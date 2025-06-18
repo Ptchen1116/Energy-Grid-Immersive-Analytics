@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.component
+package com.ucl.energygrid.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

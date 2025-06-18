@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screen
+package com.ucl.energygrid.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -31,10 +31,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.ui.layout.BottomNavigationBar
-import com.example.myapplication.ui.layout.MapControlPanel
-import com.example.myapplication.ui.layout.SiteInformationPanel
-import com.example.myapplication.ui.layout.TimeSimulationPanel
+import com.ucl.energygrid.ui.layout.BottomNavigationBar
+import com.ucl.energygrid.ui.layout.MapControlPanel
+import com.ucl.energygrid.ui.layout.SiteInformationPanel
+import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
 
 
