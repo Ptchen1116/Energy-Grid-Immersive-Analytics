@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screen
+package com.ucl.energygrid.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.R
+import com.ucl.energygrid.R
 
 @Composable
 fun UKMap(

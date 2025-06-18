@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.layout
+package com.ucl.energygrid.ui.layout
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,9 +30,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.R
-import com.example.myapplication.ui.component.RiskTag
-import com.example.myapplication.ui.component.TypeTag
+import com.ucl.energygrid.R
+import com.ucl.energygrid.ui.component.RiskTag
+import com.ucl.energygrid.ui.component.TypeTag
 
 
 @Composable

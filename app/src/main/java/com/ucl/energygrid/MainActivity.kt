@@ -1,9 +1,9 @@
-package com.example.myapplication
+package com.ucl.energygrid
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.example.myapplication.ui.screen.MainScreen
+import com.ucl.energygrid.ui.screen.MainScreen
 
 
 

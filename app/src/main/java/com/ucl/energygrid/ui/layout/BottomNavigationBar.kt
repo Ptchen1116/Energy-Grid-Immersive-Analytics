@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.layout
+package com.ucl.energygrid.ui.layout
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -12,9 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.R
-import com.example.myapplication.ui.component.BottomNavItem
-import com.example.myapplication.ui.screen.BottomSheetContent
+import com.ucl.energygrid.R
+import com.ucl.energygrid.ui.component.BottomNavItem
+import com.ucl.energygrid.ui.screen.BottomSheetContent
 
 
 @Composable
