@@ -1,0 +1,160 @@
+package com.example.myapplication.ui.screen
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import com.example.myapplication.ui.layout.BottomNavigationBar
+import com.example.myapplication.ui.layout.MapControlPanel
+import com.example.myapplication.ui.layout.SiteInformationPanel
+import com.example.myapplication.ui.layout.TimeSimulationPanel
+import kotlinx.coroutines.launch
+
+
+enum class BottomSheetContent {
+    None,
+    SiteInfo,
+    MapControl,
+    TimeSimulation
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen() {
+    var currentBottomSheet by remember { mutableStateOf(BottomSheetContent.None) }
+    val scaffoldState = rememberBottomSheetScaffoldState()
+    val coroutineScope = rememberCoroutineScope()
+    val sheetHeightPx = remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        BottomSheetScaffold(
+            scaffoldState = scaffoldState,
+            sheetPeekHeight = 0.dp,
+            sheetSwipeEnabled = true,
+            sheetDragHandle = null,
+            sheetContent = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .onGloballyPositioned { coordinates ->
+                            sheetHeightPx.intValue = coordinates.size.height
+                        }
+                        .padding(
+                            bottom = WindowInsets.navigationBars
+                                .asPaddingValues()
+                                .calculateBottomPadding()
+                        )
+                ) {
+                    when (currentBottomSheet) {
+                        BottomSheetContent.SiteInfo -> SiteInformationPanel()
+                        BottomSheetContent.MapControl -> MapControlPanel()
+                        BottomSheetContent.TimeSimulation -> TimeSimulationPanel()
+                        else -> Spacer(modifier = Modifier.height(0.dp))
+                    }
+                    Spacer(modifier = Modifier.height(75.dp))
+                }
+            }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                UKMap()
+
+                // Shadow
+                if (currentBottomSheet != BottomSheetContent.None) {
+                    val overlayHeightDp = with(density) {
+                        (sheetHeightPx.intValue + 50).toDp()
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(overlayHeightDp)
+                            .align(Alignment.BottomStart)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color(0x99000000)
+                                    ),
+                                    startY = 0f,
+                                    endY = 300f
+                                ), shape = RoundedCornerShape(
+                                    topStart = 16.dp,
+                                    topEnd = 16.dp
+                                )
+                            )
+                    )
+                }
+            }
+        }
+
+        BottomNavigationBar(
+            selectedItem = currentBottomSheet,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            onMapControlClick = {
+                coroutineScope.launch {
+                    if (currentBottomSheet == BottomSheetContent.MapControl) {
+                        currentBottomSheet = BottomSheetContent.None
+                    } else {
+                        val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                        currentBottomSheet = BottomSheetContent.MapControl
+                        if (!isExpanded) scaffoldState.bottomSheetState.expand()
+                    }
+                }
+            },
+            onSiteInfoClick = {
+                coroutineScope.launch {
+                    if (currentBottomSheet == BottomSheetContent.SiteInfo) {
+                        currentBottomSheet = BottomSheetContent.None
+                    } else {
+                        val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                        currentBottomSheet = BottomSheetContent.SiteInfo
+                        if (!isExpanded) scaffoldState.bottomSheetState.expand()
+                    }
+                }
+            },
+            onSimulationClick = {
+                coroutineScope.launch {
+                    if (currentBottomSheet == BottomSheetContent.TimeSimulation) {
+                        currentBottomSheet = BottomSheetContent.None
+                    } else {
+                        val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                        currentBottomSheet = BottomSheetContent.TimeSimulation
+                        if (!isExpanded) scaffoldState.bottomSheetState.expand()
+                    }
+                }
+            }
+        )
+    }
+}
