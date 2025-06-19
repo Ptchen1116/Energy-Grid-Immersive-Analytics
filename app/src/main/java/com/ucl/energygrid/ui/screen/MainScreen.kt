@@ -88,7 +88,7 @@ fun MainScreen() {
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                UKMap()
+                // UKMap()
 
                 // Shadow
                 if (currentBottomSheet != BottomSheetContent.None) {
