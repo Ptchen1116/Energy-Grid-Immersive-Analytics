@@ -1,40 +1,49 @@
 package com.ucl.energygrid.ui.screen
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.ucl.energygrid.R
 
 @Composable
-fun UKMap(
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.uk_map),
-            contentDescription = "UK Map",
-            modifier = Modifier.fillMaxWidth(),
-            contentScale = ContentScale.Crop
+fun UKMap() {
+    val ukBounds = LatLngBounds(
+        LatLng(49.9, -8.6),
+        LatLng(60.9, 1.8)
+    )
+
+    val cameraPositionState = rememberCameraPositionState()
+
+    LaunchedEffect(Unit) {
+        cameraPositionState.animate(
+            update = CameraUpdateFactory.newLatLngBounds(ukBounds, 100), // 100 是padding，避免貼邊太緊
+            durationMs = 1000
+        )
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
         )
 
         FloatingActionButton(
-            onClick = { /* Optional 功能 */ },
+            onClick = { /* resets the map */ },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 16.dp, bottom = 128.dp),
