@@ -59,6 +59,7 @@ fun MainScreen() {
     val density = LocalDensity.current
 
     val context = LocalContext.current
+    var showFloodRisk by remember { mutableStateOf(false) }
     val floodCenters = remember { mutableStateListOf<LatLng>() }
 
     LaunchedEffect(Unit) {
@@ -89,7 +90,10 @@ fun MainScreen() {
                 ) {
                     when (currentBottomSheet) {
                         BottomSheetContent.SiteInfo -> SiteInformationPanel()
-                        BottomSheetContent.MapControl -> MapControlPanel()
+                        BottomSheetContent.MapControl -> MapControlPanel(
+                            floodingRisk = showFloodRisk,
+                            onFloodingRiskChange = { showFloodRisk = it }
+                        )
                         BottomSheetContent.TimeSimulation -> TimeSimulationPanel()
                         else -> Spacer(modifier = Modifier.height(0.dp))
                     }
@@ -102,7 +106,7 @@ fun MainScreen() {
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                UKMap(floodCenters = floodCenters)
+                UKMap(floodCenters = floodCenters, showMarkers = showFloodRisk)
 
                 // Shadow
                 if (currentBottomSheet != BottomSheetContent.None) {

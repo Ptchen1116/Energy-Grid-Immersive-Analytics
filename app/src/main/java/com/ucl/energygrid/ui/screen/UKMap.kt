@@ -24,7 +24,7 @@ import com.ucl.energygrid.R
 
 
 @Composable
-fun UKMap(floodCenters: List<LatLng>) {
+fun UKMap(floodCenters: List<LatLng>, showMarkers: Boolean) {
     val ukBounds = LatLngBounds(
         LatLng(49.9, -8.6),
         LatLng(60.9, 1.8)
@@ -44,12 +44,14 @@ fun UKMap(floodCenters: List<LatLng>) {
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState
         ) {
-            floodCenters.forEach { center ->
-                Marker(
-                    state = MarkerState(position = center),
-                    title = "Flood Center",
-                    snippet = "Flood risk here"
-                )
+            if (showMarkers) {
+                floodCenters.forEach { center ->
+                    Marker(
+                        state = MarkerState(position = center),
+                        title = "Flood Center",
+                        snippet = "Flood risk here"
+                    )
+                }
             }
         }
 
