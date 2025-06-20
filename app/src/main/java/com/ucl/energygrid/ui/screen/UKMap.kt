@@ -34,7 +34,7 @@ fun UKMap(floodCenters: List<LatLng>, showMarkers: Boolean) {
 
     LaunchedEffect(Unit) {
         cameraPositionState.animate(
-            update = CameraUpdateFactory.newLatLngBounds(ukBounds, 100), // 100 是padding，避免貼邊太緊
+            update = CameraUpdateFactory.newLatLngBounds(ukBounds, 100),
             durationMs = 1000
         )
     }

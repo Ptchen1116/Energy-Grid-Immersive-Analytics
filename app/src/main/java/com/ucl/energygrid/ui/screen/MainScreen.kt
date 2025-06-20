@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -41,7 +44,6 @@ import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
-
 
 enum class BottomSheetContent {
     None,
@@ -61,6 +63,8 @@ fun MainScreen() {
     val context = LocalContext.current
     var showFloodRisk by remember { mutableStateOf(false) }
     val floodCenters = remember { mutableStateListOf<LatLng>() }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         val fetchedCenters = fetchAllFloodCenters(context)
@@ -68,7 +72,14 @@ fun MainScreen() {
         floodCenters.addAll(fetchedCenters)
     }
 
+    LaunchedEffect(showFloodRisk, floodCenters.size) {
+        if (showFloodRisk && floodCenters.isEmpty()) {
+            snackbarHostState.showSnackbar("No current flood risk areas.")
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
+
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetPeekHeight = 0.dp,
@@ -99,16 +110,16 @@ fun MainScreen() {
                     }
                     Spacer(modifier = Modifier.height(75.dp))
                 }
-            }
+            },
+            snackbarHost = {}
         ) { innerPadding ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                // UKMap(floodCenters = floodCenters, showMarkers = showFloodRisk)
+                UKMap(floodCenters = floodCenters, showMarkers = showFloodRisk)
 
-                // Shadow
                 if (currentBottomSheet != BottomSheetContent.None) {
                     val overlayHeightDp = with(density) {
                         (sheetHeightPx.intValue + 50).toDp()
@@ -127,7 +138,8 @@ fun MainScreen() {
                                     ),
                                     startY = 0f,
                                     endY = 300f
-                                ), shape = RoundedCornerShape(
+                                ),
+                                shape = RoundedCornerShape(
                                     topStart = 16.dp,
                                     topEnd = 16.dp
                                 )
@@ -135,6 +147,16 @@ fun MainScreen() {
                     )
                 }
             }
+        }
+
+        val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = screenHeightDp * 0.15f)
+                .align(Alignment.TopCenter)
+        ) {
+            SnackbarHost(hostState = snackbarHostState)
         }
 
         BottomNavigationBar(
