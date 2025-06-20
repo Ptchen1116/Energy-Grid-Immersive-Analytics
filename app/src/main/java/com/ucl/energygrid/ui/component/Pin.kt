@@ -11,7 +11,8 @@ enum class PinType {
     MINE,
     SOLAR,
     WIND,
-    HYDROELECTRIC
+    HYDROELECTRIC,
+    FLOODING_RISK
 }
 
 fun Int.dpToPx(context: Context): Int =
@@ -31,6 +32,7 @@ fun addPin(
         PinType.SOLAR -> R.drawable.solar_site
         PinType.WIND -> R.drawable.wind_site
         PinType.HYDROELECTRIC -> R.drawable.hydroelectric_site
+        PinType.FLOODING_RISK -> R.drawable.flooding_risk
     }
 
     val pinContainer = FrameLayout(context).apply {
@@ -47,6 +49,7 @@ fun addPin(
         PinType.SOLAR -> "#FFEB3B".toColorInt()
         PinType.WIND -> "#4CAF50".toColorInt()
         PinType.HYDROELECTRIC -> "#2196F3".toColorInt()
+        PinType.FLOODING_RISK -> "#F44336".toColorInt()
     }
 
     val pinImage = ImageView(context).apply {
