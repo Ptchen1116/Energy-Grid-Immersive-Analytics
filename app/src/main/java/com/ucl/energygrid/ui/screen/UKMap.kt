@@ -17,11 +17,14 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ucl.energygrid.R
 
+
 @Composable
-fun UKMap() {
+fun UKMap(floodCenters: List<LatLng>) {
     val ukBounds = LatLngBounds(
         LatLng(49.9, -8.6),
         LatLng(60.9, 1.8)
@@ -40,7 +43,16 @@ fun UKMap() {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState
-        )
+        ) {
+            floodCenters.forEach { center ->
+                Marker(
+                    state = MarkerState(position = center),
+                    title = "Flood Center",
+                    snippet = "Flood risk here"
+                )
+            }
+        }
+
 
         FloatingActionButton(
             onClick = { /* resets the map */ },

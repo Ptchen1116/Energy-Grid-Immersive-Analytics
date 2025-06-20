@@ -5,37 +5,54 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.ucl.energygrid.ui.screen.MainScreen
 
-import android.widget.ImageView
-import android.view.ViewGroup
-import android.content.res.Resources
-import android.widget.FrameLayout
-import com.ucl.energygrid.ui.component.PinType
-import com.ucl.energygrid.ui.component.addPin
-import android.view.ViewGroup.MarginLayoutParams
 
-/* class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MainScreen()
         }
     }
-} */
+}
 
+/*
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.pin)
+        setContent {
+            Text("Hello Flood Test")
+        }
 
-        val rootLayout = findViewById<FrameLayout>(R.id.pinLayout)
-
-        addPin(this, rootLayout, 50, 100, 48, 54, PinType.MINE)
-        addPin(this, rootLayout, 150, 100, 48, 54, PinType.SOLAR)
-        addPin(this, rootLayout, 250, 100, 48, 54, PinType.WIND)
-        addPin(this, rootLayout, 350, 100, 48, 54, PinType.HYDROELECTRIC)
+        lifecycleScope.launch {
+            try {
+                val floodPolygons = fetchFloodPolygons(this@MainActivity)
+                floodPolygons.forEach { meta ->
+                    Log.d("FloodTest", "AreaId: ${meta.areaId}, Severity: ${meta.severityLevel}, PolygonUrl: ${meta.polygonUrl}")
+                    try {
+                        val points = loadPolygonPoints(meta.polygonUrl)
+                        Log.d("PolygonPoints", "Points for ${meta.areaId}: ${points.size} points")
+                        points.take(5).forEach { point ->
+                            Log.d("PolygonPoints", " - LatLng: ${point.latitude}, ${point.longitude}")
+                        }
+                        val center = loadCenterPoint(meta.areaId)
+                        if (center != null) {
+                            Log.d("center", "Center for ${meta.areaId}: ${center.latitude}, ${center.longitude}")
+                        } else {
+                            Log.d("center", "No center for ${meta.areaId}")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("PolygonPoints", "Failed to load points for ${meta.areaId}: ${e.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("FloodTest", "Fetch failed: ${e.message}")
+            }
+        }
     }
 }
+*/
+
 
 
 
