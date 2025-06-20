@@ -16,7 +16,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import com.ucl.energygrid.AppEnvironment
 import java.net.URL
+
 
 data class FloodPolygonMeta(
     val areaId: String,
@@ -25,10 +27,11 @@ data class FloodPolygonMeta(
 )
 
 suspend fun fetchFloodPolygons(context: Context): List<FloodPolygonMeta> = withContext(Dispatchers.IO) {
-    val jsonText = context.assets
-        .open("fake_flood_data.json")
-        .bufferedReader()
-        .use { it.readText() }
+    val jsonText = if (AppEnvironment.isDebug) {
+        context.assets.open("fake_flood_data.json").bufferedReader().use { it.readText() }
+    } else {
+        URL("https://environment.data.gov.uk/flood-monitoring/id/floods").readText()
+    }
 
     val root = JSONObject(jsonText)
     val items = root.getJSONArray("items")

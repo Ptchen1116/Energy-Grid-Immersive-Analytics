@@ -106,7 +106,7 @@ fun MainScreen() {
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                UKMap(floodCenters = floodCenters, showMarkers = showFloodRisk)
+                // UKMap(floodCenters = floodCenters, showMarkers = showFloodRisk)
 
                 // Shadow
                 if (currentBottomSheet != BottomSheetContent.None) {
