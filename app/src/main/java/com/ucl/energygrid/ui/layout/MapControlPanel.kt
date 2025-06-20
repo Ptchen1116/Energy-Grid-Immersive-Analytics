@@ -24,11 +24,14 @@ import com.ucl.energygrid.ui.component.TabSelectionIndicator
 
 
 @Composable
-fun MapControlPanel(modifier: Modifier = Modifier) {
+fun MapControlPanel(
+    floodingRisk: Boolean,
+    onFloodingRiskChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var closedMine by remember { mutableStateOf(false) }
     var closingMine by remember { mutableStateOf(false) }
-    var floodingRisk by remember { mutableStateOf(false) }
     var solar by remember { mutableStateOf(false) }
     var wind by remember { mutableStateOf(false) }
     var hydroelectric by remember { mutableStateOf(false) }
@@ -36,8 +39,7 @@ fun MapControlPanel(modifier: Modifier = Modifier) {
     val selectedColor = Color(0xFF03045E)
     val unselectedColor = Color(0xFF8E8E93)
     Surface(
-        modifier = modifier
-            .fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         color = Color.White,
     ) {
         Column {
@@ -96,7 +98,10 @@ fun MapControlPanel(modifier: Modifier = Modifier) {
                 }
                 1 -> Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = floodingRisk, onCheckedChange = { floodingRisk = it })
+                        Checkbox(
+                            checked = floodingRisk,
+                            onCheckedChange = onFloodingRiskChange
+                        )
                         Text("Flooding Risk")
                     }
                 }
