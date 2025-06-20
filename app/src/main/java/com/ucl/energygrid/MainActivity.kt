@@ -14,22 +14,21 @@ import kotlinx.coroutines.launch
 
 
 
-/*
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        AppEnvironment.isDebug = true
+        AppEnvironment.isDebug = false
 
         setContent {
             MainScreen()
         }
     }
 }
-*/
 
 
-class MainActivity : ComponentActivity() {
+
+/* class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,6 +67,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+ */
 
 
 
