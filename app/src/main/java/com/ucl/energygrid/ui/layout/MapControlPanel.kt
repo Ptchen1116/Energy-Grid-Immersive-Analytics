@@ -23,18 +23,28 @@ import androidx.compose.ui.unit.dp
 import com.ucl.energygrid.ui.component.TabSelectionIndicator
 
 
+enum class BottomSheetContent {
+    None,
+    SiteInfo,
+    MapControl,
+    TimeSimulation
+}
+
 @Composable
 fun MapControlPanel(
     floodingRisk: Boolean,
     onFloodingRiskChange: (Boolean) -> Unit,
+    showSolar: Boolean,
+    onSolarChange: (Boolean) -> Unit,
+    showWind: Boolean,
+    onWindChange: (Boolean) -> Unit,
+    showHydroelectric: Boolean,
+    onHydroelectricChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var closedMine by remember { mutableStateOf(false) }
     var closingMine by remember { mutableStateOf(false) }
-    var solar by remember { mutableStateOf(false) }
-    var wind by remember { mutableStateOf(false) }
-    var hydroelectric by remember { mutableStateOf(false) }
 
     val selectedColor = Color(0xFF03045E)
     val unselectedColor = Color(0xFF8E8E93)
@@ -107,15 +117,15 @@ fun MapControlPanel(
                 }
                 2 -> Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = solar, onCheckedChange = { solar = it })
+                        Checkbox(checked = showSolar, onCheckedChange = onSolarChange)
                         Text("Solar")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = wind, onCheckedChange = { wind = it })
+                        Checkbox(checked = showWind, onCheckedChange = onWindChange)
                         Text("Wind")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = hydroelectric, onCheckedChange = { hydroelectric = it })
+                        Checkbox(checked = showHydroelectric, onCheckedChange = onHydroelectricChange)
                         Text("Hydroelectric")
                     }
                 }
