@@ -21,14 +21,23 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ucl.energygrid.R
+import com.ucl.energygrid.ui.component.PinType
+import com.ucl.energygrid.ui.component.createPinBitmap
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+
 
 
 @Composable
 fun UKMap(
     floodCenters: List<LatLng>,
     showMarkers: Boolean,
-    renewableSites: List<LatLng> = emptyList()
+    renewableSites: List<RenewableSite> = emptyList()
 ) {
+    val context = LocalContext.current
+
     val ukBounds = LatLngBounds(
         LatLng(49.9, -8.6),
         LatLng(60.9, 1.8)
@@ -43,26 +52,42 @@ fun UKMap(
         )
     }
 
+    val markerIcons = remember { mutableMapOf<PinType, BitmapDescriptor>() }
+
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState
         ) {
+            if (markerIcons.isEmpty()) {
+                PinType.values().forEach { type ->
+                    markerIcons[type] = BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, type))
+                }
+            }
+
             if (showMarkers) {
                 floodCenters.forEach { center ->
                     Marker(
                         state = MarkerState(position = center),
                         title = "Flood Center",
-                        snippet = "Flood risk here"
+                        snippet = "Flood risk here",
+                        icon = markerIcons[PinType.FLOODING_RISK]
                     )
                 }
             }
 
             renewableSites.forEach { site ->
+                val iconColor = when (site.type) {
+                    PinType.SOLAR -> BitmapDescriptorFactory.HUE_YELLOW
+                    PinType.WIND -> BitmapDescriptorFactory.HUE_GREEN
+                    PinType.HYDROELECTRIC -> BitmapDescriptorFactory.HUE_CYAN
+                    else -> BitmapDescriptorFactory.HUE_RED
+                }
                 Marker(
-                    state = MarkerState(position = site),
-                    title = "Renewable Site",
-                    snippet = "Renewable energy location"
+                    state = MarkerState(position = site.location),
+                    title = "${site.type.name} Site",
+                    snippet = site.name,
+                    icon = BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, site.type))
                 )
             }
         }

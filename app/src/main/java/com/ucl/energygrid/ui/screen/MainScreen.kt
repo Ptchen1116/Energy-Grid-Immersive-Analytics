@@ -45,6 +45,7 @@ import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import com.ucl.energygrid.data.readAndExtractSitesByType
 import kotlinx.coroutines.launch
+import com.ucl.energygrid.ui.component.PinType
 
 enum class BottomSheetContent {
     None,
@@ -52,6 +53,12 @@ enum class BottomSheetContent {
     MapControl,
     TimeSimulation
 }
+
+data class RenewableSite(
+    val name: String,
+    val location: LatLng,
+    val type: PinType
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,23 +73,14 @@ fun MainScreen() {
     var showFloodRisk by remember { mutableStateOf(false) }
     val floodCenters = remember { mutableStateListOf<LatLng>() }
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
-    // Renewable site visibility states
     var showSolar by remember { mutableStateOf(false) }
     var showWind by remember { mutableStateOf(false) }
     var showHydroelectric by remember { mutableStateOf(false) }
 
-    // Dummy renewable sites (replace with your real data)
-    val solarSites = readAndExtractSitesByType(context, category = "solar").map {
-        LatLng(it.second, it.third)
-    }
-    val windSites = readAndExtractSitesByType(context, category = "wind").map {
-        LatLng(it.second, it.third)
-    }
-    val hydroelectricSites = readAndExtractSitesByType(context, category = "hydroelectric").map {
-        LatLng(it.second, it.third)
-    }
+    val solarSites = readAndExtractSitesByType(context, category = "solar")
+    val windSites = readAndExtractSitesByType(context, category = "wind")
+    val hydroelectricSites = readAndExtractSitesByType(context, category = "hydroelectric")
 
     LaunchedEffect(Unit) {
         val fetchedCenters = fetchAllFloodCenters(context)
@@ -97,7 +95,6 @@ fun MainScreen() {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetPeekHeight = 0.dp,
@@ -142,17 +139,46 @@ fun MainScreen() {
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                // Combine markers based on selected checkboxes
-                val renewableMarkers = mutableListOf<LatLng>()
-                if (showSolar) renewableMarkers.addAll(solarSites)
-                if (showWind) renewableMarkers.addAll(windSites)
-                if (showHydroelectric) renewableMarkers.addAll(hydroelectricSites)
+                val renewableMarkers = mutableListOf<RenewableSite>()
+                if (showSolar) {
+                    renewableMarkers.addAll(
+                        solarSites.map {
+                            RenewableSite(
+                                name = it.first,
+                                location = LatLng(it.second, it.third),
+                                type = PinType.SOLAR
+                            )
+                        }
+                    )
+                }
+                if (showWind) {
+                    renewableMarkers.addAll(
+                        windSites.map {
+                            RenewableSite(
+                                name = it.first,
+                                location = LatLng(it.second, it.third),
+                                type = PinType.WIND
+                            )
+                        }
+                    )
+                }
+                if (showHydroelectric) {
+                    renewableMarkers.addAll(
+                        hydroelectricSites.map {
+                            RenewableSite(
+                                name = it.first,
+                                location = LatLng(it.second, it.third),
+                                type = PinType.HYDROELECTRIC
+                            )
+                        }
+                    )
+                }
 
-                /* UKMap(
+                UKMap(
                     floodCenters = floodCenters,
                     showMarkers = showFloodRisk,
                     renewableSites = renewableMarkers
-                )*/
+                )
 
                 if (currentBottomSheet != BottomSheetContent.None) {
                     val overlayHeightDp = with(density) {
