@@ -24,7 +24,11 @@ import com.ucl.energygrid.R
 
 
 @Composable
-fun UKMap(floodCenters: List<LatLng>, showMarkers: Boolean) {
+fun UKMap(
+    floodCenters: List<LatLng>,
+    showMarkers: Boolean,
+    renewableSites: List<LatLng> = emptyList()
+) {
     val ukBounds = LatLngBounds(
         LatLng(49.9, -8.6),
         LatLng(60.9, 1.8)
@@ -53,8 +57,15 @@ fun UKMap(floodCenters: List<LatLng>, showMarkers: Boolean) {
                     )
                 }
             }
-        }
 
+            renewableSites.forEach { site ->
+                Marker(
+                    state = MarkerState(position = site),
+                    title = "Renewable Site",
+                    snippet = "Renewable energy location"
+                )
+            }
+        }
 
         FloatingActionButton(
             onClick = { /* resets the map */ },

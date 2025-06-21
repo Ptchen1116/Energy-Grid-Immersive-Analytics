@@ -43,6 +43,7 @@ import com.ucl.energygrid.ui.layout.BottomNavigationBar
 import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
+import com.ucl.energygrid.data.readAndExtractSitesByType
 import kotlinx.coroutines.launch
 
 enum class BottomSheetContent {
@@ -51,6 +52,7 @@ enum class BottomSheetContent {
     MapControl,
     TimeSimulation
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
@@ -65,6 +67,22 @@ fun MainScreen() {
     val floodCenters = remember { mutableStateListOf<LatLng>() }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // Renewable site visibility states
+    var showSolar by remember { mutableStateOf(false) }
+    var showWind by remember { mutableStateOf(false) }
+    var showHydroelectric by remember { mutableStateOf(false) }
+
+    // Dummy renewable sites (replace with your real data)
+    val solarSites = readAndExtractSitesByType(context, category = "solar").map {
+        LatLng(it.second, it.third)
+    }
+    val windSites = readAndExtractSitesByType(context, category = "wind").map {
+        LatLng(it.second, it.third)
+    }
+    val hydroelectricSites = readAndExtractSitesByType(context, category = "hydroelectric").map {
+        LatLng(it.second, it.third)
+    }
 
     LaunchedEffect(Unit) {
         val fetchedCenters = fetchAllFloodCenters(context)
@@ -103,7 +121,13 @@ fun MainScreen() {
                         BottomSheetContent.SiteInfo -> SiteInformationPanel()
                         BottomSheetContent.MapControl -> MapControlPanel(
                             floodingRisk = showFloodRisk,
-                            onFloodingRiskChange = { showFloodRisk = it }
+                            onFloodingRiskChange = { showFloodRisk = it },
+                            showSolar = showSolar,
+                            onSolarChange = { showSolar = it },
+                            showWind = showWind,
+                            onWindChange = { showWind = it },
+                            showHydroelectric = showHydroelectric,
+                            onHydroelectricChange = { showHydroelectric = it }
                         )
                         BottomSheetContent.TimeSimulation -> TimeSimulationPanel()
                         else -> Spacer(modifier = Modifier.height(0.dp))
@@ -118,7 +142,17 @@ fun MainScreen() {
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                UKMap(floodCenters = floodCenters, showMarkers = showFloodRisk)
+                // Combine markers based on selected checkboxes
+                val renewableMarkers = mutableListOf<LatLng>()
+                if (showSolar) renewableMarkers.addAll(solarSites)
+                if (showWind) renewableMarkers.addAll(windSites)
+                if (showHydroelectric) renewableMarkers.addAll(hydroelectricSites)
+
+                /* UKMap(
+                    floodCenters = floodCenters,
+                    showMarkers = showFloodRisk,
+                    renewableSites = renewableMarkers
+                )*/
 
                 if (currentBottomSheet != BottomSheetContent.None) {
                     val overlayHeightDp = with(density) {

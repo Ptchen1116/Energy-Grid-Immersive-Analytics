@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.lifecycle.lifecycleScope
 import android.util.Log
 import kotlinx.coroutines.launch
+import com.ucl.energygrid.data.readAndExtractSitesByType
 
 
 
@@ -18,14 +19,25 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        AppEnvironment.isDebug = false
 
         setContent {
             MainScreen()
         }
     }
 }
+/*
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
+        val solarSites = readAndExtractSitesByType(this, category = "solar")
+        solarSites.forEach { (name, lat, lon) ->
+            Log.d("TECH_TYPE", "Site: $name, Lat: $lat, Lon: $lon")
+        }
+
+    }
+}
+*/
 
 
 /* class MainActivity : ComponentActivity() {
