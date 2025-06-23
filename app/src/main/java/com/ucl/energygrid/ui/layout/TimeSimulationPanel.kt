@@ -20,7 +20,6 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,27 +32,34 @@ import com.ucl.energygrid.ui.component.TabSelectionIndicator
 
 
 @Composable
-fun TimeSimulationPanel(modifier: Modifier = Modifier) {
+fun TimeSimulationPanel(
+    energyDemandHeatmap: Boolean,
+    onEnergyDemandHeatmapChange: (Boolean) -> Unit,
+    selectedYear: Int,
+    onSelectedYearChange: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    var energyDemandHeatmap by remember { mutableStateOf(false) }
-    var startYear by remember { mutableStateOf("2025") }
+    var startYear by remember { mutableStateOf("2015") }
     var endYear by remember { mutableStateOf("2035") }
     val selectedColor = Color(0xFF03045E)
     val unselectedColor = Color(0xFF8E8E93)
 
-    val years = (2020..2040).map { it.toString() }
+    val years = (2005..2035).map { it.toString() }
 
-    val startYearInt = startYear.toIntOrNull() ?: 2025
+    val startYearInt = startYear.toIntOrNull() ?: 2005
     val endYearInt = endYear.toIntOrNull() ?: 2035
 
     val yearRange = if (startYearInt <= endYearInt) (startYearInt..endYearInt).toList()
     else (endYearInt..startYearInt).toList()
 
-    var sliderIndex by remember { mutableFloatStateOf(0f) }
+    val defaultSliderIndex = yearRange.indexOf(2025).takeIf { it >= 0 }?.toFloat() ?: 0f
+    var sliderIndex by remember { mutableStateOf(defaultSliderIndex) }
 
+    // 確保 sliderIndex 在有效範圍內
     sliderIndex = sliderIndex.coerceIn(0f, (yearRange.size - 1).toFloat())
 
-    val selectedYear = yearRange[sliderIndex.toInt()]
+    val displayedYear = yearRange[sliderIndex.toInt()]
 
     Surface(
         modifier = modifier
@@ -99,7 +105,7 @@ fun TimeSimulationPanel(modifier: Modifier = Modifier) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = energyDemandHeatmap,
-                            onCheckedChange = { energyDemandHeatmap = it }
+                            onCheckedChange = onEnergyDemandHeatmapChange
                         )
                         Text("Energy Demand Heat map")
                     }
@@ -111,9 +117,9 @@ fun TimeSimulationPanel(modifier: Modifier = Modifier) {
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Simulation Year: $selectedYear")
+                    Text("Simulation Year: $displayedYear")
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -123,12 +129,19 @@ fun TimeSimulationPanel(modifier: Modifier = Modifier) {
                         DropdownMenuBox(
                             selectedOption = startYear,
                             options = years,
-                            onOptionSelected = { startYear = it }
+                            onOptionSelected = {
+                                startYear = it
+                                sliderIndex = 0f
+                            }
                         )
 
                         Slider(
                             value = sliderIndex,
-                            onValueChange = { sliderIndex = it },
+                            onValueChange = { newIndex ->
+                                sliderIndex = newIndex.coerceIn(0f, (yearRange.size - 1).toFloat())
+                                val year = yearRange[sliderIndex.toInt()]
+                                onSelectedYearChange(year)
+                            },
                             valueRange = 0f..(yearRange.lastIndex).toFloat(),
                             steps = yearRange.size - 2,
                             modifier = Modifier
@@ -139,7 +152,10 @@ fun TimeSimulationPanel(modifier: Modifier = Modifier) {
                         DropdownMenuBox(
                             selectedOption = endYear,
                             options = years,
-                            onOptionSelected = { endYear = it }
+                            onOptionSelected = {
+                                endYear = it
+                                sliderIndex = 0f
+                            }
                         )
                     }
                 }

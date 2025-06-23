@@ -38,14 +38,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.LatLng
+import com.ucl.energygrid.data.GeoJsonLoader
+import com.ucl.energygrid.data.RegionFeature
 import com.ucl.energygrid.data.fetchAllFloodCenters
+import com.ucl.energygrid.data.readAndExtractSitesByType
+import com.ucl.energygrid.ui.component.PinType
 import com.ucl.energygrid.ui.layout.BottomNavigationBar
 import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
-import com.ucl.energygrid.data.readAndExtractSitesByType
 import kotlinx.coroutines.launch
-import com.ucl.energygrid.ui.component.PinType
+
 
 enum class BottomSheetContent {
     None,
@@ -82,6 +85,10 @@ fun MainScreen() {
     val windSites = readAndExtractSitesByType(context, category = "wind")
     val hydroelectricSites = readAndExtractSitesByType(context, category = "hydroelectric")
 
+    val regionFeatures = remember { mutableStateListOf<RegionFeature>() }
+    var energyDemandHeatmap by remember { mutableStateOf(false) }
+    var selectedYear by remember { mutableStateOf(2025) }
+
     LaunchedEffect(Unit) {
         val fetchedCenters = fetchAllFloodCenters(context)
         floodCenters.clear()
@@ -91,6 +98,14 @@ fun MainScreen() {
     LaunchedEffect(showFloodRisk, floodCenters.size) {
         if (showFloodRisk && floodCenters.isEmpty()) {
             snackbarHostState.showSnackbar("No current flood risk areas.")
+        }
+    }
+
+
+    LaunchedEffect(Unit) {
+        GeoJsonLoader.loadGeoJsonFeatures { features ->
+            regionFeatures.clear()
+            regionFeatures.addAll(features)
         }
     }
 
@@ -126,7 +141,12 @@ fun MainScreen() {
                             showHydroelectric = showHydroelectric,
                             onHydroelectricChange = { showHydroelectric = it }
                         )
-                        BottomSheetContent.TimeSimulation -> TimeSimulationPanel()
+                        BottomSheetContent.TimeSimulation -> TimeSimulationPanel(
+                            energyDemandHeatmap = energyDemandHeatmap,
+                            onEnergyDemandHeatmapChange = { energyDemandHeatmap = it },
+                            selectedYear = selectedYear,
+                            onSelectedYearChange = { selectedYear = it }
+                        )
                         else -> Spacer(modifier = Modifier.height(0.dp))
                     }
                     Spacer(modifier = Modifier.height(75.dp))
@@ -177,7 +197,10 @@ fun MainScreen() {
                 UKMap(
                     floodCenters = floodCenters,
                     showMarkers = showFloodRisk,
-                    renewableSites = renewableMarkers
+                    renewableSites = renewableMarkers,
+                    regionFeatures = regionFeatures,
+                    energyDemandHeatmap = energyDemandHeatmap,
+                    year = selectedYear
                 )
 
                 if (currentBottomSheet != BottomSheetContent.None) {
