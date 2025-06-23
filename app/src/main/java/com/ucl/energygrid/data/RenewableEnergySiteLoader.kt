@@ -2,9 +2,7 @@ package com.ucl.energygrid.data
 
 import android.content.Context
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import android.util.Log
 import org.locationtech.proj4j.CRSFactory
-import org.locationtech.proj4j.CoordinateReferenceSystem
 import org.locationtech.proj4j.CoordinateTransformFactory
 import org.locationtech.proj4j.ProjCoordinate
 

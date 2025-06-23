@@ -11,12 +11,12 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolygonOptions
 import com.google.maps.android.compose.MapEffect
+import com.ucl.energygrid.AppEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import com.ucl.energygrid.AppEnvironment
 import java.net.URL
 
 

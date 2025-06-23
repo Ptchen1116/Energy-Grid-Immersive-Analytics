@@ -12,76 +12,24 @@ import androidx.lifecycle.lifecycleScope
 import android.util.Log
 import kotlinx.coroutines.launch
 import com.ucl.energygrid.data.readAndExtractSitesByType
-
-
+import com.ucl.energygrid.data.GeoJsonLoader
+import com.ucl.energygrid.data.loadEnergyConsumption
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import android.content.Context
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVParser
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        AppEnvironment.isDebug = true
 
         setContent {
             MainScreen()
         }
     }
 }
-/*
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val solarSites = readAndExtractSitesByType(this, category = "solar")
-        solarSites.forEach { (name, lat, lon) ->
-            Log.d("TECH_TYPE", "Site: $name, Lat: $lat, Lon: $lon")
-        }
-
-    }
-}
-*/
-
-
-/* class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        AppEnvironment.isDebug = false
-
-        setContent {
-            Text("Hello Flood Test")
-        }
-
-        lifecycleScope.launch {
-            try {
-                val floodPolygons = fetchFloodPolygons(this@MainActivity)
-                floodPolygons.forEach { meta ->
-                    Log.d("FloodTest", "AreaId: ${meta.areaId}, Severity: ${meta.severityLevel}, PolygonUrl: ${meta.polygonUrl}")
-                    try {
-                        /*
-                        val points = loadPolygonPoints(meta.polygonUrl)
-                        Log.d("PolygonPoints", "Points for ${meta.areaId}: ${points.size} points")
-                        points.take(5).forEach { point ->
-                            Log.d("PolygonPoints", " - LatLng: ${point.latitude}, ${point.longitude}")
-                        }
-                         */
-                        val center = loadCenterPoint(meta.areaId)
-                        if (center != null) {
-                            Log.d("center", "Center for ${meta.areaId}: ${center.latitude}, ${center.longitude}")
-                        } else {
-                            Log.d("center", "No center for ${meta.areaId}")
-                        }
-                    } catch (e: Exception) {
-                        Log.e("PolygonPoints", "Failed to load points for ${meta.areaId}: ${e.message}")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("FloodTest", "Fetch failed: ${e.message}")
-            }
-        }
-    }
-}
- */
-
-
 
 
 

@@ -58,6 +58,8 @@ dependencies {
 
     // csv reader
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.1")
+    implementation("org.apache.commons:commons-csv:1.10.0")
+
 
     // org.osgeo.proj4j for coordinate conversion
     implementation("org.locationtech.proj4j:proj4j:1.1.1")
