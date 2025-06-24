@@ -56,7 +56,6 @@ fun TimeSimulationPanel(
     val defaultSliderIndex = yearRange.indexOf(2025).takeIf { it >= 0 }?.toFloat() ?: 0f
     var sliderIndex by remember { mutableStateOf(defaultSliderIndex) }
 
-    // 確保 sliderIndex 在有效範圍內
     sliderIndex = sliderIndex.coerceIn(0f, (yearRange.size - 1).toFloat())
 
     val displayedYear = yearRange[sliderIndex.toInt()]

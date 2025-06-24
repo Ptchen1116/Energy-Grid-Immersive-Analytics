@@ -32,7 +32,7 @@ import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ucl.energygrid.R
 import com.ucl.energygrid.data.RegionFeature
-import com.ucl.energygrid.data.loadEnergyConsumption
+import com.ucl.energygrid.data.fetchEnergyForecast
 import com.ucl.energygrid.ui.component.PinType
 import com.ucl.energygrid.ui.component.createPinBitmap
 
@@ -66,11 +66,11 @@ fun UKMap(
     var selectedRegion by remember { mutableStateOf<RegionFeature?>(null) }
 
     // State to store energy consumption data
-    var energyConsumption by remember { mutableStateOf<Map<String, Double>>(emptyMap()) }
+    var energyConsumption by remember { mutableStateOf<Map<String, Pair<Double, String>>>(emptyMap()) }
 
     // Load energy data once
     LaunchedEffect(year) {
-        energyConsumption = loadEnergyConsumption(context, year)
+        energyConsumption = fetchEnergyForecast(year)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -133,26 +133,30 @@ fun UKMap(
                 val center = region.getCenterLatLng()
                 val code = region.nutsCode
 
-                Log.d("MapMarker", "Selected region code: $code")
+                val consumptionPair = energyConsumption[code]
+                val consumption = consumptionPair?.first
+                val source = consumptionPair?.second
 
-                val consumption = energyConsumption[code]
-
-                if (consumption != null) {
-                    Log.d("MapMarker", "Found energy consumption: $consumption GWh for code: $code")
+                val titleWithSource = if (source != null) {
+                    "${region.name} ($source)"
                 } else {
-                    Log.w("MapMarker", "No energy consumption found for code: $code. Available keys: ${energyConsumption.keys}")
+                    region.name
                 }
 
                 val snippet = if (consumption != null) {
-                    "Total Consumption: %.2f GWh".format(consumption)
+                    "Total Consumption: %.2f GWh\n(Source: %s)".format(consumption, source)
                 } else {
                     "No data available"
                 }
 
                 Marker(
                     state = MarkerState(position = center),
-                    title = region.name,
-                    snippet = snippet,
+                    title = titleWithSource,
+                    snippet = if (consumption != null) {
+                        "Total Consumption: %.2f GWh".format(consumption)
+                    } else {
+                        "No data available"
+                    },
                     icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
                 )
             }

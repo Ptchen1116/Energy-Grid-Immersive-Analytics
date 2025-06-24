@@ -1,66 +1,50 @@
 package com.ucl.energygrid.data
 
-import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVParser
+import org.json.JSONObject
 import java.io.BufferedReader
-import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 
-suspend fun loadEnergyConsumption(context: Context, year: Int): Map<String, Double> = withContext(Dispatchers.IO) {
-    val regionToConsumption = mutableMapOf<String, Double>()
-
-    val longToShort = mapOf(
-        "E12000001" to "UKC",
-        "E12000002" to "UKD",
-        "E12000003" to "UKE",
-        "E12000004" to "UKF",
-        "E12000005" to "UKG",
-        "E12000006" to "UKH",
-        "E12000007" to "UKI",
-        "E12000008" to "UKJ",
-        "E12000009" to "UKK",
-        "W92000004" to "UKL",
-        "S92000003" to "UKM"
-    )
+suspend fun fetchEnergyForecast(year: Int): Map<String, Pair<Double, String>> = withContext(Dispatchers.IO) {
+    val result = mutableMapOf<String, Pair<Double, String>>()
+    val apiUrl = "http://10.0.2.2:8000/forecast"
 
     try {
-        val assetPath = "Subnational_electricity_consumption_statistics/Subnational_electricity_consumption_statistics_${year}.csv"
-        val inputStream = context.assets.open(assetPath)
-        val reader = BufferedReader(InputStreamReader(inputStream))
-        val csvParser = CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())
+        val url = URL(apiUrl)
+        val conn = url.openConnection() as HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.doOutput = true
 
-        val headerMap = csvParser.headerMap.keys.associateBy { it.trim().lowercase() }
+        val requestBody = JSONObject().put("year", year).toString()
 
-        val codeKey = headerMap.entries.find { it.key.contains("code") }?.value
-        val consumptionKey = headerMap.entries.find {
-            it.key.contains("total consumption") && it.key.contains("all meters")
-        }?.value
+        OutputStreamWriter(conn.outputStream).use { it.write(requestBody) }
 
-        if (codeKey == null || consumptionKey == null) {
-            Log.e("loadEnergy", "Required CSV headers not found. Available headers: ${headerMap.values}")
-            return@withContext emptyMap()
-        }
+        val responseCode = conn.responseCode
+        Log.d("EnergyForecast", "Response code: $responseCode")
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            val response = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+            val jsonResponse = JSONObject(response)
 
-        for ((index, record) in csvParser.withIndex()) {
-            try {
-                val rawCode = record.get(codeKey)?.trim() ?: continue
-                val code = if (longToShort.containsKey(rawCode)) longToShort[rawCode]!! else rawCode
+            for (key in jsonResponse.keys()) {
+                val item = jsonResponse.getJSONObject(key)
+                val value = item.getDouble("value")
+                val source = item.getString("source")
+                result[key] = Pair(value, source)
 
-                val rawConsumption = record.get(consumptionKey)?.replace(",", "") ?: continue
-                val consumption = rawConsumption.toDoubleOrNull() ?: 0.0
-
-                regionToConsumption[code] = consumption
-            } catch (e: Exception) {
-                Log.w("loadEnergy", "Skipping row $index due to parse error: ${e.message}")
+                Log.d("EnergyForecast", "$key: $value ($source)")
             }
+        } else {
+            Log.e("EnergyForecast", "Error response code: $responseCode")
         }
 
     } catch (e: Exception) {
-        Log.e("loadEnergy", "Failed to load energy consumption data for $year: ${e.message}", e)
+        Log.e("EnergyForecast", "Error fetching forecast: ${e.message}", e)
     }
 
-    regionToConsumption
+    result
 }
