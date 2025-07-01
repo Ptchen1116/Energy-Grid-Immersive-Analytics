@@ -1,0 +1,107 @@
+[
+  {
+    "Reference": "247737",
+    "Name": "Redcarr Wood Quarry",
+    "Status": "C",
+    "Easting": 436879,
+    "Northing": 365669
+  },
+  {
+    "Reference": "146147",
+    "Name": "Oldash Mine",
+    "Status": "C",
+    "Easting": 426814,
+    "Northing": 360805
+  },
+  {
+    "Reference": "1359",
+    "Name": "Halldale Quarry",
+    "Status": "I",
+    "Easting": 427985,
+    "Northing": 363475
+  },
+  {
+    "Reference": "106590",
+    "Name": "Whisby Gravel Pits",
+    "Status": "C",
+    "Easting": 491422,
+    "Northing": 367264
+  },
+  {
+    "Reference": "227802",
+    "Name": "Whisby Quarry",
+    "Status": "I",
+    "Easting": 489900,
+    "Northing": 366865
+  },
+  {
+    "Reference": "106570",
+    "Name": "Nether Headon Clay Pit",
+    "Status": "C",
+    "Easting": 474831,
+    "Northing": 377726
+  },
+  {
+    "Reference": "262932",
+    "Name": "Holme Hall",
+    "Status": "I",
+    "Easting": 454980,
+    "Northing": 396285
+  },
+  {
+    "Reference": "5937",
+    "Name": "Gilfach Quarry",
+    "Status": "C",
+    "Easting": 315795,
+    "Northing": 198208
+  },
+  {
+    "Reference": "2145",
+    "Name": "Ropley Chalk Pit",
+    "Status": "I",
+    "Easting": 465700,
+    "Northing": 130500
+  },
+  {
+    "Reference": "199499",
+    "Name": "Randall's Farm Pit",
+    "Status": "C",
+    "Easting": 616508,
+    "Northing": 292338
+  },
+  {
+    "Reference": "1749",
+    "Name": "Park Farm Quarry",
+    "Status": "I",
+    "Easting": 512185,
+    "Northing": 457890
+  },
+  {
+    "Reference": "116260",
+    "Name": "Murton Heights",
+    "Status": "C",
+    "Easting": 455046,
+    "Northing": 487558
+  },
+  {
+    "Reference": "88571",
+    "Name": "Birch Cleuch",
+    "Status": "C",
+    "Easting": 340680,
+    "Northing": 589810
+  },
+  {
+    "Reference": "261316",
+    "Name": "Ardno Forest Quarry",
+    "Status": "I",
+    "Easting": 216835,
+    "Northing": 708710
+  },
+  {
+    "Reference": "259531",
+    "Name": "Tramp's Cairn Borrow Pit",
+    "Status": "I",
+    "Easting": 235280,
+    "Northing": 918845
+  }
+]
