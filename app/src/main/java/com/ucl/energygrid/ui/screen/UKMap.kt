@@ -31,6 +31,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ucl.energygrid.R
+import com.ucl.energygrid.data.MinesMarkers
 import com.ucl.energygrid.data.RegionFeature
 import com.ucl.energygrid.data.fetchEnergyForecast
 import com.ucl.energygrid.ui.component.PinType
@@ -43,7 +44,10 @@ fun UKMap(
     renewableSites: List<RenewableSite> = emptyList(),
     regionFeatures: List<RegionFeature> = emptyList(),
     energyDemandHeatmap: Boolean = false,
-    year: Int
+    year: Int,
+    closedMine: Boolean,
+    closingMine: Boolean,
+    markerIcons: Map<PinType, BitmapDescriptor>
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -87,6 +91,12 @@ fun UKMap(
                     markerIcons[type] = BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, type))
                 }
             }
+
+            MinesMarkers(
+                closedMine = closedMine,
+                closingMine = closingMine,
+                markerIcons = markerIcons
+            )
 
             // Flood markers
             if (showMarkers) {
@@ -159,6 +169,8 @@ fun UKMap(
                     },
                     icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
                 )
+
+
             }
         }
 

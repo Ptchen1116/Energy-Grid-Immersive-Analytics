@@ -72,6 +72,9 @@ fun MainScreen() {
     val sheetHeightPx = remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
 
+    var closedMine by remember { mutableStateOf(false) }
+    var closingMine by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     var showFloodRisk by remember { mutableStateOf(false) }
     val floodCenters = remember { mutableStateListOf<LatLng>() }
@@ -139,7 +142,11 @@ fun MainScreen() {
                             showWind = showWind,
                             onWindChange = { showWind = it },
                             showHydroelectric = showHydroelectric,
-                            onHydroelectricChange = { showHydroelectric = it }
+                            onHydroelectricChange = { showHydroelectric = it },
+                            closedMine = closedMine,
+                            onClosedMineChange = { closedMine = it },
+                            closingMine = closingMine,
+                            onClosingMineChange = { closingMine = it }
                         )
                         BottomSheetContent.TimeSimulation -> TimeSimulationPanel(
                             energyDemandHeatmap = energyDemandHeatmap,
@@ -200,7 +207,10 @@ fun MainScreen() {
                     renewableSites = renewableMarkers,
                     regionFeatures = regionFeatures,
                     energyDemandHeatmap = energyDemandHeatmap,
-                    year = selectedYear
+                    year = selectedYear,
+                    closedMine = closedMine,
+                    closingMine = closingMine,
+                    markerIcons = emptyMap()
                 )
 
                 if (currentBottomSheet != BottomSheetContent.None) {
