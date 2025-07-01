@@ -40,11 +40,13 @@ fun MapControlPanel(
     onWindChange: (Boolean) -> Unit,
     showHydroelectric: Boolean,
     onHydroelectricChange: (Boolean) -> Unit,
+    closedMine: Boolean,
+    onClosedMineChange: (Boolean) -> Unit,
+    closingMine: Boolean,
+    onClosingMineChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    var closedMine by remember { mutableStateOf(false) }
-    var closingMine by remember { mutableStateOf(false) }
 
     val selectedColor = Color(0xFF03045E)
     val unselectedColor = Color(0xFF8E8E93)
@@ -98,11 +100,11 @@ fun MapControlPanel(
             when (selectedTab) {
                 0 -> Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = closedMine, onCheckedChange = { closedMine = it })
+                        Checkbox(checked = closedMine, onCheckedChange = onClosedMineChange)
                         Text("Closed Mine")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = closingMine, onCheckedChange = { closingMine = it })
+                        Checkbox(checked = closingMine, onCheckedChange = onClosingMineChange)
                         Text("Closing Mine")
                     }
                 }
