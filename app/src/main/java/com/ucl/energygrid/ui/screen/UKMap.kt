@@ -123,12 +123,30 @@ fun UKMap(
             // Heatmap
             if (energyDemandHeatmap) {
                 regionFeatures.forEach { region ->
+                    val nutsCode = region.nutsCode
+                    val demand = energyConsumption[nutsCode]?.first
+
+                    val lowThreshold = 10000.0
+                    val highThreshold = 20000.0
+
+                    val baseColor = when {
+                        demand == null -> Color.Transparent
+                        demand < lowThreshold -> Color(0xFF00FF00)
+                        demand >= lowThreshold && demand < highThreshold -> Color(0xFFFFFF00)
+                        demand >= highThreshold -> Color(0xFFFF0000)
+                        else -> Color.Gray
+                    }
+
+
+                    val isSelected = selectedRegion?.nutsCode == nutsCode
+                    val fillColor = if (isSelected) Color(0x550000FF) else baseColor
+
                     region.polygons.forEach { polygon ->
                         Polygon(
                             points = polygon.map { LatLng(it[1], it[0]) },
-                            strokeColor = Color.Blue,
-                            fillColor = Color(0x550000FF),
-                            strokeWidth = 3f,
+                            strokeColor = if (isSelected) Color.Blue else Color.Black,
+                            fillColor = fillColor,
+                            strokeWidth = if (isSelected) 3f else 1f,
                             clickable = true,
                             onClick = {
                                 selectedRegion = region
