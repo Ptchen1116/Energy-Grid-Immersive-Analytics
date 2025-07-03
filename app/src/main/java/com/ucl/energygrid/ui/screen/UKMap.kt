@@ -47,7 +47,8 @@ fun UKMap(
     year: Int,
     closedMine: Boolean,
     closingMine: Boolean,
-    markerIcons: Map<PinType, BitmapDescriptor>
+    markerIcons: Map<PinType, BitmapDescriptor>,
+    onSiteSelected: (Mine) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -95,7 +96,8 @@ fun UKMap(
             MinesMarkers(
                 closedMine = closedMine,
                 closingMine = closingMine,
-                markerIcons = markerIcons
+                markerIcons = markerIcons,
+                onSiteSelected = onSiteSelected
             )
 
             // Flood markers
