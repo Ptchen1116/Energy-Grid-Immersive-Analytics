@@ -4,104 +4,344 @@
     "Name": "Redcarr Wood Quarry",
     "Status": "C",
     "Easting": 436879,
-    "Northing": 365669
+    "Northing": 365669,
+    "LocalAuthority": "North East Derbyshire",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 422.160353965063 },
+      { "year": 2016, "value": 406.3822500006712 },
+      { "year": 2017, "value": 409.5869169007316 },
+      { "year": 2018, "value": 419.2762658005856 },
+      { "year": 2019, "value": 421.1002045004875 },
+      { "year": 2020, "value": 389.5688251123918 },
+      { "year": 2021, "value": 403.6103323243917 },
+      { "year": 2022, "value": 386.3479495123916 },
+      { "year": 2023, "value": 393.4051853423918 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "146147",
     "Name": "Oldash Mine",
     "Status": "C",
     "Easting": 426814,
-    "Northing": 360805
+    "Northing": 360805,
+    "LocalAuthority": "Derbyshire Dales",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 419.3210013018352 },
+      { "year": 2016, "value": 408.0528954028645 },
+      { "year": 2017, "value": 409.7743813025148 },
+      { "year": 2018, "value": 405.1058212029053 },
+      { "year": 2019, "value": 405.6612692028566 },
+      { "year": 2020, "value": 388.1240416167327 },
+      { "year": 2021, "value": 397.6543505029268 },
+      { "year": 2022, "value": 365.8560625949017 },
+      { "year": 2023, "value": 351.5168688689995 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "1359",
     "Name": "Halldale Quarry",
     "Status": "I",
     "Easting": 427985,
-    "Northing": 363475
+    "Northing": 363475,
+    "LocalAuthority": "Derbyshire Dales",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 419.3210013018352 },
+      { "year": 2016, "value": 408.0528954028645 },
+      { "year": 2017, "value": 409.7743813025148 },
+      { "year": 2018, "value": 405.1058212029053 },
+      { "year": 2019, "value": 405.6612692028566 },
+      { "year": 2020, "value": 388.1240416167327 },
+      { "year": 2021, "value": 397.6543505029268 },
+      { "year": 2022, "value": 365.8560625949017 },
+      { "year": 2023, "value": 351.5168688689995 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "106590",
     "Name": "Whisby Gravel Pits",
     "Status": "C",
     "Easting": 491422,
-    "Northing": 367264
+    "Northing": 367264,
+    "LocalAuthority": "North Kesteven",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 487.1321528889972 },
+      { "year": 2016, "value": 469.7898596996156 },
+      { "year": 2017, "value": 472.2742254001947 },
+      { "year": 2018, "value": 472.1835916000966 },
+      { "year": 2019, "value": 470.3741081003926 },
+      { "year": 2020, "value": 470.1853233612925 },
+      { "year": 2021, "value": 466.8230463560989 },
+      { "year": 2022, "value": 434.9120293609979 },
+      { "year": 2023, "value": 437.7088623580004 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "227802",
     "Name": "Whisby Quarry",
     "Status": "I",
     "Easting": 489900,
-    "Northing": 366865
+    "Northing": 366865,
+    "LocalAuthority": "North Kesteven",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 487.1321528889972 },
+      { "year": 2016, "value": 469.7898596996156 },
+      { "year": 2017, "value": 472.2742254001947 },
+      { "year": 2018, "value": 472.1835916000966 },
+      { "year": 2019, "value": 470.3741081003926 },
+      { "year": 2020, "value": 470.1853233612925 },
+      { "year": 2021, "value": 466.8230463560989 },
+      { "year": 2022, "value": 434.9120293609979 },
+      { "year": 2023, "value": 437.7088623580004 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "106570",
     "Name": "Nether Headon Clay Pit",
     "Status": "C",
     "Easting": 474831,
-    "Northing": 377726
+    "Northing": 377726,
+    "LocalAuthority": "Bassetlaw",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 568.3475785148723 },
+      { "year": 2016, "value": 550.3117365999875 },
+      { "year": 2017, "value": 583.8877474000493 },
+      { "year": 2018, "value": 558.2924674000969 },
+      { "year": 2019, "value": 547.6854560998029 },
+      { "year": 2020, "value": 531.5861229998064 },
+      { "year": 2021, "value": 542.4851021628053 },
+      { "year": 2022, "value": 523.0472283898032 },
+      { "year": 2023, "value": 520.343373631805 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "262932",
     "Name": "Holme Hall",
     "Status": "I",
     "Easting": 454980,
-    "Northing": 396285
+    "Northing": 396285,
+    "LocalAuthority": "Doncaster",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 1299.079009346311 },
+      { "year": 2016, "value": 1241.45637840223 },
+      { "year": 2017, "value": 1257.269616700993 },
+      { "year": 2018, "value": 1275.125632599954 },
+      { "year": 2019, "value": 1297.037047099905 },
+      { "year": 2020, "value": 1236.039102035907 },
+      { "year": 2021, "value": 1283.658544342901 },
+      { "year": 2022, "value": 1247.238594625898 },
+      { "year": 2023, "value": 1206.542848060899 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "5937",
     "Name": "Gilfach Quarry",
     "Status": "C",
     "Easting": 315795,
-    "Northing": 198208
+    "Northing": 198208,
+    "LocalAuthority": "Caerphilly / Caerffili",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 654.9970554918572 },
+      { "year": 2016, "value": 642.0128877999629 },
+      { "year": 2017, "value": 636.9041980992675 },
+      { "year": 2018, "value": 632.741415799755 },
+      { "year": 2019, "value": 626.3614557999014 },
+      { "year": 2020, "value": 590.5092954280011 },
+      { "year": 2021, "value": 592.4112805110008 },
+      { "year": 2022, "value": 564.903438216999 },
+      { "year": 2023, "value": 551.6528676989988 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "2145",
     "Name": "Ropley Chalk Pit",
     "Status": "I",
     "Easting": 465700,
-    "Northing": 130500
+    "Northing": 130500,
+    "LocalAuthority": "East Hampshire",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 454.6505157022157 },
+      { "year": 2016, "value": 434.0648103989971 },
+      { "year": 2017, "value": 443.6362433990221 },
+      { "year": 2018, "value": 440.9195093999981 },
+      { "year": 2019, "value": 439.0859133000001 },
+      { "year": 2020, "value": 432.0187727170031 },
+      { "year": 2021, "value": 426.374628670003 },
+      { "year": 2022, "value": 404.7824494920011 },
+      { "year": 2023, "value": 402.1406902259996 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "199499",
     "Name": "Randall's Farm Pit",
     "Status": "C",
     "Easting": 616508,
-    "Northing": 292338
+    "Northing": 292338,
+    "LocalAuthority": "South Norfolk",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 563.4079106024994 },
+      { "year": 2016, "value": 551.0551796000859 },
+      { "year": 2017, "value": 563.6457829998176 },
+      { "year": 2018, "value": 574.1352272001706 },
+      { "year": 2019, "value": 551.4660550999741 },
+      { "year": 2020, "value": 554.4919041929999 },
+      { "year": 2021, "value": 559.3234897369985 },
+      { "year": 2022, "value": 512.6219401530025 },
+      { "year": 2023, "value": 514.4217549670008 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "1749",
     "Name": "Park Farm Quarry",
     "Status": "I",
     "Easting": 512185,
-    "Northing": 457890
+    "Northing": 457890,
+    "LocalAuthority": "East Riding of Yorkshire",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 1602.077435895018 },
+      { "year": 2016, "value": 1565.971341990631 },
+      { "year": 2017, "value": 1597.964622998741 },
+      { "year": 2018, "value": 1593.117733888144 },
+      { "year": 2019, "value": 1595.300864600053 },
+      { "year": 2020, "value": 1522.065980864003 },
+      { "year": 2021, "value": 1523.491829170004 },
+      { "year": 2022, "value": 1467.765337443996 },
+      { "year": 2023, "value": 1468.659025101 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "116260",
     "Name": "Murton Heights",
     "Status": "C",
     "Easting": 455046,
-    "Northing": 487558
+    "Northing": 487558,
+    "LocalAuthority": "North Yorkshire",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 3212.327835321906 },
+      { "year": 2016, "value": 2976.765650819405 },
+      { "year": 2017, "value": 3065.50649139879 },
+      { "year": 2018, "value": 3036.462798201644 },
+      { "year": 2019, "value": 3018.817417422311 },
+      { "year": 2020, "value": 2938.57196045672 },
+      { "year": 2021, "value": 3001.922272656921 },
+      { "year": 2022, "value": 2847.100336541082 },
+      { "year": 2023, "value": 2824.50197104112 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "88571",
     "Name": "Birch Cleuch",
     "Status": "C",
     "Easting": 340680,
-    "Northing": 589810
+    "Northing": 589810,
+    "LocalAuthority": "Dumfries and Galloway",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 895.4129944831354 },
+      { "year": 2016, "value": 868.8824819015867 },
+      { "year": 2017, "value": 873.6936495110448 },
+      { "year": 2018, "value": 851.7608019001937 },
+      { "year": 2019, "value": 821.7677608999517 },
+      { "year": 2020, "value": 805.6820519328069 },
+      { "year": 2021, "value": 792.3559650328052 },
+      { "year": 2022, "value": 728.3817722188043 },
+      { "year": 2023, "value": 713.1305169176082 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "261316",
     "Name": "Ardno Forest Quarry",
     "Status": "I",
     "Easting": 216835,
-    "Northing": 708710
+    "Northing": 708710,
+    "LocalAuthority": "Argyll and Bute",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 517.4507226119159 },
+      { "year": 2016, "value": 501.3461370961296 },
+      { "year": 2017, "value": 513.1764633974619 },
+      { "year": 2018, "value": 509.5993875971671 },
+      { "year": 2019, "value": 505.5595364980468 },
+      { "year": 2020, "value": 480.6642281999997 },
+      { "year": 2021, "value": 486.4303491478997 },
+      { "year": 2022, "value": 466.5225189149012 },
+      { "year": 2023, "value": 455.7982600809991 }
+    ],
+    "ForecastEnergyDemand": null
   },
   {
     "Reference": "259531",
     "Name": "Tramp's Cairn Borrow Pit",
     "Status": "I",
     "Easting": 235280,
-    "Northing": 918845
+    "Northing": 918845,
+    "LocalAuthority": "Highland",
+    "Note": null,
+    "FloodRiskLevel": null,
+    "FloodHistory": null,
+    "EnergyDemandHistory": [
+      { "year": 2015, "value": 1592.561772402333 },
+      { "year": 2016, "value": 1557.095681806063 },
+      { "year": 2017, "value": 1584.472785500546 },
+      { "year": 2018, "value": 1564.658940300316 },
+      { "year": 2019, "value": 1479.606006499835 },
+      { "year": 2020, "value": 1398.073126851809 },
+      { "year": 2021, "value": 1527.628203731811 },
+      { "year": 2022, "value": 1404.638759185189 },
+      { "year": 2023, "value": 1412.031817819195 }
+    ],
+    "ForecastEnergyDemand": null
   }
 ]

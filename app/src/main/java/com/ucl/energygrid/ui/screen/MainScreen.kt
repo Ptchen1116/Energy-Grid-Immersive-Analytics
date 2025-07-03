@@ -63,6 +63,27 @@ data class RenewableSite(
     val type: PinType
 )
 
+data class EnergyDemand(
+    val year: Int,
+    val value: Double
+)
+
+data class Mine(
+    val reference: String,
+    val name: String,
+    val status: String,
+    val easting: Double,
+    val northing: Double,
+    val localAuthority: String?,
+    val note: String?,
+    val floodRiskLevel: String?,
+    val floodHistory: String?,
+    val energyDemandHistory: List<EnergyDemand>?,
+    val forecastEnergyDemand: Any?
+)
+
+data class YearValue(val year: Int, val value: Double)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
@@ -74,6 +95,9 @@ fun MainScreen() {
 
     var closedMine by remember { mutableStateOf(false) }
     var closingMine by remember { mutableStateOf(false) }
+
+    var selectedMine by remember { mutableStateOf<Mine?>(null) }
+
 
     val context = LocalContext.current
     var showFloodRisk by remember { mutableStateOf(false) }
@@ -133,7 +157,11 @@ fun MainScreen() {
                         )
                 ) {
                     when (currentBottomSheet) {
-                        BottomSheetContent.SiteInfo -> SiteInformationPanel()
+                        BottomSheetContent.SiteInfo -> {
+                            selectedMine?.let {
+                                SiteInformationPanel(mine = it)
+                            }
+                        }
                         BottomSheetContent.MapControl -> MapControlPanel(
                             floodingRisk = showFloodRisk,
                             onFloodingRiskChange = { showFloodRisk = it },
@@ -210,7 +238,14 @@ fun MainScreen() {
                     year = selectedYear,
                     closedMine = closedMine,
                     closingMine = closingMine,
-                    markerIcons = emptyMap()
+                    markerIcons = emptyMap(),
+                    onSiteSelected = { mine ->
+                        selectedMine = mine
+                        coroutineScope.launch {
+                            currentBottomSheet = BottomSheetContent.SiteInfo
+                            scaffoldState.bottomSheetState.expand()
+                        }
+                    }
                 )
 
                 if (currentBottomSheet != BottomSheetContent.None) {

@@ -64,7 +64,6 @@ dependencies {
     // org.osgeo.proj4j for coordinate conversion
     implementation("org.locationtech.proj4j:proj4j:1.1.1")
 
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
