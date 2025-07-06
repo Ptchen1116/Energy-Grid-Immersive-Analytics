@@ -14,4 +14,8 @@ object RetrofitInstance {
     val userApi: UserApi by lazy {
         retrofit.create(UserApi::class.java)
     }
+
+    val pinApi: PinApi by lazy {
+        retrofit.create(PinApi::class.java)
+    }
 }
