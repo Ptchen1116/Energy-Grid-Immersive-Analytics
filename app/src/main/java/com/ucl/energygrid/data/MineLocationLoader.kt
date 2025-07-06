@@ -13,6 +13,7 @@ import com.ucl.energygrid.ui.component.PinType
 import com.ucl.energygrid.ui.screen.Mine
 import com.ucl.energygrid.ui.screen.EnergyDemand
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import android.content.Context
 
 fun convertOSGB36ToWGS84(easting: Double, northing: Double): LatLng {
     val csFactory = CRSFactory()
@@ -116,3 +117,14 @@ fun parseMinesFromJson(jsonString: String): List<Mine> {
     return list
 }
 
+fun loadMinesFromJson(context: Context): List<Mine> {
+    return try {
+        val jsonString = context.assets.open("fake_mine_location_data.json")
+            .bufferedReader()
+            .use { it.readText() }
+        parseMinesFromJson(jsonString)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        emptyList()
+    }
+}

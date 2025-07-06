@@ -36,6 +36,12 @@ import com.ucl.energygrid.data.RegionFeature
 import com.ucl.energygrid.data.fetchEnergyForecast
 import com.ucl.energygrid.ui.component.PinType
 import com.ucl.energygrid.ui.component.createPinBitmap
+import com.ucl.energygrid.data.API.PinResponse
+import com.ucl.energygrid.data.convertOSGB36ToWGS84
+
+
+data class SelectedPinInfo(val mine: Mine, val pinNote: String)
+
 
 @Composable
 fun UKMap(
@@ -48,7 +54,10 @@ fun UKMap(
     closedMine: Boolean,
     closingMine: Boolean,
     markerIcons: Map<PinType, BitmapDescriptor>,
-    onSiteSelected: (Mine) -> Unit
+    onSiteSelected: (Mine) -> Unit,
+    myPins: List<PinResponse> = emptyList(),
+    allMines: List<Mine> = emptyList(),
+    onPinSelected: (Mine) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -100,6 +109,24 @@ fun UKMap(
                 onSiteSelected = onSiteSelected
             )
 
+            myPins.forEach { pin ->
+                val mine = allMines.find { it.reference == pin.mine_id.toString() }
+                if (mine != null) {
+                    val position = convertOSGB36ToWGS84(mine.easting, mine.northing)
+
+                    Marker(
+                        state = MarkerState(position = position),
+                        title = mine.name ?: "My Pin",
+                        snippet = pin.note ?: "",
+                        icon = markerIcons[PinType.USER_PIN] ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE),
+                        onClick = {
+                            onPinSelected(mine)
+                            true
+                        }
+                    )
+                }
+            }
+
             // Flood markers
             if (showMarkers) {
                 floodCenters.forEach { center ->
@@ -111,6 +138,7 @@ fun UKMap(
                     )
                 }
             }
+
 
             // Renewable site markers
             renewableSites.forEach { site ->
