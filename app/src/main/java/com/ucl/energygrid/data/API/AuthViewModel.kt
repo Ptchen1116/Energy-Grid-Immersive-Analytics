@@ -15,13 +15,18 @@ class AuthViewModel : ViewModel() {
     var userToken by mutableStateOf<String?>(null)
         private set
 
-    fun loginSuccess(token: String) {
+    var userId by mutableStateOf<String?>(null)
+        private set
+
+    fun loginSuccess(token: String, id: String) {
         isLoggedIn = true
         userToken = token
+        userId = id
     }
 
     fun logout() {
         isLoggedIn = false
         userToken = null
+        userId = null
     }
 }

@@ -66,6 +66,7 @@ import com.ucl.energygrid.data.API.RegisterRequest
 import com.ucl.energygrid.data.API.LoginRequest
 import com.ucl.energygrid.data.API.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.auth0.android.jwt.JWT
 
 enum class BottomSheetContent {
     None,
@@ -184,9 +185,10 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                                 val loginResponse = response.body()
                                 val token = loginResponse?.access_token
                                 if (token != null) {
-                                    authViewModel.loginSuccess(token)
-                                    Toast.makeText(context, "Login success!", Toast.LENGTH_SHORT)
-                                        .show()
+                                    val jwt = JWT(token)
+                                    val userId = jwt.getClaim("sub").asString() ?: jwt.getClaim("id").asString() ?: ""
+                                    authViewModel.loginSuccess(token, userId)
+                                    Toast.makeText(context, "Login success! UserId: $userId", Toast.LENGTH_SHORT).show()
                                 }
                             } else {
                                 Toast.makeText(
