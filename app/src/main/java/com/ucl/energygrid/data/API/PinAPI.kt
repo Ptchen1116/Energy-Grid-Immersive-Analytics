@@ -29,4 +29,9 @@ interface PinApi {
         @Path("user_id") userId: Int,
         @Path("mine_id") mineId: Int
     ): Response<PinResponse>
+
+    @GET("/api/users/{user_id}/pins")
+    suspend fun getAllPins(
+        @Path("user_id") userId: Int
+    ): Response<List<PinResponse>>
 }

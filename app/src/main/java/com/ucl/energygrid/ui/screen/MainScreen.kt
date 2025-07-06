@@ -69,7 +69,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.auth0.android.jwt.JWT
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.ui.text.font.FontWeight
+import com.ucl.energygrid.data.API.PinResponse
+import com.ucl.energygrid.data.loadMinesFromJson
+
 
 enum class BottomSheetContent {
     None,
@@ -142,6 +144,9 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
     var expanded by remember { mutableStateOf(false) }
     val isLoggedIn by authViewModel.isLoggedIn
     var pinsExpanded by remember { mutableStateOf(false) }
+    var myPins by remember { mutableStateOf<List<PinResponse>>(emptyList()) }
+    var showMyPinsMarkers by remember { mutableStateOf(false) }
+    val allMines = remember { loadMinesFromJson(context) }
 
     LaunchedEffect(Unit) {
         val fetchedCenters = fetchAllFloodCenters(context)
@@ -154,7 +159,6 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
             snackbarHostState.showSnackbar("No current flood risk areas.")
         }
     }
-
 
     LaunchedEffect(Unit) {
         GeoJsonLoader.loadGeoJsonFeatures { features ->
@@ -191,7 +195,26 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                         DropdownMenuItem(
                             text = { Text("My Pins") },
                             onClick = {
-                                pinsExpanded = true
+                                coroutineScope.launch {
+                                    try {
+                                        if (isLoggedIn) {
+                                            val userId = authViewModel.userId.value?.toIntOrNull() ?: return@launch
+                                            val api = RetrofitInstance.pinApi
+                                            val response = api.getAllPins(userId)
+                                            if (response.isSuccessful) {
+                                                myPins = response.body() ?: emptyList()
+                                                showMyPinsMarkers = true
+                                            } else {
+                                                Toast.makeText(context, "Failed to load pins: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } else {
+                                            showLoginDialog = true
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Failed to load pins: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                                expanded = false
                             }
                         )
                     }
@@ -371,6 +394,13 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                                 currentBottomSheet = BottomSheetContent.SiteInfo
                                 scaffoldState.bottomSheetState.expand()
                             }
+                        },
+                        myPins = if (showMyPinsMarkers) myPins else emptyList(),
+                        allMines = allMines,
+                        onPinSelected = { mine ->
+                            selectedMine = mine
+                            currentBottomSheet = BottomSheetContent.SiteInfo
+                            coroutineScope.launch { scaffoldState.bottomSheetState.expand() }
                         }
                     )
 
