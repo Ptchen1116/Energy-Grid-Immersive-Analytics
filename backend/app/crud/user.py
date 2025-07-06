@@ -9,7 +9,7 @@ def create_user(db: Session, user: UserCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    hashed_pw = bcrypt.hash(user.password)
+    hashed_pw = hash_password(user.password)
     db_user = User(username=user.username, email=user.email, hashed_password=hashed_pw)
     db.add(db_user)
     db.commit()
