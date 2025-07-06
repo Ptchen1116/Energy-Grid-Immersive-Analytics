@@ -67,6 +67,9 @@ import com.ucl.energygrid.data.API.LoginRequest
 import com.ucl.energygrid.data.API.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.auth0.android.jwt.JWT
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.ui.text.font.FontWeight
 
 enum class BottomSheetContent {
     None,
@@ -136,6 +139,9 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
 
     var showLoginDialog by remember { mutableStateOf(false) }
     var showRegisterDialog by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+    val isLoggedIn by authViewModel.isLoggedIn
+    var pinsExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         val fetchedCenters = fetchAllFloodCenters(context)
@@ -164,11 +170,37 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                 containerColor = Color(0xFFAAE5F2)
             ),
             actions = {
-                IconButton(onClick = { showLoginDialog = true }) {
-                    Icon(Icons.Default.AccountCircle, contentDescription = "Login")
+                Box {
+                    IconButton(onClick = {
+                        if (isLoggedIn) {
+                            expanded = true
+                        } else {
+                            showLoginDialog = true
+                        }
+                    }) {
+                        Icon(Icons.Default.AccountCircle, contentDescription = "Login")
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = {
+                            expanded = false
+                            pinsExpanded = false
+                        }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("My Pins") },
+                            onClick = {
+                                pinsExpanded = true
+                            }
+                        )
+                    }
                 }
-                IconButton(onClick = { showRegisterDialog = true }) {
-                    Icon(Icons.Default.AddCircle, contentDescription = "Register")
+
+                if (!isLoggedIn) {
+                    IconButton(onClick = { showRegisterDialog = true }) {
+                        Icon(Icons.Default.AddCircle, contentDescription = "Register")
+                    }
                 }
             }
         )
@@ -248,8 +280,7 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                             )
                     ) {
                         val authViewModel: AuthViewModel = viewModel()
-                        val userId: Int = authViewModel.userId?.toIntOrNull() ?: -1
-
+                        val userId: Int = authViewModel.userId.value?.toIntOrNull() ?: -1
 
                         when (currentBottomSheet) {
                             BottomSheetContent.SiteInfo -> {
