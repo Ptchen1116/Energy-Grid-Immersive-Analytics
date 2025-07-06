@@ -64,6 +64,8 @@ import android.widget.Toast
 import com.ucl.energygrid.data.API.RetrofitInstance
 import com.ucl.energygrid.data.API.RegisterRequest
 import com.ucl.energygrid.data.API.LoginRequest
+import com.ucl.energygrid.data.API.AuthViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 enum class BottomSheetContent {
     None,
@@ -101,7 +103,7 @@ data class YearValue(val year: Int, val value: Double)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
     var currentBottomSheet by remember { mutableStateOf(BottomSheetContent.None) }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
@@ -181,12 +183,21 @@ fun MainScreen() {
                             if (response.isSuccessful) {
                                 val loginResponse = response.body()
                                 val token = loginResponse?.access_token
-                                Toast.makeText(context, "Login success! Token: $token", Toast.LENGTH_SHORT).show()
+                                if (token != null) {
+                                    authViewModel.loginSuccess(token)
+                                    Toast.makeText(context, "Login success!", Toast.LENGTH_SHORT)
+                                        .show()
+                                }
                             } else {
-                                Toast.makeText(context, "Login failed: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Login failed: ${response.errorBody()?.string()}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Login error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Login error: ${e.message}", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     }
                 }
