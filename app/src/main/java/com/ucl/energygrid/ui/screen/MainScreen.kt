@@ -48,18 +48,22 @@ import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Icon
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-
+import androidx.compose.material.icons.filled.AddCircle
+import android.widget.Toast
+import com.ucl.energygrid.data.API.RetrofitInstance
+import com.ucl.energygrid.data.API.RegisterRequest
+import com.ucl.energygrid.data.API.LoginRequest
 
 enum class BottomSheetContent {
     None,
@@ -127,6 +131,9 @@ fun MainScreen() {
     var energyDemandHeatmap by remember { mutableStateOf(false) }
     var selectedYear by remember { mutableStateOf(2025) }
 
+    var showLoginDialog by remember { mutableStateOf(false) }
+    var showRegisterDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         val fetchedCenters = fetchAllFloodCenters(context)
         floodCenters.clear()
@@ -154,11 +161,59 @@ fun MainScreen() {
                 containerColor = Color(0xFFAAE5F2)
             ),
             actions = {
-                IconButton(onClick = { /* TODO: Handle login */ }) {
+                IconButton(onClick = { showLoginDialog = true }) {
                     Icon(Icons.Default.AccountCircle, contentDescription = "Login")
+                }
+                IconButton(onClick = { showRegisterDialog = true }) {
+                    Icon(Icons.Default.AddCircle, contentDescription = "Register")
                 }
             }
         )
+
+        if (showLoginDialog) {
+            LoginDialog(
+                onDismiss = { showLoginDialog = false },
+                onLogin = { email, password ->
+                    coroutineScope.launch {
+                        try {
+                            val api = RetrofitInstance.userApi
+                            val response = api.login(LoginRequest(email, password))
+                            if (response.isSuccessful) {
+                                val loginResponse = response.body()
+                                val token = loginResponse?.access_token
+                                Toast.makeText(context, "Login success! Token: $token", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "Login failed: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Login error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            )
+        }
+
+        if (showRegisterDialog) {
+            RegisterDialog(
+                onDismiss = { showRegisterDialog = false },
+                onRegister = { username, email, password ->
+                    coroutineScope.launch {
+                        try {
+                            val api = RetrofitInstance.userApi
+                            val response = api.register(RegisterRequest(username, email, password))
+                            if (response.isSuccessful) {
+                                Toast.makeText(context, "Register successful!", Toast.LENGTH_SHORT).show()
+                                showRegisterDialog = false
+                            } else {
+                                Toast.makeText(context, "Register failed: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Register error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            )
+        }
         Box(modifier = Modifier.weight(1f)) {
             BottomSheetScaffold(
                 scaffoldState = scaffoldState,
@@ -349,4 +404,94 @@ fun MainScreen() {
             )
         }
     }
+}
+
+@Composable
+fun LoginDialog(
+    onDismiss: () -> Unit,
+    onLogin: (email: String, password: String) -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Login") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") }
+                )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onLogin(email, password)
+                    onDismiss()
+                }
+            ) {
+                Text("Login")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
+fun RegisterDialog(
+    onDismiss: () -> Unit,
+    onRegister: (username: String, email: String, password: String) -> Unit
+) {
+    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Register") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Username") }
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") }
+                )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onRegister(username, email, password)
+                    onDismiss()
+                }
+            ) {
+                Text("Register")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
 }

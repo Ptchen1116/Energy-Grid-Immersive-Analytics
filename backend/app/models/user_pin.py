@@ -11,4 +11,3 @@ class UserPin(Base):
     note = Column(Text)
 
     user = relationship("User", back_populates="pins")
-    mine = relationship("Mine", back_populates="pins")
