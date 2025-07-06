@@ -48,6 +48,17 @@ import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 
 
 enum class BottomSheetContent {
@@ -136,193 +147,206 @@ fun MainScreen() {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        BottomSheetScaffold(
-            scaffoldState = scaffoldState,
-            sheetPeekHeight = 0.dp,
-            sheetSwipeEnabled = true,
-            sheetDragHandle = null,
-            sheetContent = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .onGloballyPositioned { coordinates ->
-                            sheetHeightPx.intValue = coordinates.size.height
-                        }
-                        .padding(
-                            bottom = WindowInsets.navigationBars
-                                .asPaddingValues()
-                                .calculateBottomPadding()
-                        )
-                ) {
-                    when (currentBottomSheet) {
-                        BottomSheetContent.SiteInfo -> {
-                            selectedMine?.let {
-                                SiteInformationPanel(mine = it)
-                            }
-                        }
-                        BottomSheetContent.MapControl -> MapControlPanel(
-                            floodingRisk = showFloodRisk,
-                            onFloodingRiskChange = { showFloodRisk = it },
-                            showSolar = showSolar,
-                            onSolarChange = { showSolar = it },
-                            showWind = showWind,
-                            onWindChange = { showWind = it },
-                            showHydroelectric = showHydroelectric,
-                            onHydroelectricChange = { showHydroelectric = it },
-                            closedMine = closedMine,
-                            onClosedMineChange = { closedMine = it },
-                            closingMine = closingMine,
-                            onClosingMineChange = { closingMine = it }
-                        )
-                        BottomSheetContent.TimeSimulation -> TimeSimulationPanel(
-                            energyDemandHeatmap = energyDemandHeatmap,
-                            onEnergyDemandHeatmapChange = { energyDemandHeatmap = it },
-                            selectedYear = selectedYear,
-                            onSelectedYearChange = { selectedYear = it }
-                        )
-                        else -> Spacer(modifier = Modifier.height(0.dp))
-                    }
-                    Spacer(modifier = Modifier.height(75.dp))
-                }
-            },
-            snackbarHost = {}
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                val renewableMarkers = mutableListOf<RenewableSite>()
-                if (showSolar) {
-                    renewableMarkers.addAll(
-                        solarSites.map {
-                            RenewableSite(
-                                name = it.first,
-                                location = LatLng(it.second, it.third),
-                                type = PinType.SOLAR
-                            )
-                        }
-                    )
-                }
-                if (showWind) {
-                    renewableMarkers.addAll(
-                        windSites.map {
-                            RenewableSite(
-                                name = it.first,
-                                location = LatLng(it.second, it.third),
-                                type = PinType.WIND
-                            )
-                        }
-                    )
-                }
-                if (showHydroelectric) {
-                    renewableMarkers.addAll(
-                        hydroelectricSites.map {
-                            RenewableSite(
-                                name = it.first,
-                                location = LatLng(it.second, it.third),
-                                type = PinType.HYDROELECTRIC
-                            )
-                        }
-                    )
-                }
-
-                UKMap(
-                    floodCenters = floodCenters,
-                    showMarkers = showFloodRisk,
-                    renewableSites = renewableMarkers,
-                    regionFeatures = regionFeatures,
-                    energyDemandHeatmap = energyDemandHeatmap,
-                    year = selectedYear,
-                    closedMine = closedMine,
-                    closingMine = closingMine,
-                    markerIcons = emptyMap(),
-                    onSiteSelected = { mine ->
-                        selectedMine = mine
-                        coroutineScope.launch {
-                            currentBottomSheet = BottomSheetContent.SiteInfo
-                            scaffoldState.bottomSheetState.expand()
-                        }
-                    }
-                )
-
-                if (currentBottomSheet != BottomSheetContent.None) {
-                    val overlayHeightDp = with(density) {
-                        (sheetHeightPx.intValue + 50).toDp()
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(overlayHeightDp)
-                            .align(Alignment.BottomStart)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color(0x99000000)
-                                    ),
-                                    startY = 0f,
-                                    endY = 300f
-                                ),
-                                shape = RoundedCornerShape(
-                                    topStart = 16.dp,
-                                    topEnd = 16.dp
-                                )
-                            )
-                    )
-                }
-            }
-        }
-
-        val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = screenHeightDp * 0.15f)
-                .align(Alignment.TopCenter)
-        ) {
-            SnackbarHost(hostState = snackbarHostState)
-        }
-
-        BottomNavigationBar(
-            selectedItem = currentBottomSheet,
-            modifier = Modifier.align(Alignment.BottomCenter),
-            onMapControlClick = {
-                coroutineScope.launch {
-                    if (currentBottomSheet == BottomSheetContent.MapControl) {
-                        currentBottomSheet = BottomSheetContent.None
-                    } else {
-                        val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-                        currentBottomSheet = BottomSheetContent.MapControl
-                        if (!isExpanded) scaffoldState.bottomSheetState.expand()
-                    }
-                }
-            },
-            onSiteInfoClick = {
-                coroutineScope.launch {
-                    if (currentBottomSheet == BottomSheetContent.SiteInfo) {
-                        currentBottomSheet = BottomSheetContent.None
-                    } else {
-                        val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-                        currentBottomSheet = BottomSheetContent.SiteInfo
-                        if (!isExpanded) scaffoldState.bottomSheetState.expand()
-                    }
-                }
-            },
-            onSimulationClick = {
-                coroutineScope.launch {
-                    if (currentBottomSheet == BottomSheetContent.TimeSimulation) {
-                        currentBottomSheet = BottomSheetContent.None
-                    } else {
-                        val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-                        currentBottomSheet = BottomSheetContent.TimeSimulation
-                        if (!isExpanded) scaffoldState.bottomSheetState.expand()
-                    }
+    Column(modifier = Modifier.fillMaxSize()) {
+        CenterAlignedTopAppBar(
+            title = { Text("Energy Insight") },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = Color(0xFFAAE5F2)
+            ),
+            actions = {
+                IconButton(onClick = { /* TODO: Handle login */ }) {
+                    Icon(Icons.Default.AccountCircle, contentDescription = "Login")
                 }
             }
         )
+        Box(modifier = Modifier.weight(1f)) {
+            BottomSheetScaffold(
+                scaffoldState = scaffoldState,
+                sheetPeekHeight = 0.dp,
+                sheetSwipeEnabled = true,
+                sheetDragHandle = null,
+                sheetContent = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .onGloballyPositioned { coordinates ->
+                                sheetHeightPx.intValue = coordinates.size.height
+                            }
+                            .padding(
+                                bottom = WindowInsets.navigationBars
+                                    .asPaddingValues()
+                                    .calculateBottomPadding()
+                            )
+                    ) {
+                        when (currentBottomSheet) {
+                            BottomSheetContent.SiteInfo -> {
+                                selectedMine?.let {
+                                    SiteInformationPanel(mine = it)
+                                }
+                            }
+                            BottomSheetContent.MapControl -> MapControlPanel(
+                                floodingRisk = showFloodRisk,
+                                onFloodingRiskChange = { showFloodRisk = it },
+                                showSolar = showSolar,
+                                onSolarChange = { showSolar = it },
+                                showWind = showWind,
+                                onWindChange = { showWind = it },
+                                showHydroelectric = showHydroelectric,
+                                onHydroelectricChange = { showHydroelectric = it },
+                                closedMine = closedMine,
+                                onClosedMineChange = { closedMine = it },
+                                closingMine = closingMine,
+                                onClosingMineChange = { closingMine = it }
+                            )
+                            BottomSheetContent.TimeSimulation -> TimeSimulationPanel(
+                                energyDemandHeatmap = energyDemandHeatmap,
+                                onEnergyDemandHeatmapChange = { energyDemandHeatmap = it },
+                                selectedYear = selectedYear,
+                                onSelectedYearChange = { selectedYear = it }
+                            )
+                            else -> Spacer(modifier = Modifier.height(0.dp))
+                        }
+                        Spacer(modifier = Modifier.height(75.dp))
+                    }
+                },
+                snackbarHost = {}
+            ) { innerPadding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    val renewableMarkers = mutableListOf<RenewableSite>()
+                    if (showSolar) {
+                        renewableMarkers.addAll(
+                            solarSites.map {
+                                RenewableSite(
+                                    name = it.first,
+                                    location = LatLng(it.second, it.third),
+                                    type = PinType.SOLAR
+                                )
+                            }
+                        )
+                    }
+                    if (showWind) {
+                        renewableMarkers.addAll(
+                            windSites.map {
+                                RenewableSite(
+                                    name = it.first,
+                                    location = LatLng(it.second, it.third),
+                                    type = PinType.WIND
+                                )
+                            }
+                        )
+                    }
+                    if (showHydroelectric) {
+                        renewableMarkers.addAll(
+                            hydroelectricSites.map {
+                                RenewableSite(
+                                    name = it.first,
+                                    location = LatLng(it.second, it.third),
+                                    type = PinType.HYDROELECTRIC
+                                )
+                            }
+                        )
+                    }
+
+                    UKMap(
+                        floodCenters = floodCenters,
+                        showMarkers = showFloodRisk,
+                        renewableSites = renewableMarkers,
+                        regionFeatures = regionFeatures,
+                        energyDemandHeatmap = energyDemandHeatmap,
+                        year = selectedYear,
+                        closedMine = closedMine,
+                        closingMine = closingMine,
+                        markerIcons = emptyMap(),
+                        onSiteSelected = { mine ->
+                            selectedMine = mine
+                            coroutineScope.launch {
+                                currentBottomSheet = BottomSheetContent.SiteInfo
+                                scaffoldState.bottomSheetState.expand()
+                            }
+                        }
+                    )
+
+                    if (currentBottomSheet != BottomSheetContent.None) {
+                        val overlayHeightDp = with(density) {
+                            (sheetHeightPx.intValue + 50).toDp()
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(overlayHeightDp)
+                                .align(Alignment.BottomStart)
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color(0x99000000)
+                                        ),
+                                        startY = 0f,
+                                        endY = 300f
+                                    ),
+                                    shape = RoundedCornerShape(
+                                        topStart = 16.dp,
+                                        topEnd = 16.dp
+                                    )
+                                )
+                        )
+                    }
+                }
+            }
+
+            val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = screenHeightDp * 0.15f)
+                    .align(Alignment.TopCenter)
+            ) {
+                SnackbarHost(hostState = snackbarHostState)
+            }
+
+            BottomNavigationBar(
+                selectedItem = currentBottomSheet,
+                modifier = Modifier.align(Alignment.BottomCenter),
+                onMapControlClick = {
+                    coroutineScope.launch {
+                        if (currentBottomSheet == BottomSheetContent.MapControl) {
+                            currentBottomSheet = BottomSheetContent.None
+                        } else {
+                            val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                            currentBottomSheet = BottomSheetContent.MapControl
+                            if (!isExpanded) scaffoldState.bottomSheetState.expand()
+                        }
+                    }
+                },
+                onSiteInfoClick = {
+                    coroutineScope.launch {
+                        if (currentBottomSheet == BottomSheetContent.SiteInfo) {
+                            currentBottomSheet = BottomSheetContent.None
+                        } else {
+                            val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                            currentBottomSheet = BottomSheetContent.SiteInfo
+                            if (!isExpanded) scaffoldState.bottomSheetState.expand()
+                        }
+                    }
+                },
+                onSimulationClick = {
+                    coroutineScope.launch {
+                        if (currentBottomSheet == BottomSheetContent.TimeSimulation) {
+                            currentBottomSheet = BottomSheetContent.None
+                        } else {
+                            val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+                            currentBottomSheet = BottomSheetContent.TimeSimulation
+                            if (!isExpanded) scaffoldState.bottomSheetState.expand()
+                        }
+                    }
+                }
+            )
+        }
     }
 }

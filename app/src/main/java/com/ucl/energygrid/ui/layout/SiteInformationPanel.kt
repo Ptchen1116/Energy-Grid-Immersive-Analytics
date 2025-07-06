@@ -38,6 +38,7 @@ import com.ucl.energygrid.ui.screen.EnergyDemand
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.foundation.layout.width
 
 @Composable
 fun SiteInformationPanel(mine: Mine) {
@@ -66,22 +67,31 @@ fun SiteInformationPanel(mine: Mine) {
                 }
             }
 
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("📍 Pin & Notes", fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = note,
-                    onValueChange = { note = it },
-                    label = { Text("Note") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { /* persist note */ }) {
-                    Text("Edit Note")
-                }
+            SectionHeader(
+                iconResId = R.drawable.siteinfo_pinandnote,
+                title = "Contact Onsite Operator"
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = note,
+                onValueChange = { note = it },
+                label = { Text("Note") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = { /* persist note */ }) {
+                Text("Edit Note")
             }
 
-            SectionHeader("🌊 Flooding Risks")
+
+            SectionHeader(
+                iconResId = R.drawable.siteinfo_floodingrisks,
+                title = "Flooding Risks"
+            )
+
             val floodColor = when (mine.floodRiskLevel?.lowercase()) {
                 "low" -> Color(0xFF00C853)
                 "medium" -> Color(0xFFFFD600)
@@ -92,7 +102,10 @@ fun SiteInformationPanel(mine: Mine) {
 
             GraphSection("Historical Flood Trend Graph") // Placeholder
 
-            SectionHeader("⚡ Energy Demand")
+            SectionHeader(
+                iconResId = R.drawable.siteinfo_energydemand,
+                title = "Energy Demand"
+            )
             mine.energyDemandHistory?.let {
                 EnergyLineChart(it)
             } ?: Text("No energy history available", color = Color.Gray)
@@ -108,7 +121,10 @@ fun SiteInformationPanel(mine: Mine) {
                 Text("Run Forecast")
             }
 
-            SectionHeader("📞 Contact Onsite Operator")
+            SectionHeader(
+                iconResId = R.drawable.siteinfo_call,
+                title = "Contact Onsite Operator"
+            )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
                     painter = painterResource(id = R.drawable.uk_map),
@@ -129,15 +145,25 @@ fun SiteInformationPanel(mine: Mine) {
 }
 
 @Composable
-fun SectionHeader(title: String) {
-    Text(
-        title,
+fun SectionHeader(iconResId: Int, title: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold
-    )
+            .padding(16.dp)
+    ) {
+        Image(
+            painter = painterResource(id = iconResId),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
 }
 
 @Composable
