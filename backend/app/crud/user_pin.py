@@ -12,3 +12,9 @@ def create_user_pin(db: Session, user_id: int, pin_data: UserPinCreate):
 
 def get_user_pins(db: Session, user_id: int):
     return db.query(UserPin).filter(UserPin.user_id == user_id).all()
+
+def get_user_pin_by_mine(db: Session, user_id: int, mine_id: int):
+    return db.query(UserPin).filter(
+        UserPin.user_id == user_id,
+        UserPin.mine_id == mine_id
+    ).first()

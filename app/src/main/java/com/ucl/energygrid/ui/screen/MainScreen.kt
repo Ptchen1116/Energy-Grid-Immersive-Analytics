@@ -247,10 +247,14 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                                     .calculateBottomPadding()
                             )
                     ) {
+                        val authViewModel: AuthViewModel = viewModel()
+                        val userId: Int = authViewModel.userId?.toIntOrNull() ?: -1
+
+
                         when (currentBottomSheet) {
                             BottomSheetContent.SiteInfo -> {
                                 selectedMine?.let {
-                                    SiteInformationPanel(mine = it)
+                                    SiteInformationPanel(mine = it, userId)
                                 }
                             }
                             BottomSheetContent.MapControl -> MapControlPanel(

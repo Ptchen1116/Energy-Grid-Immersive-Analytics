@@ -88,7 +88,6 @@ fun parseMinesFromJson(jsonString: String): List<Mine> {
         val floodRiskLevel = if (obj.isNull("FloodRiskLevel")) null else obj.optString("FloodRiskLevel")
         val floodHistory = if (obj.isNull("FloodHistory")) null else obj.optString("FloodHistory")
 
-        // 解析 EnergyDemandHistory 陣列
         val energyDemandList = mutableListOf<EnergyDemand>()
         if (!obj.isNull("EnergyDemandHistory")) {
             val energyArray = obj.getJSONArray("EnergyDemandHistory")

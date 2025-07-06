@@ -7,7 +7,7 @@ class UserPin(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    mine_id = Column(Text) 
+    mine_id = Column(Integer)
     note = Column(Text)
 
     user = relationship("User", back_populates="pins")

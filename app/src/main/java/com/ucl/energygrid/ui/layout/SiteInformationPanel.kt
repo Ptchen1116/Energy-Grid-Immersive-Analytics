@@ -39,10 +39,36 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.layout.width
+import com.ucl.energygrid.data.API.RetrofitInstance
+import com.ucl.energygrid.data.API.PinRequest
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.LaunchedEffect
+
 
 @Composable
-fun SiteInformationPanel(mine: Mine) {
+fun SiteInformationPanel(mine: Mine, userId: Int) {
     var note by remember { mutableStateOf(mine.note ?: "") }
+    var isPosting by remember { mutableStateOf(false) }
+    var postResult by remember { mutableStateOf<String?>(null) }
+    var hasExistingNote by remember { mutableStateOf(mine.note?.isNotBlank() == true) }
+    var isNoteLoaded by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = RetrofitInstance.pinApi.getPin(userId, mine.reference.toInt())
+            if (response.isSuccessful) {
+                note = response.body()?.note ?: ""
+            } else {
+                postResult = "Failed to load note: ${response.code()}"
+            }
+        } catch (e: Exception) {
+            postResult = "Error loading note: ${e.message}"
+        } finally {
+            isNoteLoaded = true
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -79,11 +105,45 @@ fun SiteInformationPanel(mine: Mine) {
                 label = { Text("Note") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp),
+                enabled = isNoteLoaded
             )
+
             Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = { /* persist note */ }) {
-                Text("Edit Note")
+
+            Button(
+                onClick = {
+                    isPosting = true
+                    postResult = null
+                    coroutineScope.launch {
+                        try {
+                            val response = RetrofitInstance.pinApi.create_or_update_pin(
+                                userId = userId,
+                                pinRequest = PinRequest(mine_id = mine.reference.toInt(), note = note)
+                            )
+                            if (response.isSuccessful) {
+                                postResult = "Note saved successfully"
+                            } else {
+                                postResult = "Failed: ${response.code()}"
+                            }
+                        } catch (e: Exception) {
+                            postResult = "Error: ${e.message}"
+                        } finally {
+                            isPosting = false
+                        }
+                    }
+                },
+                enabled = !isPosting && isNoteLoaded
+            ) {
+                Text(if (isPosting) "Saving..." else if (note.isNotEmpty()) "Update Note" else "Add Note")
+            }
+
+            postResult?.let {
+                Text(
+                    text = it,
+                    color = if (it.startsWith("Note saved") || it.startsWith("Note updated")) Color.Green else Color.Red,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
 
 
