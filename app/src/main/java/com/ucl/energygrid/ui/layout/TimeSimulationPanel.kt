@@ -116,7 +116,7 @@ fun TimeSimulationPanel(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Simulation Year: $displayedYear")
+                    Text("Selected Year: $displayedYear")
 
                     Spacer(Modifier.height(16.dp))
 
