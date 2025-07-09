@@ -34,5 +34,5 @@ def read_pins(user_id: int, db: Session = Depends(get_db)):
 def read_pin_by_mine(user_id: int, mine_id: int, db: Session = Depends(get_db)):
     pin = crud_user_pin.get_user_pin_by_mine(db, user_id, mine_id)
     if not pin:
-        raise HTTPException(status_code=404, detail="Pin not found")
+        return UserPinResponse(id=-1,mine_id=mine_id, note=None)  
     return pin
