@@ -44,14 +44,17 @@ import com.ucl.energygrid.data.API.PinRequest
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
-
+import com.ucl.energygrid.data.API.AuthViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
+    val authViewModel: AuthViewModel = viewModel()
+    val isLoggedIn by authViewModel.isLoggedIn
+
     var note by remember { mutableStateOf(mine.note ?: "") }
     var isPosting by remember { mutableStateOf(false) }
     var postResult by remember { mutableStateOf<String?>(null) }
-    var hasExistingNote by remember { mutableStateOf(mine.note?.isNotBlank() == true) }
     var isNoteLoaded by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -95,55 +98,63 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
 
             SectionHeader(
                 iconResId = R.drawable.siteinfo_pinandnote,
-                title = "Contact Onsite Operator"
+                title = "Note"
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = note,
-                onValueChange = { note = it },
-                label = { Text("Note") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                enabled = isNoteLoaded
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = {
-                    isPosting = true
-                    postResult = null
-                    coroutineScope.launch {
-                        try {
-                            val response = RetrofitInstance.pinApi.create_or_update_pin(
-                                userId = userId,
-                                pinRequest = PinRequest(mine_id = mine.reference.toInt(), note = note)
-                            )
-                            if (response.isSuccessful) {
-                                postResult = "Note saved successfully"
-                            } else {
-                                postResult = "Failed: ${response.code()}"
-                            }
-                        } catch (e: Exception) {
-                            postResult = "Error: ${e.message}"
-                        } finally {
-                            isPosting = false
-                        }
-                    }
-                },
-                enabled = !isPosting && isNoteLoaded
-            ) {
-                Text(if (isPosting) "Saving..." else if (note.isNotEmpty()) "Update Note" else "Add Note")
-            }
-
-            postResult?.let {
+            if (!isLoggedIn) {
                 Text(
-                    text = it,
-                    color = if (it.startsWith("Note saved") || it.startsWith("Note updated")) Color.Green else Color.Red,
-                    modifier = Modifier.padding(top = 8.dp)
+                    text = "Login to pin the location",
+                    color = Color.Gray,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
+            } else {
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    label = { Text("Note") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    enabled = isNoteLoaded
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        isPosting = true
+                        postResult = null
+                        coroutineScope.launch {
+                            try {
+                                val response = RetrofitInstance.pinApi.create_or_update_pin(
+                                    userId = userId,
+                                    pinRequest = PinRequest(mine_id = mine.reference.toInt(), note = note)
+                                )
+                                if (response.isSuccessful) {
+                                    postResult = "Note saved successfully"
+                                } else {
+                                    postResult = "Failed: ${response.code()}"
+                                }
+                            } catch (e: Exception) {
+                                postResult = "Error: ${e.message}"
+                            } finally {
+                                isPosting = false
+                            }
+                        }
+                    },
+                    enabled = !isPosting && isNoteLoaded
+                ) {
+                    Text(if (isPosting) "Saving..." else if (note.isNotEmpty()) "Update Note" else "Add Note")
+                }
+
+                postResult?.let {
+                    Text(
+                        text = it,
+                        color = if (it.startsWith("Note saved") || it.startsWith("Note updated")) Color.Green else Color.Red,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
 
 
@@ -160,14 +171,14 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
             }
             RiskTag(mine.floodRiskLevel ?: "Unknown", floodColor)
 
-            GraphSection("Historical Flood Trend Graph") // Placeholder
+            GraphSection("Historical Flood Trend Graph")
 
             SectionHeader(
                 iconResId = R.drawable.siteinfo_energydemand,
                 title = "Energy Demand"
             )
             mine.energyDemandHistory?.let {
-                EnergyLineChart(it)
+                EnergyLineChart("Historical Energy Demand Graph",it)
             } ?: Text("No energy history available", color = Color.Gray)
 
             GraphSection("Forecast Energy Demand Graph", graphColor = Color(0xFFFFC107))
@@ -248,7 +259,7 @@ fun GraphSection(title: String, graphColor: Color = Color.Blue) {
 }
 
 @Composable
-fun EnergyLineChart(data: List<EnergyDemand>) {
+fun EnergyLineChart(title: String, data: List<EnergyDemand>) {
     if (data.isEmpty()) {
         Text("No data available", color = Color.Gray)
         return
@@ -260,51 +271,60 @@ fun EnergyLineChart(data: List<EnergyDemand>) {
 
     val stroke = Stroke(width = 4f)
 
-    Box(
+    Column(
         modifier = Modifier
-            .height(200.dp)
             .fillMaxWidth()
             .padding(16.dp)
-            .background(Color(0xFFE3F2FD), shape = RoundedCornerShape(8.dp))
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val spaceX = size.width / (data.size - 1).coerceAtLeast(1)
-            val spaceY = size.height
+        Text(title, fontWeight = FontWeight.Bold)
 
-            val points = data.mapIndexed { index, entry ->
-                val x = index * spaceX
-                val y = spaceY - (((entry.value.toFloat() - minVal) / (maxVal - minVal)) * spaceY)
-                Offset(x, y)
-            }
+        Spacer(modifier = Modifier.height(8.dp))
 
-            // Draw line
-            for (i in 0 until points.size - 1) {
-                drawLine(
-                    color = Color.Blue,
-                    start = points[i],
-                    end = points[i + 1],
-                    strokeWidth = stroke.width
-                )
-            }
-
-            // Draw points
-            points.forEach {
-                drawCircle(Color.Blue, radius = 6f, center = it)
-            }
-        }
-
-        // Year labels below the graph
-        Column(
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 8.dp)
+                .height(200.dp)
+                .fillMaxWidth()
+                .background(Color(0xFFE3F2FD), shape = RoundedCornerShape(8.dp))
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val spaceX = size.width / (data.size - 1).coerceAtLeast(1)
+                val spaceY = size.height
+
+                val points = data.mapIndexed { index, entry ->
+                    val x = index * spaceX
+                    val y = spaceY - (((entry.value.toFloat() - minVal) / (maxVal - minVal)) * spaceY)
+                    Offset(x, y)
+                }
+
+                // Draw line
+                for (i in 0 until points.size - 1) {
+                    drawLine(
+                        color = Color.Blue,
+                        start = points[i],
+                        end = points[i + 1],
+                        strokeWidth = stroke.width
+                    )
+                }
+
+                // Draw points
+                points.forEach {
+                    drawCircle(Color.Blue, radius = 6f, center = it)
+                }
+            }
+
+            // Year labels below the graph
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 8.dp)
             ) {
-                yearLabels.forEach {
-                    Text(it, fontSize = 10.sp, color = Color.DarkGray)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    yearLabels.forEach {
+                        Text(it, fontSize = 10.sp, color = Color.DarkGray)
+                    }
                 }
             }
         }
