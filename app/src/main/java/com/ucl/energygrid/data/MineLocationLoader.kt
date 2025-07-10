@@ -55,11 +55,21 @@ fun MinesMarkers(
             convertOSGB36ToWGS84(mine.easting, mine.northing)
         }
 
+        val pinType = when (mine.status) {
+            "C" -> PinType.CLOSED_MINE
+            "I" -> PinType.CLOSING_MINE
+            else -> throw IllegalArgumentException("Unsupported mine status: ${mine.status}")
+        }
+
         Marker(
             state = MarkerState(position = latLng),
             title = mine.name,
-            snippet = if (mine.status == "C") "Closed Mine" else "Closing Mine",
-            icon = markerIcons[PinType.MINE] ?: BitmapDescriptorFactory.defaultMarker(),
+            snippet = when (mine.status) {
+                "C" -> "Closed Mine"
+                "I" -> "Closing Mine"
+                else -> "Mine"
+            },
+            icon = markerIcons[pinType] ?: BitmapDescriptorFactory.defaultMarker(),
             onClick = {
                 onSiteSelected(mine)
                 true

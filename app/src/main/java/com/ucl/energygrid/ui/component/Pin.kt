@@ -13,7 +13,8 @@ import androidx.core.graphics.toColorInt
 import com.ucl.energygrid.R
 
 enum class PinType {
-    MINE,
+    CLOSED_MINE,
+    CLOSING_MINE,
     SOLAR,
     WIND,
     HYDROELECTRIC,
@@ -34,8 +35,9 @@ fun addPin(
     type: PinType
 ) {
     val iconResId = when (type) {
-        PinType.USER_PIN -> R.drawable.mine_location
-        PinType.MINE -> R.drawable.mine_location
+        PinType.USER_PIN -> R.drawable.pin_my_pin
+        PinType.CLOSED_MINE -> R.drawable.pin_closed_mine
+        PinType.CLOSING_MINE -> R.drawable.pin_closing_mine
         PinType.SOLAR -> R.drawable.solar_site
         PinType.WIND -> R.drawable.wind_site
         PinType.HYDROELECTRIC -> R.drawable.hydroelectric_site
@@ -44,7 +46,8 @@ fun addPin(
 
     val pinColor = when (type) {
         PinType.USER_PIN -> "#F44336".toColorInt()
-        PinType.MINE -> "#F44336".toColorInt()
+        PinType.CLOSED_MINE -> "#F44336".toColorInt()
+        PinType.CLOSING_MINE -> "#F44336".toColorInt()
         PinType.SOLAR -> "#FFA000".toColorInt()
         PinType.WIND -> "#4CAF50".toColorInt()
         PinType.HYDROELECTRIC -> "#2196F3".toColorInt()
