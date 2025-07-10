@@ -76,13 +76,11 @@ fun UKMap(
         )
     }
 
-    val markerIcons = remember { mutableMapOf<PinType, BitmapDescriptor>() }
+    val dynamicMarkerIcons = remember { mutableMapOf<PinType, BitmapDescriptor>() }
     var selectedRegion by remember { mutableStateOf<RegionFeature?>(null) }
 
-    // State to store energy consumption data
     var energyConsumption by remember { mutableStateOf<Map<String, Pair<Double, String>>>(emptyMap()) }
 
-    // Load energy data once
     LaunchedEffect(year) {
         energyConsumption = fetchEnergyForecast(year)
     }
@@ -91,21 +89,19 @@ fun UKMap(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            onMapClick = {
-                selectedRegion = null
-            }
+            onMapClick = { selectedRegion = null }
         ) {
-            // Load custom marker icons
-            if (markerIcons.isEmpty()) {
+            // Load icons once
+            if (dynamicMarkerIcons.isEmpty()) {
                 PinType.values().forEach { type ->
-                    markerIcons[type] = BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, type))
+                    dynamicMarkerIcons[type] = BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, type))
                 }
             }
 
             MinesMarkers(
                 closedMine = closedMine,
                 closingMine = closingMine,
-                markerIcons = markerIcons,
+                markerIcons = dynamicMarkerIcons,
                 onSiteSelected = onSiteSelected
             )
 
@@ -118,7 +114,7 @@ fun UKMap(
                         state = MarkerState(position = position),
                         title = mine.name ?: "My Pin",
                         snippet = pin.note ?: "",
-                        icon = markerIcons[PinType.USER_PIN] ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE),
+                        icon = dynamicMarkerIcons[PinType.USER_PIN] ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE),
                         onClick = {
                             onPinSelected(mine)
                             true
@@ -127,20 +123,17 @@ fun UKMap(
                 }
             }
 
-            // Flood markers
             if (showMarkers) {
                 floodCenters.forEach { center ->
                     Marker(
                         state = MarkerState(position = center),
                         title = "Flood Center",
                         snippet = "Flood risk here",
-                        icon = markerIcons[PinType.FLOODING_RISK]
+                        icon = dynamicMarkerIcons[PinType.FLOODING_RISK]
                     )
                 }
             }
 
-
-            // Renewable site markers
             renewableSites.forEach { site ->
                 Marker(
                     state = MarkerState(position = site.location),
@@ -150,23 +143,17 @@ fun UKMap(
                 )
             }
 
-            // Heatmap
             if (energyDemandHeatmap) {
                 regionFeatures.forEach { region ->
                     val nutsCode = region.nutsCode
                     val demand = energyConsumption[nutsCode]?.first
 
-                    val lowThreshold = 10000.0
-                    val highThreshold = 20000.0
-
                     val baseColor = when {
                         demand == null -> Color.Transparent
-                        demand < lowThreshold -> Color(0xFF00FF00)
-                        demand >= lowThreshold && demand < highThreshold -> Color(0xFFFFFF00)
-                        demand >= highThreshold -> Color(0xFFFF0000)
-                        else -> Color.Gray
+                        demand < 10000.0 -> Color(0xFF00FF00)
+                        demand < 20000.0 -> Color(0xFFFFFF00)
+                        else -> Color(0xFFFF0000)
                     }
-
 
                     val isSelected = selectedRegion?.nutsCode == nutsCode
                     val fillColor = if (isSelected) Color(0x550000FF) else baseColor
@@ -178,52 +165,33 @@ fun UKMap(
                             fillColor = fillColor,
                             strokeWidth = if (isSelected) 3f else 1f,
                             clickable = true,
-                            onClick = {
-                                selectedRegion = region
-                            }
+                            onClick = { selectedRegion = region }
                         )
                     }
                 }
             }
 
-            // Tooltip marker for selected region
             selectedRegion?.let { region ->
                 val center = region.getCenterLatLng()
                 val code = region.nutsCode
-
                 val consumptionPair = energyConsumption[code]
                 val consumption = consumptionPair?.first
                 val source = consumptionPair?.second
 
-                val titleWithSource = if (source != null) {
-                    "${region.name} ($source)"
-                } else {
-                    region.name
-                }
-
-                val snippet = if (consumption != null) {
-                    "Total Consumption: %.2f GWh\n(Source: %s)".format(consumption, source)
-                } else {
-                    "No data available"
-                }
+                val titleWithSource = source?.let { "${region.name} ($it)" } ?: region.name
+                val snippet = consumption?.let { "Total Consumption: %.2f GWh".format(it) } ?: "No data available"
 
                 Marker(
                     state = MarkerState(position = center),
                     title = titleWithSource,
-                    snippet = if (consumption != null) {
-                        "Total Consumption: %.2f GWh".format(consumption)
-                    } else {
-                        "No data available"
-                    },
+                    snippet = snippet,
                     icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
                 )
-
-
             }
         }
 
         FloatingActionButton(
-            onClick = { /* Add reset logic */ },
+            onClick = { /* TODO: Reset action */ },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 16.dp, bottom = 128.dp),
