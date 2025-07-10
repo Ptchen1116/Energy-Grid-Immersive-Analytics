@@ -323,7 +323,7 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                                 closedMine = closedMine,
                                 onClosedMineChange = { closedMine = it },
                                 closingMine = closingMine,
-                                onClosingMineChange = { closingMine = it }
+                                onClosingMineChange = { closingMine = it },
                             )
                             BottomSheetContent.TimeSimulation -> TimeSimulationPanel(
                                 energyDemandHeatmap = energyDemandHeatmap,
@@ -401,6 +401,32 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                             selectedMine = mine
                             currentBottomSheet = BottomSheetContent.SiteInfo
                             coroutineScope.launch { scaffoldState.bottomSheetState.expand() }
+                        },
+                        showMyPinsMarkers = showMyPinsMarkers,
+                        onShowMyPinsClick = {
+                            if (!showMyPinsMarkers) {
+                                coroutineScope.launch {
+                                    try {
+                                        if (isLoggedIn) {
+                                            val userId = authViewModel.userId.value?.toIntOrNull() ?: return@launch
+                                            val api = RetrofitInstance.pinApi
+                                            val response = api.getAllPins(userId)
+                                            if (response.isSuccessful) {
+                                                myPins = response.body() ?: emptyList()
+                                                showMyPinsMarkers = true
+                                            } else {
+                                                Toast.makeText(context, "Failed to load pins: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } else {
+                                            showLoginDialog = true
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Failed to load pins: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            } else {
+                                showMyPinsMarkers = false
+                            }
                         }
                     )
 
