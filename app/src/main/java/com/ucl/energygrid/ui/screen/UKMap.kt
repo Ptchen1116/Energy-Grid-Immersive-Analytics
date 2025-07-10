@@ -56,7 +56,9 @@ fun UKMap(
     onSiteSelected: (Mine) -> Unit,
     myPins: List<PinResponse> = emptyList(),
     allMines: List<Mine> = emptyList(),
-    onPinSelected: (Mine) -> Unit
+    onPinSelected: (Mine) -> Unit,
+    showMyPinsMarkers: Boolean,
+    onShowMyPinsClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -208,7 +210,7 @@ fun UKMap(
             }
 
             FloatingActionButton(
-                onClick = { /* TODO: Show users' pin */ },
+                onClick = { onShowMyPinsClick()},
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(end = 16.dp, top = 88.dp),
