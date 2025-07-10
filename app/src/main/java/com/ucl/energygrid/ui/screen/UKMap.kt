@@ -1,6 +1,5 @@
 package com.ucl.energygrid.ui.screen
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -190,19 +189,38 @@ fun UKMap(
             }
         }
 
-        FloatingActionButton(
-            onClick = { /* TODO: Reset action */ },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 128.dp),
-            containerColor = Color.White
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.map_btn),
-                contentDescription = "Map Button",
-                tint = Color.Black,
-                modifier = Modifier.size(24.dp)
-            )
+            FloatingActionButton(
+                onClick = { /* TODO: Reset action */ },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 16.dp, top = 16.dp),
+                containerColor = Color.White
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.floating_button_reset_map),
+                    contentDescription = "Map Button",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            FloatingActionButton(
+                onClick = { /* TODO: Show users' pin */ },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 16.dp, top = 88.dp),
+                containerColor = Color.White
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.floating_button_my_pin),
+                    contentDescription = "My Pin",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 }
