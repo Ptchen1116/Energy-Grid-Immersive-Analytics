@@ -271,12 +271,28 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>) {
 
     val stroke = Stroke(width = 4f)
 
+    val trendColor = when {
+        data.size >= 2 && data.last().value > data.first().value -> Color.Red
+        data.size >= 2 && data.last().value < data.first().value -> Color(0xFF00C853) // 綠
+        else -> Color.Gray
+    }
+
+    val trendLabel = when (trendColor) {
+        Color.Red -> "Increasing"
+        Color(0xFF00C853) -> "Decreasing"
+        else -> "Stable"
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text(title, fontWeight = FontWeight.Bold)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(title, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.width(8.dp))
+            TrendTag(label = trendLabel, color = trendColor)
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -296,23 +312,20 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>) {
                     Offset(x, y)
                 }
 
-                // Draw line
                 for (i in 0 until points.size - 1) {
                     drawLine(
-                        color = Color.Blue,
+                        color = trendColor,
                         start = points[i],
                         end = points[i + 1],
                         strokeWidth = stroke.width
                     )
                 }
 
-                // Draw points
                 points.forEach {
-                    drawCircle(Color.Blue, radius = 6f, center = it)
+                    drawCircle(trendColor, radius = 6f, center = it)
                 }
             }
 
-            // Year labels below the graph
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -328,5 +341,21 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TrendTag(label: String, color: Color) {
+    Box(
+        modifier = Modifier
+            .background(color.copy(alpha = 0.15f), shape = RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = label,
+            color = color,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
