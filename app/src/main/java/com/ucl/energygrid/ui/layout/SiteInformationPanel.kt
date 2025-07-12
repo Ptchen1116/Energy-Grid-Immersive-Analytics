@@ -46,6 +46,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import com.ucl.energygrid.data.API.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ucl.energygrid.ui.screen.Trend
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
@@ -178,7 +179,7 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 title = "Energy Demand"
             )
             mine.energyDemandHistory?.let {
-                EnergyLineChart("Historical Energy Demand Graph",it)
+                EnergyLineChart("Historical Energy Demand Graph", it, mine.trend)
             } ?: Text("No energy history available", color = Color.Gray)
 
             GraphSection("Forecast Energy Demand Graph", graphColor = Color(0xFFFFC107))
@@ -259,7 +260,7 @@ fun GraphSection(title: String, graphColor: Color = Color.Blue) {
 }
 
 @Composable
-fun EnergyLineChart(title: String, data: List<EnergyDemand>) {
+fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
     if (data.isEmpty()) {
         Text("No data available", color = Color.Gray)
         return
@@ -271,16 +272,18 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>) {
 
     val stroke = Stroke(width = 4f)
 
-    val trendColor = when {
-        data.size >= 2 && data.last().value > data.first().value -> Color.Red
-        data.size >= 2 && data.last().value < data.first().value -> Color(0xFF00C853) // 綠
-        else -> Color.Gray
+    val trendColor = when (trend) {
+        Trend.INCREASING -> Color.Red
+        Trend.DECREASING -> Color(0xFF00C853)
+        Trend.STABLE -> Color.Gray
+        null -> Color.Gray
     }
 
-    val trendLabel = when (trendColor) {
-        Color.Red -> "Increasing"
-        Color(0xFF00C853) -> "Decreasing"
-        else -> "Stable"
+    val trendLabel = when (trend) {
+        Trend.INCREASING -> "Increasing"
+        Trend.DECREASING -> "Decreasing"
+        Trend.STABLE -> "Stable"
+        null -> "Unknown"
     }
 
     Column(
