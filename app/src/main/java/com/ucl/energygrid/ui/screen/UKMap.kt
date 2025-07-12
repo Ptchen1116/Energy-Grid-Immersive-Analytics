@@ -39,8 +39,6 @@ import com.ucl.energygrid.data.API.PinResponse
 import com.ucl.energygrid.data.convertOSGB36ToWGS84
 
 
-data class SelectedPinInfo(val mine: Mine, val pinNote: String)
-
 
 @Composable
 fun UKMap(
@@ -102,7 +100,6 @@ fun UKMap(
             MinesMarkers(
                 closedMine = closedMine,
                 closingMine = closingMine,
-                markerIcons = dynamicMarkerIcons,
                 onSiteSelected = onSiteSelected
             )
 

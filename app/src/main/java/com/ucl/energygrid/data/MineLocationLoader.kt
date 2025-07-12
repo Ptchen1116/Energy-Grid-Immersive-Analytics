@@ -11,9 +11,12 @@ import org.locationtech.proj4j.*
 import org.json.JSONArray
 import com.ucl.energygrid.ui.component.PinType
 import com.ucl.energygrid.ui.screen.Mine
+import com.ucl.energygrid.ui.screen.Trend
 import com.ucl.energygrid.ui.screen.EnergyDemand
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import android.content.Context
+import com.ucl.energygrid.ui.component.createPinBitmap
+import android.util.Log
 
 fun convertOSGB36ToWGS84(easting: Double, northing: Double): LatLng {
     val csFactory = CRSFactory()
@@ -35,7 +38,6 @@ fun convertOSGB36ToWGS84(easting: Double, northing: Double): LatLng {
 fun MinesMarkers(
     closedMine: Boolean,
     closingMine: Boolean,
-    markerIcons: Map<PinType, BitmapDescriptor>,
     onSiteSelected: (Mine) -> Unit
 ) {
     val context = LocalContext.current
@@ -51,6 +53,9 @@ fun MinesMarkers(
     }
 
     filteredMines.forEach { mine ->
+        Log.d("MinesMarkers", "Mine ${mine.name} trend: ${mine.trend} (type: ${mine.trend?.javaClass?.simpleName})")
+
+
         val latLng = remember(mine.easting, mine.northing) {
             convertOSGB36ToWGS84(mine.easting, mine.northing)
         }
@@ -58,7 +63,15 @@ fun MinesMarkers(
         val pinType = when (mine.status) {
             "C" -> PinType.CLOSED_MINE
             "I" -> PinType.CLOSING_MINE
-            else -> throw IllegalArgumentException("Unsupported mine status: ${mine.status}")
+            else -> throw IllegalArgumentException("Unknown mine status: ${mine.status}")
+        }
+
+        val iconBitmap = remember(mine.trend, pinType) {
+            createPinBitmap(context, pinType, mine.trend)
+        }
+
+        val iconDescriptor = remember(iconBitmap) {
+            BitmapDescriptorFactory.fromBitmap(iconBitmap)
         }
 
         Marker(
@@ -69,7 +82,7 @@ fun MinesMarkers(
                 "I" -> "Closing Mine"
                 else -> "Mine"
             },
-            icon = markerIcons[pinType] ?: BitmapDescriptorFactory.defaultMarker(),
+            icon = iconDescriptor,
             onClick = {
                 onSiteSelected(mine)
                 true
@@ -78,15 +91,13 @@ fun MinesMarkers(
     }
 }
 
+
 fun parseMinesFromJson(jsonString: String): List<Mine> {
     val list = mutableListOf<Mine>()
     val jsonArray = JSONArray(jsonString)
 
     for (i in 0 until jsonArray.length()) {
-        if (jsonArray.isNull(i)) {
-            continue
-        }
-
+        if (jsonArray.isNull(i)) continue
         val obj = jsonArray.getJSONObject(i)
 
         val reference = obj.optString("Reference")
@@ -110,7 +121,8 @@ fun parseMinesFromJson(jsonString: String): List<Mine> {
                 energyDemandList.add(EnergyDemand(year, value))
             }
         }
-        val forecastEnergyDemand = null
+
+        val trend = calculateTrend(energyDemandList)
 
         list.add(
             Mine(
@@ -119,13 +131,26 @@ fun parseMinesFromJson(jsonString: String): List<Mine> {
                 localAuthority, note,
                 floodRiskLevel, floodHistory,
                 energyDemandList.takeIf { it.isNotEmpty() },
-                forecastEnergyDemand
+                forecastEnergyDemand = null,
+                trend = trend
             )
         )
     }
 
     return list
 }
+
+fun calculateTrend(data: List<EnergyDemand>): Trend? {
+    if (data.size < 2) return null
+    val first = data.first().value
+    val last = data.last().value
+    return when {
+        last > first -> Trend.INCREASING
+        last < first -> Trend.DECREASING
+        else -> Trend.STABLE
+    }
+}
+
 
 fun loadMinesFromJson(context: Context): List<Mine> {
     return try {
