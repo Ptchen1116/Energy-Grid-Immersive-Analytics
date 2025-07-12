@@ -91,10 +91,12 @@ data class EnergyDemand(
     val value: Double
 )
 
+enum class Trend { INCREASING, DECREASING, STABLE }
+
 data class Mine(
     val reference: String,
     val name: String,
-    val status: String,
+    val status: String?,
     val easting: Double,
     val northing: Double,
     val localAuthority: String?,
@@ -102,10 +104,9 @@ data class Mine(
     val floodRiskLevel: String?,
     val floodHistory: String?,
     val energyDemandHistory: List<EnergyDemand>?,
-    val forecastEnergyDemand: Any?
+    val forecastEnergyDemand: List<EnergyDemand>?,
+    val trend: Trend? = null
 )
-
-data class YearValue(val year: Int, val value: Double)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
