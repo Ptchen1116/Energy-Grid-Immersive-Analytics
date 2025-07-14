@@ -8,7 +8,11 @@
     "LocalAuthority": "North East Derbyshire",
     "Note": null,
     "FloodRiskLevel": "Low",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2010, "events": 1 },
+      { "year": 2014, "events": 2 },
+      { "year": 2018, "events": 1 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 422.160353965063 },
       { "year": 2016, "value": 406.3822500006712 },
@@ -44,7 +48,7 @@
     "LocalAuthority": "Derbyshire Dales",
     "Note": null,
     "FloodRiskLevel": "Low",
-    "FloodHistory": null,
+    "FloodHistory": [],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 419.3210013018352 },
       { "year": 2016, "value": 408.0528954028645 },
@@ -80,7 +84,7 @@
     "LocalAuthority": "Derbyshire Dales",
     "Note": null,
     "FloodRiskLevel": "Medium",
-    "FloodHistory": null,
+    "FloodHistory": [],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 419.3210013018352 },
       { "year": 2016, "value": 408.0528954028645 },
@@ -116,7 +120,12 @@
     "LocalAuthority": "North Kesteven",
     "Note": null,
     "FloodRiskLevel": "High",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2011, "events": 1 },
+      { "year": 2014, "events": 2 },
+      { "year": 2017, "events": 3 },
+      { "year": 2020, "events": 1 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 487.1321528889972 },
       { "year": 2016, "value": 469.7898596996156 },
@@ -152,7 +161,12 @@
     "LocalAuthority": "North Kesteven",
     "Note": null,
     "FloodRiskLevel": "Low",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2011, "events": 1 },
+      { "year": 2014, "events": 2 },
+      { "year": 2017, "events": 3 },
+      { "year": 2020, "events": 1 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 487.1321528889972 },
       { "year": 2016, "value": 469.7898596996156 },
@@ -185,10 +199,16 @@
     "Status": "C",
     "Easting": 474831,
     "Northing": 377726,
-    "LocalAuthority": "Bassetlaw",
+    "LocalAuthority": "Basset law",
     "Note": null,
     "FloodRiskLevel": "High",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2004, "events": 3 },
+      { "year": 2008, "events": 2 },
+      { "year": 2015, "events": 4 },
+      { "year": 2019, "events": 3 },
+      { "year": 2022, "events": 5 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 568.3475785148723 },
       { "year": 2016, "value": 550.3117365999875 },
@@ -224,7 +244,7 @@
     "LocalAuthority": "Doncaster",
     "Note": null,
     "FloodRiskLevel": "Low",
-    "FloodHistory": null,
+    "FloodHistory": [],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 1299.079009346311 },
       { "year": 2016, "value": 1241.45637840223 },
@@ -260,7 +280,13 @@
     "LocalAuthority": "Caerphilly / Caerffili",
     "Note": null,
     "FloodRiskLevel": "Low",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2016, "events": 2 },
+      { "year": 2018, "events": 3 },
+      { "year": 2019, "events": 4 },
+      { "year": 2021, "events": 4 },
+      { "year": 2023, "events": 5 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 654.9970554918572 },
       { "year": 2016, "value": 642.0128877999629 },
@@ -296,7 +322,10 @@
     "LocalAuthority": "East Hampshire",
     "Note": null,
     "FloodRiskLevel": "Medium",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2010, "events": 1 },
+      { "year": 2022, "events": 1 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 454.6505157022157 },
       { "year": 2016, "value": 434.0648103989971 },
@@ -332,7 +361,7 @@
     "LocalAuthority": "South Norfolk",
     "Note": null,
     "FloodRiskLevel": "Low",
-    "FloodHistory": null,
+    "FloodHistory": [],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 563.4079106024994 },
       { "year": 2016, "value": 551.0551796000859 },
@@ -368,7 +397,13 @@
     "LocalAuthority": "East Riding of Yorkshire",
     "Note": null,
     "FloodRiskLevel": "Low",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2011, "events": 2 },
+      { "year": 2014, "events": 2 },
+      { "year": 2016, "events": 2 },
+      { "year": 2019, "events": 3 },
+      { "year": 2023, "events": 2 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 1602.077435895018 },
       { "year": 2016, "value": 1565.971341990631 },
@@ -404,7 +439,10 @@
     "LocalAuthority": "North Yorkshire",
     "Note": null,
     "FloodRiskLevel": "High",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2013, "events": 2 },
+      { "year": 2020, "events": 1 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 3212.327835321906 },
       { "year": 2016, "value": 2976.765650819405 },
@@ -440,7 +478,13 @@
     "LocalAuthority": "Dumfries and Galloway",
     "Note": null,
     "FloodRiskLevel": "Low",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2012, "events": 1 },
+      { "year": 2014, "events": 2 },
+      { "year": 2016, "events": 3 },
+      { "year": 2019, "events": 4 },
+      { "year": 2023, "events": 5 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 895.4129944831354 },
       { "year": 2016, "value": 868.8824819015867 },
@@ -476,7 +520,12 @@
     "LocalAuthority": "Argyll and Bute",
     "Note": null,
     "FloodRiskLevel": "Medium",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2011, "events": 1 },
+      { "year": 2014, "events": 2 },
+      { "year": 2017, "events": 3 },
+      { "year": 2020, "events": 1 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 517.4507226119159 },
       { "year": 2016, "value": 501.3461370961296 },
@@ -512,7 +561,13 @@
     "LocalAuthority": "Highland",
     "Note": null,
     "FloodRiskLevel": "Medium",
-    "FloodHistory": null,
+    "FloodHistory": [
+      { "year": 2006, "events": 3 },
+      { "year": 2009, "events": 2 },
+      { "year": 2012, "events": 1 },
+      { "year": 2018, "events": 0 },
+      { "year": 2023, "events": 0 }
+    ],
     "EnergyDemandHistory": [
       { "year": 2015, "value": 1592.561772402333 },
       { "year": 2016, "value": 1557.095681806063 },
