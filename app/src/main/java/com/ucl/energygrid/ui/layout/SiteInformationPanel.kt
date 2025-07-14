@@ -48,9 +48,12 @@ import com.ucl.energygrid.data.API.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucl.energygrid.ui.screen.Trend
 import android.util.Log
-
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.nativeCanvas
+
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
@@ -289,7 +292,7 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
     val maxVal = data.maxOf { it.value }.toFloat()
     val minVal = data.minOf { it.value }.toFloat()
     val yRange = (maxVal - minVal).takeIf { it != 0f } ?: 1f
-    val yearLabels = data.map { it.year.toString() }
+    val midVal = minVal + yRange / 2
 
     val trendColor = when (trend) {
         Trend.INCREASING -> Color.Red
@@ -304,6 +307,8 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
         Trend.STABLE -> "Stable"
         null -> "Unknown"
     }
+
+    val yAxisWidthDp = 48.dp
 
     Column(
         modifier = Modifier
@@ -320,61 +325,78 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        BoxWithConstraints(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp) // Increased to contain graph + x-axis
+                .height(220.dp)
                 .background(Color(0xFFE3F2FD), shape = RoundedCornerShape(8.dp))
-                .padding(horizontal = 12.dp, vertical = 12.dp)
+                .padding(top = 12.dp, bottom = 12.dp, end = 12.dp)
+
         ) {
-            val width = constraints.maxWidth.toFloat()
-            val height = constraints.maxHeight.toFloat()
-            val density = LocalDensity.current
-            val xStep = width / (data.size - 1).coerceAtLeast(1)
-
-            // Graph area
-            Canvas(
+            // Y-axis labels
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(170.dp) // leave room for labels below
-                    .align(Alignment.TopCenter)
+                    .width(yAxisWidthDp)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val points = data.mapIndexed { index, entry ->
-                    val x = index * xStep
-                    val yRatio = (entry.value.toFloat() - minVal) / yRange
-                    val y = size.height * (1 - yRatio)
-                    Offset(x, y)
-                }
-
-                for (i in 0 until points.size - 1) {
-                    drawLine(
-                        color = trendColor,
-                        start = points[i],
-                        end = points[i + 1],
-                        strokeWidth = 4f
-                    )
-                }
-
-                points.forEach {
-                    drawCircle(trendColor, radius = 6f, center = it)
-                }
+                Text(text = maxVal.toInt().toString(), fontSize = 10.sp, color = Color.DarkGray)
+                Text(text = midVal.toInt().toString(), fontSize = 10.sp, color = Color.DarkGray)
+                Text(text = minVal.toInt().toString(), fontSize = 10.sp, color = Color.DarkGray)
             }
 
-            // Year labels
-            yearLabels.forEachIndexed { index, label ->
-                val xDp = with(density) { (index * xStep).toDp() }
-                Text(
-                    text = label,
-                    fontSize = 10.sp,
-                    color = Color.DarkGray,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .offset(x = xDp - 10.dp) // -10.dp for visual centering
-                )
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            ) {
+                val width = constraints.maxWidth.toFloat()
+                val height = constraints.maxHeight.toFloat()
+                val xStep = width / (data.size - 1).coerceAtLeast(1)
+                val labelHeight = with(LocalDensity.current) { 20.dp.toPx() }
+
+                Canvas(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    val points = data.mapIndexed { index, entry ->
+                        val x = index * xStep
+                        val yRatio = (entry.value.toFloat() - minVal) / yRange
+                        val y = size.height - labelHeight - (size.height - labelHeight) * yRatio
+                        Offset(x, y)
+                    }
+
+                    for (i in 0 until points.size - 1) {
+                        drawLine(
+                            color = trendColor,
+                            start = points[i],
+                            end = points[i + 1],
+                            strokeWidth = 4f
+                        )
+                    }
+
+                    points.forEach {
+                        drawCircle(trendColor, radius = 6f, center = it)
+                    }
+
+                    val paint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.DKGRAY
+                        textSize = 30f
+                        textAlign = android.graphics.Paint.Align.CENTER
+                        isAntiAlias = true
+                    }
+
+                    data.forEachIndexed { index, entry ->
+                        val x = index * xStep
+                        val xClamped = x.coerceIn(paint.textSize / 2, size.width - paint.textSize / 2)
+                        drawContext.canvas.nativeCanvas.drawText(entry.year.toString(), xClamped, size.height - 4.dp.toPx(), paint)
+                    }
+                }
             }
         }
     }
 }
+
 
 
 
