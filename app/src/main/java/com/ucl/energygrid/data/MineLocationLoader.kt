@@ -122,6 +122,18 @@ fun parseMinesFromJson(jsonString: String): List<Mine> {
             }
         }
 
+        val forecastEnergyDemandList = mutableListOf<EnergyDemand>()
+        if (!obj.isNull("ForecastEnergyDemand")) {
+            val forecastArray = obj.getJSONArray("ForecastEnergyDemand")
+            for (j in 0 until forecastArray.length()) {
+                if (forecastArray.isNull(j)) continue
+                val forecastObj = forecastArray.getJSONObject(j)
+                val year = forecastObj.optInt("year")
+                val value = forecastObj.optDouble("value")
+                forecastEnergyDemandList.add(EnergyDemand(year, value))
+            }
+        }
+
         val trend = calculateTrend(energyDemandList)
 
         list.add(
@@ -131,7 +143,7 @@ fun parseMinesFromJson(jsonString: String): List<Mine> {
                 localAuthority, note,
                 floodRiskLevel, floodHistory,
                 energyDemandList.takeIf { it.isNotEmpty() },
-                forecastEnergyDemand = null,
+                forecastEnergyDemand = forecastEnergyDemandList.takeIf { it.isNotEmpty() },
                 trend = trend
             )
         )

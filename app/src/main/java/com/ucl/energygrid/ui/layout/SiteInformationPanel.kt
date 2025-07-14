@@ -47,6 +47,8 @@ import androidx.compose.runtime.LaunchedEffect
 import com.ucl.energygrid.data.API.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucl.energygrid.ui.screen.Trend
+import android.util.Log
+
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
@@ -185,7 +187,12 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 EnergyLineChart("Historical Energy Demand Graph", it, mine.trend)
             } ?: Text("No energy history available", color = Color.Gray)
 
-            GraphSection("Forecast Energy Demand Graph", graphColor = Color(0xFFFFC107))
+            Log.d("MineDebug", "forecastEnergyDemand = ${mine}")
+
+            mine.forecastEnergyDemand?.let {
+                EnergyLineChart("Forecast Energy Demand Graph", it, null)
+            } ?: Text("No energy history available", color = Color.Gray)
+
 
             Button(
                 onClick = { /* Run Forecast */ },
@@ -297,7 +304,10 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(title, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(8.dp))
-            TrendTag(label = trendLabel, color = trendColor)
+
+            if (trend != null) {
+                TrendTag(label = trendLabel, color = trendColor)
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
