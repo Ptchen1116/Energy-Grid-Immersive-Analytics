@@ -7,7 +7,7 @@
     "Northing": 365669,
     "LocalAuthority": "North East Derbyshire",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Low",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 422.160353965063 },
@@ -30,7 +30,7 @@
     "Northing": 360805,
     "LocalAuthority": "Derbyshire Dales",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Low",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 419.3210013018352 },
@@ -53,7 +53,7 @@
     "Northing": 363475,
     "LocalAuthority": "Derbyshire Dales",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Medium",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 419.3210013018352 },
@@ -76,7 +76,7 @@
     "Northing": 367264,
     "LocalAuthority": "North Kesteven",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "High",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 487.1321528889972 },
@@ -99,7 +99,7 @@
     "Northing": 366865,
     "LocalAuthority": "North Kesteven",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Low",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 487.1321528889972 },
@@ -122,7 +122,7 @@
     "Northing": 377726,
     "LocalAuthority": "Bassetlaw",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "High",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 568.3475785148723 },
@@ -145,7 +145,7 @@
     "Northing": 396285,
     "LocalAuthority": "Doncaster",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Low",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 1299.079009346311 },
@@ -168,7 +168,7 @@
     "Northing": 198208,
     "LocalAuthority": "Caerphilly / Caerffili",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Low",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 654.9970554918572 },
@@ -191,7 +191,7 @@
     "Northing": 130500,
     "LocalAuthority": "East Hampshire",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Medium",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 454.6505157022157 },
@@ -214,7 +214,7 @@
     "Northing": 292338,
     "LocalAuthority": "South Norfolk",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Low",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 563.4079106024994 },
@@ -237,7 +237,7 @@
     "Northing": 457890,
     "LocalAuthority": "East Riding of Yorkshire",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Low",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 1602.077435895018 },
@@ -260,7 +260,7 @@
     "Northing": 487558,
     "LocalAuthority": "North Yorkshire",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "High",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 3212.327835321906 },
@@ -283,7 +283,7 @@
     "Northing": 589810,
     "LocalAuthority": "Dumfries and Galloway",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Low",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 895.4129944831354 },
@@ -306,7 +306,7 @@
     "Northing": 708710,
     "LocalAuthority": "Argyll and Bute",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Medium",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 517.4507226119159 },
@@ -329,7 +329,7 @@
     "Northing": 918845,
     "LocalAuthority": "Highland",
     "Note": null,
-    "FloodRiskLevel": null,
+    "FloodRiskLevel": "Medium",
     "FloodHistory": null,
     "EnergyDemandHistory": [
       { "year": 2015, "value": 1592.561772402333 },
