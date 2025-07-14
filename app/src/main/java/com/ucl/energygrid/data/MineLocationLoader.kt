@@ -13,6 +13,7 @@ import com.ucl.energygrid.ui.component.PinType
 import com.ucl.energygrid.ui.screen.Mine
 import com.ucl.energygrid.ui.screen.Trend
 import com.ucl.energygrid.ui.screen.EnergyDemand
+import com.ucl.energygrid.ui.screen.FloodEvent
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import android.content.Context
 import com.ucl.energygrid.ui.component.createPinBitmap
@@ -108,7 +109,17 @@ fun parseMinesFromJson(jsonString: String): List<Mine> {
         val localAuthority = obj.optString("LocalAuthority")
         val note = if (obj.isNull("Note")) null else obj.optString("Note")
         val floodRiskLevel = if (obj.isNull("FloodRiskLevel")) null else obj.optString("FloodRiskLevel")
-        val floodHistory = if (obj.isNull("FloodHistory")) null else obj.optString("FloodHistory")
+        val floodHistoryList = mutableListOf<FloodEvent>()
+        if (!obj.isNull("FloodHistory")) {
+            val floodArray = obj.getJSONArray("FloodHistory")
+            for (j in 0 until floodArray.length()) {
+                if (floodArray.isNull(j)) continue
+                val floodObj = floodArray.getJSONObject(j)
+                val year = floodObj.optInt("year")
+                val events = floodObj.optInt("events")
+                floodHistoryList.add(FloodEvent(year, events))
+            }
+        }
 
         val energyDemandList = mutableListOf<EnergyDemand>()
         if (!obj.isNull("EnergyDemandHistory")) {
@@ -141,7 +152,8 @@ fun parseMinesFromJson(jsonString: String): List<Mine> {
                 reference, name, status,
                 easting, northing,
                 localAuthority, note,
-                floodRiskLevel, floodHistory,
+                floodRiskLevel = floodRiskLevel,
+                floodHistory = floodHistoryList.takeIf { it.isNotEmpty() },
                 energyDemandList.takeIf { it.isNotEmpty() },
                 forecastEnergyDemand = forecastEnergyDemandList.takeIf { it.isNotEmpty() },
                 trend = trend
