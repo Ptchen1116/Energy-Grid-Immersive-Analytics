@@ -323,16 +323,22 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(220.dp) // Increased to contain graph + x-axis
                 .background(Color(0xFFE3F2FD), shape = RoundedCornerShape(8.dp))
+                .padding(horizontal = 12.dp, vertical = 12.dp)
         ) {
             val width = constraints.maxWidth.toFloat()
             val height = constraints.maxHeight.toFloat()
             val density = LocalDensity.current
-
             val xStep = width / (data.size - 1).coerceAtLeast(1)
 
-            Canvas(modifier = Modifier.fillMaxSize()) {
+            // Graph area
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(170.dp) // leave room for labels below
+                    .align(Alignment.TopCenter)
+            ) {
                 val points = data.mapIndexed { index, entry ->
                     val x = index * xStep
                     val yRatio = (entry.value.toFloat() - minVal) / yRange
@@ -354,20 +360,22 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
                 }
             }
 
+            // Year labels
             yearLabels.forEachIndexed { index, label ->
                 val xDp = with(density) { (index * xStep).toDp() }
-
                 Text(
                     text = label,
                     fontSize = 10.sp,
                     color = Color.DarkGray,
                     modifier = Modifier
-                        .absoluteOffset(x = xDp - 10.dp, y = 170.dp) // -10.dp to center text
+                        .align(Alignment.BottomStart)
+                        .offset(x = xDp - 10.dp) // -10.dp for visual centering
                 )
             }
         }
     }
 }
+
 
 
 @Composable
