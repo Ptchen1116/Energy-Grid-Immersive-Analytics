@@ -170,7 +170,10 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 "high" -> Color(0xFFD50000)
                 else -> Color.Gray
             }
-            RiskTag(mine.floodRiskLevel ?: "Unknown", floodColor)
+            FloodRiskTag(
+                label = mine.floodRiskLevel?.replaceFirstChar { it.uppercase() } ?: "Unknown",
+                color = floodColor
+            )
 
             GraphSection("Historical Flood Trend Graph")
 
@@ -349,6 +352,22 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
 
 @Composable
 fun TrendTag(label: String, color: Color) {
+    Box(
+        modifier = Modifier
+            .background(color.copy(alpha = 0.15f), shape = RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = label,
+            color = color,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+fun FloodRiskTag(label: String, color: Color) {
     Box(
         modifier = Modifier
             .background(color.copy(alpha = 0.15f), shape = RoundedCornerShape(12.dp))
