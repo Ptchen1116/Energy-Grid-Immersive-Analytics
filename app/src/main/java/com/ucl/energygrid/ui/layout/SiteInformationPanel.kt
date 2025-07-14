@@ -49,6 +49,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucl.energygrid.ui.screen.Trend
 import android.util.Log
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.platform.LocalDensity
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
@@ -286,9 +288,8 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
 
     val maxVal = data.maxOf { it.value }.toFloat()
     val minVal = data.minOf { it.value }.toFloat()
+    val yRange = (maxVal - minVal).takeIf { it != 0f } ?: 1f
     val yearLabels = data.map { it.year.toString() }
-
-    val stroke = Stroke(width = 4f)
 
     val trendColor = when (trend) {
         Trend.INCREASING -> Color.Red
@@ -312,7 +313,6 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(title, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(8.dp))
-
             if (trend != null) {
                 TrendTag(label = trendLabel, color = trendColor)
             }
@@ -320,19 +320,23 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
-                .height(200.dp)
                 .fillMaxWidth()
+                .height(200.dp)
                 .background(Color(0xFFE3F2FD), shape = RoundedCornerShape(8.dp))
         ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val spaceX = size.width / (data.size - 1).coerceAtLeast(1)
-                val spaceY = size.height
+            val width = constraints.maxWidth.toFloat()
+            val height = constraints.maxHeight.toFloat()
+            val density = LocalDensity.current
 
+            val xStep = width / (data.size - 1).coerceAtLeast(1)
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
                 val points = data.mapIndexed { index, entry ->
-                    val x = index * spaceX
-                    val y = spaceY - (((entry.value.toFloat() - minVal) / (maxVal - minVal)) * spaceY)
+                    val x = index * xStep
+                    val yRatio = (entry.value.toFloat() - minVal) / yRange
+                    val y = size.height * (1 - yRatio)
                     Offset(x, y)
                 }
 
@@ -341,7 +345,7 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
                         color = trendColor,
                         start = points[i],
                         end = points[i + 1],
-                        strokeWidth = stroke.width
+                        strokeWidth = 4f
                     )
                 }
 
@@ -350,23 +354,21 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
                 }
             }
 
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    yearLabels.forEach {
-                        Text(it, fontSize = 10.sp, color = Color.DarkGray)
-                    }
-                }
+            yearLabels.forEachIndexed { index, label ->
+                val xDp = with(density) { (index * xStep).toDp() }
+
+                Text(
+                    text = label,
+                    fontSize = 10.sp,
+                    color = Color.DarkGray,
+                    modifier = Modifier
+                        .absoluteOffset(x = xDp - 10.dp, y = 170.dp) // -10.dp to center text
+                )
             }
         }
     }
 }
+
 
 @Composable
 fun TrendTag(label: String, color: Color) {
