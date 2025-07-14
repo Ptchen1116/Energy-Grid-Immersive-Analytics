@@ -52,6 +52,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.platform.LocalDensity
+import kotlin.math.ceil
+import kotlin.math.floor
 import androidx.compose.ui.graphics.nativeCanvas
 
 
@@ -262,37 +264,18 @@ fun SectionHeader(iconResId: Int, title: String) {
 }
 
 @Composable
-fun GraphSection(title: String, graphColor: Color = Color.Blue) {
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-    ) {
-        Text(title, fontWeight = FontWeight.Bold)
-        Box(
-            modifier = Modifier
-                .height(150.dp)
-                .fillMaxWidth()
-                .background(graphColor.copy(alpha = 0.2f))
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Graph Placeholder", color = graphColor)
-        }
-    }
-}
-
-@Composable
 fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
     if (data.isEmpty()) {
         Text("No data available", color = Color.Gray)
         return
     }
 
-    val maxVal = data.maxOf { it.value }.toFloat()
-    val minVal = data.minOf { it.value }.toFloat()
-    val yRange = (maxVal - minVal).takeIf { it != 0f } ?: 1f
-    val midVal = minVal + yRange / 2
+    val rawMax = data.maxOf { it.value }
+    val rawMin = data.minOf { it.value }
+
+    val maxVal = (((rawMax + 99) / 100).toInt()) * 100
+    val minVal = ((rawMin / 100).toInt()) * 100
+    val yRange = (maxVal - minVal).takeIf { it != 0 } ?: 100
 
     val trendColor = when (trend) {
         Trend.INCREASING -> Color.Red
@@ -308,97 +291,103 @@ fun EnergyLineChart(title: String, data: List<EnergyDemand>, trend: Trend?) {
         null -> "Unknown"
     }
 
-    val yAxisWidthDp = 48.dp
+    val yAxisWidth = 48.dp
+    val paddingHorizontal = 16.dp
+    val chartHeight = 220.dp
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = paddingHorizontal)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(title, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(Modifier.width(8.dp))
             if (trend != null) {
                 TrendTag(label = trendLabel, color = trendColor)
             }
         }
+        Spacer(Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp)
+                .height(chartHeight)
                 .background(Color(0xFFE3F2FD), shape = RoundedCornerShape(8.dp))
-                .padding(top = 12.dp, bottom = 12.dp, end = 12.dp)
-
+                .padding(end = 12.dp)
         ) {
-            // Y-axis labels
-            Column(
-                modifier = Modifier
-                    .width(yAxisWidthDp)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = maxVal.toInt().toString(), fontSize = 10.sp, color = Color.DarkGray)
-                Text(text = midVal.toInt().toString(), fontSize = 10.sp, color = Color.DarkGray)
-                Text(text = minVal.toInt().toString(), fontSize = 10.sp, color = Color.DarkGray)
-            }
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val canvasWidth = size.width
+                val canvasHeight = size.height
 
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f)
-            ) {
-                val width = constraints.maxWidth.toFloat()
-                val height = constraints.maxHeight.toFloat()
-                val xStep = width / (data.size - 1).coerceAtLeast(1)
-                val labelHeight = with(LocalDensity.current) { 20.dp.toPx() }
+                val yPaddingTop = 20f
+                val yPaddingBottom = 30f
+                val yUsableHeight = canvasHeight - yPaddingTop - yPaddingBottom
 
-                Canvas(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    val points = data.mapIndexed { index, entry ->
-                        val x = index * xStep
-                        val yRatio = (entry.value.toFloat() - minVal) / yRange
-                        val y = size.height - labelHeight - (size.height - labelHeight) * yRatio
-                        Offset(x, y)
-                    }
+                val yAxisLabelLeftPadding = 8f
+                val yAxisLabelRightPadding = 4.dp.toPx()
+                val yAxisLabelWidth = yAxisWidth.toPx()
 
-                    for (i in 0 until points.size - 1) {
-                        drawLine(
-                            color = trendColor,
-                            start = points[i],
-                            end = points[i + 1],
-                            strokeWidth = 4f
-                        )
-                    }
+                val yLabels = mutableListOf<Int>()
+                var currentLabel = maxVal
+                while (currentLabel >= minVal) {
+                    yLabels.add(currentLabel)
+                    currentLabel -= 100
+                }
 
-                    points.forEach {
-                        drawCircle(trendColor, radius = 6f, center = it)
-                    }
+                val yLabelPaint = android.graphics.Paint().apply {
+                    color = android.graphics.Color.DKGRAY
+                    textSize = 30f
+                    textAlign = android.graphics.Paint.Align.LEFT
+                    isAntiAlias = true
+                }
 
-                    val paint = android.graphics.Paint().apply {
-                        color = android.graphics.Color.DKGRAY
-                        textSize = 30f
-                        textAlign = android.graphics.Paint.Align.CENTER
-                        isAntiAlias = true
-                    }
+                yLabels.forEach { v ->
+                    val yRatio = (v - minVal).toFloat() / yRange.toFloat()
+                    var y = canvasHeight - yPaddingBottom - yUsableHeight * yRatio + yLabelPaint.textSize / 3
+                    if (v == minVal) y -= yLabelPaint.textSize
 
-                    data.forEachIndexed { index, entry ->
-                        val x = index * xStep
-                        val xClamped = x.coerceIn(paint.textSize / 2, size.width - paint.textSize / 2)
-                        drawContext.canvas.nativeCanvas.drawText(entry.year.toString(), xClamped, size.height - 4.dp.toPx(), paint)
-                    }
+                    drawContext.canvas.nativeCanvas.drawText(
+                        v.toString(),
+                        yAxisLabelLeftPadding,
+                        y,
+                        yLabelPaint
+                    )
+                }
+
+                val xStart = yAxisLabelWidth + yAxisLabelRightPadding
+                val xStep = (canvasWidth - xStart) / (data.size - 1).coerceAtLeast(1)
+
+                val points = data.mapIndexed { i, entry ->
+                    val x = xStart + i * xStep
+                    val yRatio = (entry.value.toFloat() - minVal) / yRange.toFloat()
+                    val y = canvasHeight - yPaddingBottom - yUsableHeight * yRatio
+                    Offset(x, y)
+                }
+
+                for (i in 0 until points.size - 1) {
+                    drawLine(trendColor, points[i], points[i + 1], strokeWidth = 4f)
+                }
+
+                points.forEach {
+                    drawCircle(trendColor, radius = 6f, center = it)
+                }
+
+                val xLabelPaint = android.graphics.Paint().apply {
+                    color = android.graphics.Color.DKGRAY
+                    textSize = 30f
+                    textAlign = android.graphics.Paint.Align.CENTER
+                    isAntiAlias = true
+                }
+                data.forEachIndexed { i, entry ->
+                    val x = xStart + i * xStep
+                    val y = canvasHeight - 4.dp.toPx()
+                    drawContext.canvas.nativeCanvas.drawText(entry.year.toString(), x, y, xLabelPaint)
                 }
             }
         }
     }
 }
-
-
-
 
 @Composable
 fun TrendTag(label: String, color: Color) {
