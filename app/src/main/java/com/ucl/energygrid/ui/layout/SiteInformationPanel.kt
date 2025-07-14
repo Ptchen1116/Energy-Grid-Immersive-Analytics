@@ -31,10 +31,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ucl.energygrid.R
-import com.ucl.energygrid.ui.component.RiskTag
 import com.ucl.energygrid.ui.component.TypeTag
 import com.ucl.energygrid.ui.screen.Mine
 import com.ucl.energygrid.ui.screen.EnergyDemand
+import com.ucl.energygrid.ui.screen.FloodEvent
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -177,7 +177,15 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 color = floodColor
             )
 
-            GraphSection("Historical Flood Trend Graph")
+            mine.floodHistory?.let { historyList ->
+                val sortedFloodEvents = historyList.sortedBy { it.year }
+                if (sortedFloodEvents.isNotEmpty()) {
+                    FloodHistoryChart("Historical Flood Trend Graph", sortedFloodEvents)
+                } else {
+                    Text("No flood history available", color = Color.Gray)
+                }
+            } ?: Text("No flood history available", color = Color.Gray)
+
 
             SectionHeader(
                 iconResId = R.drawable.siteinfo_energydemand,
@@ -389,5 +397,75 @@ fun FloodRiskTag(label: String, color: Color) {
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold
         )
+    }
+}
+
+@Composable
+fun FloodHistoryChart(title: String, data: List<FloodEvent>) {
+    if (data.isEmpty()) {
+        Text("No data available", color = Color.Gray)
+        return
+    }
+
+    val maxEvents = data.maxOf { it.events }.toFloat()
+    val minEvents = data.minOf { it.events }.toFloat()
+    val yearLabels = data.map { it.year.toString() }
+
+    val stroke = Stroke(width = 4f)
+    val floodColor = Color(0xFF1E88E5)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(title, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box(
+            modifier = Modifier
+                .height(200.dp)
+                .fillMaxWidth()
+                .background(Color(0xFFF1F8E9), shape = RoundedCornerShape(8.dp))
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val spaceX = size.width / (data.size - 1).coerceAtLeast(1)
+                val spaceY = size.height
+
+                val points = data.mapIndexed { index, entry ->
+                    val x = index * spaceX
+                    val y = spaceY - (((entry.events - minEvents) / (maxEvents - minEvents).coerceAtLeast(1f)) * spaceY)
+                    Offset(x, y)
+                }
+
+                for (i in 0 until points.size - 1) {
+                    drawLine(
+                        color = floodColor,
+                        start = points[i],
+                        end = points[i + 1],
+                        strokeWidth = stroke.width
+                    )
+                }
+
+                points.forEach {
+                    drawCircle(floodColor, radius = 6f, center = it)
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    yearLabels.forEach {
+                        Text(it, fontSize = 10.sp, color = Color.DarkGray)
+                    }
+                }
+            }
+        }
     }
 }

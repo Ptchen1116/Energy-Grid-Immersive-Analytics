@@ -93,6 +93,8 @@ data class EnergyDemand(
 
 enum class Trend { INCREASING, DECREASING, STABLE }
 
+data class FloodEvent(val year: Int, val events: Int)
+
 data class Mine(
     val reference: String,
     val name: String,
@@ -102,7 +104,7 @@ data class Mine(
     val localAuthority: String?,
     val note: String?,
     val floodRiskLevel: String?,
-    val floodHistory: String?,
+    val floodHistory: List<FloodEvent>?,
     val energyDemandHistory: List<EnergyDemand>?,
     val forecastEnergyDemand: List<EnergyDemand>?,
     val trend: Trend? = null
