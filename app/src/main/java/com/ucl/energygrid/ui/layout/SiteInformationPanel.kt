@@ -109,7 +109,7 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
 
             SectionHeader(
                 iconResId = R.drawable.siteinfo_pinandnote,
-                title = "Note"
+                title = "Pin & Note"
             )
             Spacer(modifier = Modifier.height(8.dp))
 
