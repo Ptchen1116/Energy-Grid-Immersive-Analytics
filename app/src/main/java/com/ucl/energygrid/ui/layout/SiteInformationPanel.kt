@@ -48,12 +48,6 @@ import com.ucl.energygrid.data.API.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucl.energygrid.ui.screen.Trend
 import android.util.Log
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.foundation.layout.*
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.platform.LocalDensity
-import kotlin.math.ceil
-import kotlin.math.floor
 import androidx.compose.ui.graphics.nativeCanvas
 
 
@@ -168,20 +162,21 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
             }
 
 
-            SectionHeader(
-                iconResId = R.drawable.siteinfo_floodingrisks,
-                title = "Flooding Risks"
-            )
-
             val floodColor = when (mine.floodRiskLevel?.lowercase()) {
                 "low" -> Color(0xFF00C853)
                 "medium" -> Color(0xFFFFD600)
                 "high" -> Color(0xFFD50000)
                 else -> Color.Gray
             }
-            FloodRiskTag(
-                label = mine.floodRiskLevel?.replaceFirstChar { it.uppercase() } ?: "Unknown",
-                color = floodColor
+            SectionHeader(
+                iconResId = R.drawable.siteinfo_floodingrisks,
+                title = "Flooding Risks",
+                trailingContent = {
+                    FloodRiskTag(
+                        label = mine.floodRiskLevel?.replaceFirstChar { it.uppercase() } ?: "Unknown",
+                        color = floodColor
+                    )
+                }
             )
 
             mine.floodHistory?.let { historyList ->
@@ -193,13 +188,28 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 }
             } ?: Text("No flood history available", color = Color.Gray)
 
-
             SectionHeader(
                 iconResId = R.drawable.siteinfo_energydemand,
-                title = "Energy Demand"
+                title = "Energy Demand",
+                trailingContent = {
+                    mine.trend?.let { trend ->
+                        val trendColor = when (trend) {
+                            Trend.INCREASING -> Color.Red
+                            Trend.DECREASING -> Color(0xFF00C853)
+                            Trend.STABLE -> Color.Gray
+                        }
+                        val trendLabel = when (trend) {
+                            Trend.INCREASING -> "Increasing"
+                            Trend.DECREASING -> "Decreasing"
+                            Trend.STABLE -> "Stable"
+                        }
+                        TrendTag(label = trendLabel, color = trendColor)
+                    }
+                }
             )
+
             mine.energyDemandHistory?.let {
-                EnergyLineChart("Historical Energy Demand Graph", it, mine.trend)
+                EnergyLineChart("Historical Energy Demand Graph", it, null)
             } ?: Text("No energy history available", color = Color.Gray)
 
             Log.d("MineDebug", "forecastEnergyDemand = ${mine}")
@@ -232,24 +242,33 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
 }
 
 @Composable
-fun SectionHeader(iconResId: Int, title: String) {
+fun SectionHeader(iconResId: Int, title: String, trailingContent: (@Composable () -> Unit)? = null) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Image(
             painter = painterResource(id = iconResId),
             contentDescription = null,
             modifier = Modifier.size(24.dp)
         )
+
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            trailingContent?.let {
+                Spacer(modifier = Modifier.width(8.dp))
+                it()
+            }
+        }
     }
 }
 
