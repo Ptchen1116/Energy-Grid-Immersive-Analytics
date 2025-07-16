@@ -208,16 +208,6 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 EnergyLineChart("Forecast Energy Demand Graph", it, null)
             } ?: Text("No energy history available", color = Color.Gray)
 
-
-            Button(
-                onClick = { /* Run Forecast */ },
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .fillMaxWidth(0.5f)
-            ) {
-                Text("Run Forecast")
-            }
-
             SectionHeader(
                 iconResId = R.drawable.siteinfo_call,
                 title = "Contact Onsite Operator"
