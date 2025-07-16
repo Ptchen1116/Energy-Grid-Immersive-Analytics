@@ -4,6 +4,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
+import retrofit2.http.DELETE
 import retrofit2.http.Path
 
 data class PinRequest(
@@ -34,4 +35,10 @@ interface PinApi {
     suspend fun getAllPins(
         @Path("user_id") userId: Int
     ): Response<List<PinResponse>>
+
+    @DELETE("/api/users/{user_id}/pins/mine/{mine_id}")
+    suspend fun deletePin(
+        @Path("user_id") userId: Int,
+        @Path("mine_id") mineId: Int
+    ): Response<Unit>
 }

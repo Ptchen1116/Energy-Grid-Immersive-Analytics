@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, get_db
 from app.crud import user_pin as crud_user_pin
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from app.schemas.user_pin import UserPinCreate, UserPinResponse
 from app.models.user_pin import UserPin
 
@@ -35,4 +35,17 @@ def read_pin_by_mine(user_id: int, mine_id: int, db: Session = Depends(get_db)):
     pin = crud_user_pin.get_user_pin_by_mine(db, user_id, mine_id)
     if not pin:
         return UserPinResponse(id=-1,mine_id=mine_id, note=None)  
+    return pin
+
+@router.delete("/users/{user_id}/pins/mine/{mine_id}", response_model=UserPinResponse)
+def delete_pin(user_id: int, mine_id: int, db: Session = Depends(get_db)):
+    pin = crud_user_pin.get_user_pin_by_mine(db, user_id, mine_id)
+    if not pin:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Pin for user {user_id} and mine {mine_id} not found"
+        )
+    
+    db.delete(pin)
+    db.commit()
     return pin
