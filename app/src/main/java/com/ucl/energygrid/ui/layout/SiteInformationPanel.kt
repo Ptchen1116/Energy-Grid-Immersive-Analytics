@@ -49,6 +49,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucl.energygrid.ui.screen.Trend
 import android.util.Log
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.viewinterop.AndroidView
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import android.view.ViewGroup
+import com.github.mikephil.charting.formatter.ValueFormatter
+
 
 
 @Composable
@@ -179,13 +189,8 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 }
             )
 
-            mine.floodHistory?.let { historyList ->
-                val sortedFloodEvents = historyList.sortedBy { it.year }
-                if (sortedFloodEvents.isNotEmpty()) {
-                    FloodHistoryChart("Historical Flood Trend Graph", sortedFloodEvents)
-                } else {
-                    Text("No flood history available", color = Color.Gray)
-                }
+            mine.floodHistory?.let {
+                FloodHistoryChartMP("Historical Flood Trend Graph", it)
             } ?: Text("No flood history available", color = Color.Gray)
 
             SectionHeader(
@@ -209,13 +214,13 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
             )
 
             mine.energyDemandHistory?.let {
-                EnergyLineChart("Historical Energy Demand Graph", it, null)
+                EnergyLineChartMP("Historical Energy Demand Graph", it, null)
             } ?: Text("No energy history available", color = Color.Gray)
 
             Log.d("MineDebug", "forecastEnergyDemand = ${mine}")
 
             mine.forecastEnergyDemand?.let {
-                EnergyLineChart("Forecast Energy Demand Graph", it, null)
+                EnergyLineChartMP("Forecast Energy Demand Graph", it, null)
             } ?: Text("No energy history available", color = Color.Gray)
 
             SectionHeader(
@@ -497,5 +502,172 @@ fun FloodHistoryChart(title: String, data: List<FloodEvent>) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun EnergyLineChartMP(title: String, data: List<EnergyDemand>, trend: Trend?) {
+    if (data.isEmpty()) {
+        Text("No data available", color = Color.Gray)
+        return
+    }
+
+    val trendColor = when (trend) {
+        Trend.INCREASING -> android.graphics.Color.RED
+        Trend.DECREASING -> android.graphics.Color.GREEN
+        Trend.STABLE -> android.graphics.Color.GRAY
+        null -> android.graphics.Color.GRAY
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(title, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(8.dp))
+            trend?.let {
+                TrendTag(
+                    label = when (it) {
+                        Trend.INCREASING -> "Increasing"
+                        Trend.DECREASING -> "Decreasing"
+                        Trend.STABLE -> "Stable"
+                    },
+                    color = when (it) {
+                        Trend.INCREASING -> Color.Red
+                        Trend.DECREASING -> Color(0xFF00C853)
+                        Trend.STABLE -> Color.Gray
+                    }
+                )
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+
+        AndroidView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp),
+            factory = { context ->
+                LineChart(context).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    setBackgroundColor(android.graphics.Color.WHITE)
+                    description.isEnabled = false
+                    axisRight.isEnabled = false
+                    legend.isEnabled = false
+                }
+            },
+            update = { chart ->
+                val entries = data.mapIndexed { i, it ->
+                    Entry(i.toFloat(), it.value.toFloat())
+                }
+                val lineDataSet = LineDataSet(entries, "Energy Demand").apply {
+                    color = trendColor
+                    valueTextColor = android.graphics.Color.BLACK
+                    setDrawCircles(true)
+                    lineWidth = 3f
+                    circleRadius = 6f
+                    setDrawValues(false)
+                }
+
+                chart.data = LineData(lineDataSet)
+
+                chart.xAxis.apply {
+                    valueFormatter = IndexAxisValueFormatter(data.map { it.year.toString() })
+                    position = XAxis.XAxisPosition.BOTTOM
+                    granularity = 1f
+                    setDrawGridLines(false)
+                }
+
+                chart.axisLeft.apply {
+                    axisMinimum = (data.minOf { it.value } * 0.9f).toFloat()
+                    axisMaximum = (data.maxOf { it.value } * 1.1f).toFloat()
+                }
+                chart.invalidate()
+            }
+        )
+    }
+}
+
+@Composable
+fun FloodHistoryChartMP(title: String, data: List<FloodEvent>) {
+    if (data.isEmpty()) {
+        Text("No data available", color = Color.Gray)
+        return
+    }
+
+    val floodColor = android.graphics.Color.parseColor("#1E88E5")
+
+    val yearsRange = (2015..2023).toList()
+    val completeData = yearsRange.map { year ->
+        data.find { it.year == year } ?: FloodEvent(year, 0)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(title, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        AndroidView(
+            modifier = Modifier
+                .height(200.dp)
+                .fillMaxWidth(),
+            factory = { context ->
+                LineChart(context).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    setBackgroundColor(android.graphics.Color.WHITE)
+                    description.isEnabled = false
+                    axisRight.isEnabled = false
+                    legend.isEnabled = false
+                }
+            },
+            update = { chart ->
+                val entries = completeData.mapIndexed { i, it ->
+                    Entry(i.toFloat(), it.events.toFloat())
+                }
+                val lineDataSet = LineDataSet(entries, "Flood Events").apply {
+                    color = floodColor
+                    valueTextColor = android.graphics.Color.BLACK
+                    setDrawCircles(true)
+                    lineWidth = 3f
+                    circleRadius = 6f
+                    setDrawValues(false)
+                }
+
+                chart.data = LineData(lineDataSet)
+
+                chart.xAxis.apply {
+                    valueFormatter = IndexAxisValueFormatter(completeData.map { it.year.toString() })
+                    position = XAxis.XAxisPosition.BOTTOM
+                    granularity = 1f
+                    setDrawGridLines(false)
+                }
+
+                val maxEvents = completeData.maxOf { it.events }
+
+                chart.axisLeft.apply {
+                    axisMinimum = 0f
+                    axisMaximum = maxEvents.toFloat()
+                    granularity = 1f
+                    setLabelCount(maxEvents + 1, true)
+                    valueFormatter = object : ValueFormatter() {
+                        override fun getFormattedValue(value: Float): String {
+                            return value.toInt().toString()
+                        }
+                    }
+                }
+
+                chart.invalidate()
+            }
+        )
     }
 }

@@ -74,6 +74,9 @@ dependencies {
     // auth0 for decoding token
     implementation("com.auth0.android:jwtdecode:2.0.0")
 
+    // Line chart library
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
 
 
     testImplementation(libs.junit)
