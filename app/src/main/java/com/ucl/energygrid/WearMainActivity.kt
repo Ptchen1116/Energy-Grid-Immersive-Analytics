@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.StateFlow
 import com.ucl.energygrid.data.getAllSiteLabelsReferencesAndNames
 import com.ucl.energygrid.data.getInfoByReference
 import com.ucl.energygrid.ui.screen.Mine
+import com.ucl.energygrid.ui.layout.FloodHistoryChartMP
+import com.ucl.energygrid.ui.layout.EnergyLineChartMP
 import androidx.compose.ui.platform.LocalContext
 
 class WearMainActivity : ComponentActivity() {
@@ -208,14 +210,12 @@ fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
                     "floodTrend" -> {
                         mineInfo?.let { mine ->
                             Text("Flood Risk Level: ${mine.floodRiskLevel}", color = Color.Black)
-                        }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            mine.floodHistory?.let {
+                                FloodHistoryChartMP("Historical Flood Trend Graph", it)
+                            } ?: Text("No flood history available", color = Color.Gray)
+                        } ?: Text("Loading mine info...", color = Color.Gray)
 
-                        Spacer(modifier = Modifier.height(8.dp))
-                        mineInfo?.floodHistory?.let {
-                            it.forEach { event ->
-                                Text("Year ${event.year}: ${event.events} events", color = Color.DarkGray)
-                            }
-                        } ?: Text("No flood history available", color = Color.Gray)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("Say 'back' or 'menu' to return", color = Color.DarkGray)
                     }
@@ -223,10 +223,9 @@ fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
                         Text("Historical Energy Demand", color = Color.Black)
                         Spacer(modifier = Modifier.height(8.dp))
                         mineInfo?.energyDemandHistory?.let {
-                            it.forEach { demand ->
-                                Text("${demand.year}: ${demand.value} kWh", color = Color.DarkGray)
-                            }
+                            EnergyLineChartMP("Historical Energy Demand Graph", it, null)
                         } ?: Text("No historical data", color = Color.Gray)
+
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("Say 'back' or 'menu' to return", color = Color.DarkGray)
                     }
@@ -234,10 +233,9 @@ fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
                         Text("Forecast Energy Demand", color = Color.Black)
                         Spacer(modifier = Modifier.height(8.dp))
                         mineInfo?.forecastEnergyDemand?.let {
-                            it.forEach { demand ->
-                                Text("${demand.year}: ${demand.value} kWh", color = Color.DarkGray)
-                            }
+                            EnergyLineChartMP("Forecast Energy Demand Graph", it, null)
                         } ?: Text("No forecast data", color = Color.Gray)
+
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("Say 'back' or 'menu' to return", color = Color.DarkGray)
                     }
