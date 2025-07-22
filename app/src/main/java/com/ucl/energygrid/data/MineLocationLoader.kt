@@ -187,3 +187,10 @@ fun loadMinesFromJson(context: Context): List<Mine> {
         emptyList()
     }
 }
+
+fun getAllSiteLabelsReferencesAndNames(context: Context): List<Triple<String, String, String>> {
+    val mines = loadMinesFromJson(context)
+    return mines.mapIndexed { index, mine ->
+        Triple("Site ${index + 1}", mine.reference, mine.name)
+    }
+}
