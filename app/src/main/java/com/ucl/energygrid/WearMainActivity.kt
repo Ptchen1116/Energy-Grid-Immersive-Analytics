@@ -93,7 +93,7 @@ class WearMainActivity : ComponentActivity() {
                     }
                     if (selectedSite != null) {
                         selectedMineReference = selectedSite.second
-                        selectedMineInfo = null
+                        selectedMineInfo = getInfoByReference(context, selectedSite.second)
                         currentStage = "menu"
 
                         sendCommands(
@@ -109,7 +109,6 @@ class WearMainActivity : ComponentActivity() {
                 } else if (currentStage == "menu") {
                     when (command.lowercase()) {
                         "reselect site" -> {
-                            selectedMine = null
                             selectedMineReference = null
                             selectedMineInfo = null
                             currentStage = "selectSite"
@@ -117,30 +116,34 @@ class WearMainActivity : ComponentActivity() {
                             sendCommands(siteLabels)
                         }
                         "show me basic info" -> {
-                            selectedMineReference?.let { ref ->
-                                selectedMineInfo = getInfoByReference(context, ref)
-                                currentStage = "basicInfo"
-                            }
+                            currentStage = "basicInfo"
                             sendCommands(listOf("back", "menu"))
                         }
-                        "show me flooding trend" -> { /* TODO */ }
-                        "show me historical energy demand" -> { /* TODO */ }
-                        "show me forecast energy demand" -> { /* TODO */ }
-                    }
-                } else if (currentStage == "basicInfo") {
-                    when (command.lowercase()) {
-                        "back", "menu" -> {
-                            currentStage = "menu"
-                            sendCommands(
-                                listOf(
-                                    "reselect site",
-                                    "show me basic info",
-                                    "show me flooding trend",
-                                    "show me historical energy demand",
-                                    "show me forecast energy demand"
-                                )
-                            )
+                        "show me flooding trend" -> {
+                            currentStage = "floodTrend"
+                            sendCommands(listOf("back", "menu"))
                         }
+                        "show me historical energy demand" -> {
+                            currentStage = "historicalEnergy"
+                            sendCommands(listOf("back", "menu"))
+                        }
+                        "show me forecast energy demand" -> {
+                            currentStage = "forecastEnergy"
+                            sendCommands(listOf("back", "menu"))
+                        }
+                    }
+                } else {
+                    if (command.lowercase() in listOf("back", "menu")) {
+                        currentStage = "menu"
+                        sendCommands(
+                            listOf(
+                                "reselect site",
+                                "show me basic info",
+                                "show me flooding trend",
+                                "show me historical energy demand",
+                                "show me forecast energy demand"
+                            )
+                        )
                     }
                 }
             }
@@ -201,6 +204,42 @@ fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
                         } ?: run {
                             Text("Loading mine info...", color = Color.Black)
                         }
+                    }
+                    "floodTrend" -> {
+                        mineInfo?.let { mine ->
+                            Text("Flood Risk Level: ${mine.floodRiskLevel}", color = Color.Black)
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        mineInfo?.floodHistory?.let {
+                            it.forEach { event ->
+                                Text("Year ${event.year}: ${event.events} events", color = Color.DarkGray)
+                            }
+                        } ?: Text("No flood history available", color = Color.Gray)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Say 'back' or 'menu' to return", color = Color.DarkGray)
+                    }
+                    "historicalEnergy" -> {
+                        Text("Historical Energy Demand", color = Color.Black)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        mineInfo?.energyDemandHistory?.let {
+                            it.forEach { demand ->
+                                Text("${demand.year}: ${demand.value} kWh", color = Color.DarkGray)
+                            }
+                        } ?: Text("No historical data", color = Color.Gray)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Say 'back' or 'menu' to return", color = Color.DarkGray)
+                    }
+                    "forecastEnergy" -> {
+                        Text("Forecast Energy Demand", color = Color.Black)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        mineInfo?.forecastEnergyDemand?.let {
+                            it.forEach { demand ->
+                                Text("${demand.year}: ${demand.value} kWh", color = Color.DarkGray)
+                            }
+                        } ?: Text("No forecast data", color = Color.Gray)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Say 'back' or 'menu' to return", color = Color.DarkGray)
                     }
                 }
             }
