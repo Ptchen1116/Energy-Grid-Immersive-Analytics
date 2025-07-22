@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.ucl.energygrid"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -76,6 +76,13 @@ dependencies {
 
     // Line chart library
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    implementation("androidx.navigation:navigation-compose:2.5.3")
+
+    // Wear Compose Material
+    implementation("androidx.wear.compose:compose-material:1.3.0")
+    implementation("androidx.wear.compose:compose-navigation:1.3.0")
+    implementation("androidx.wear.compose:compose-foundation:1.3.0")
 
 
 
