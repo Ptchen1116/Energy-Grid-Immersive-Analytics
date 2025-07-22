@@ -194,3 +194,8 @@ fun getAllSiteLabelsReferencesAndNames(context: Context): List<Triple<String, St
         Triple("Site ${index + 1}", mine.reference, mine.name)
     }
 }
+
+fun getInfoByReference(context: Context, reference: String): Mine? {
+    val mines = loadMinesFromJson(context)
+    return mines.firstOrNull { it.reference == reference }
+}

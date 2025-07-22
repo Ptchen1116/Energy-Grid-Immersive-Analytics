@@ -25,11 +25,15 @@ import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.ucl.energygrid.data.getAllSiteLabelsReferencesAndNames
+import com.ucl.energygrid.data.getInfoByReference
+import com.ucl.energygrid.ui.screen.Mine
 import androidx.compose.ui.platform.LocalContext
 
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
     val spokenCommand: StateFlow<String> get() = _spokenCommand
+
+
 
     private val asrReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -77,15 +81,19 @@ class WearMainActivity : ComponentActivity() {
 
             var currentStage by remember { mutableStateOf("selectSite") }
             var selectedMine by remember { mutableStateOf<String?>(null) }
+            var selectedMineReference by remember { mutableStateOf<String?>(null) }
+            var selectedMineInfo by remember { mutableStateOf<Mine?>(null) }
 
             LaunchedEffect(command) {
+                Log.i("WearMainCommand", "Received command: '$command'")
                 if (currentStage == "selectSite") {
                     val selectedSite = sites.firstOrNull {
                         it.first.equals(command, ignoreCase = true) ||
                                 command in listOf("one", "1", "two", "2", "three", "3") && it.first.endsWith(command.takeLast(1))
                     }
                     if (selectedSite != null) {
-                        selectedMine = selectedSite.third
+                        selectedMineReference = selectedSite.second
+                        selectedMineInfo = null
                         currentStage = "menu"
 
                         sendCommands(
@@ -102,28 +110,52 @@ class WearMainActivity : ComponentActivity() {
                     when (command.lowercase()) {
                         "reselect site" -> {
                             selectedMine = null
+                            selectedMineReference = null
+                            selectedMineInfo = null
                             currentStage = "selectSite"
                             val siteLabels = sites.map { it.first.lowercase() }
                             sendCommands(siteLabels)
                         }
-                        "show me basic info" -> { /* TODO: Show basic information page */ }
-                        "show me flooding trend" -> { /* TODO: Show flooding trend page */ }
-                        "show me historical energy demand" -> { /* TODO: Show historical energy demand page */ }
-                        "show me forecast energy demand" -> { /* TODO: Show forecast energy demand page */ }
+                        "show me basic info" -> {
+                            selectedMineReference?.let { ref ->
+                                selectedMineInfo = getInfoByReference(context, ref)
+                                currentStage = "basicInfo"
+                            }
+                            sendCommands(listOf("back", "menu"))
+                        }
+                        "show me flooding trend" -> { /* TODO */ }
+                        "show me historical energy demand" -> { /* TODO */ }
+                        "show me forecast energy demand" -> { /* TODO */ }
+                    }
+                } else if (currentStage == "basicInfo") {
+                    when (command.lowercase()) {
+                        "back", "menu" -> {
+                            currentStage = "menu"
+                            sendCommands(
+                                listOf(
+                                    "reselect site",
+                                    "show me basic info",
+                                    "show me flooding trend",
+                                    "show me historical energy demand",
+                                    "show me forecast energy demand"
+                                )
+                            )
+                        }
                     }
                 }
             }
 
             WearMainScreen(
                 stage = currentStage,
-                mineName = selectedMine
+                mineName = selectedMineReference,
+                mineInfo = selectedMineInfo
             )
         }
     }
 }
 
 @Composable
-fun WearMainScreen(stage: String, mineName: String?) {
+fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -145,6 +177,30 @@ fun WearMainScreen(stage: String, mineName: String?) {
                         Text("3. Show me flooding trend", color = Color.DarkGray)
                         Text("4. Show me historical energy demand", color = Color.DarkGray)
                         Text("5. Show me forecast energy demand", color = Color.DarkGray)
+                    }
+                    "basicInfo" -> {
+                        mineInfo?.let { mine ->
+                            Text(
+                                "Basic Information",
+                                color = Color.Black,
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text("Name: ${mine.name}", color = Color.Black)
+                            Text("Reference: ${mine.reference}", color = Color.Black)
+                            Text("Status: ${mine.status ?: "Unknown"}", color = Color.Black)
+                            Text(
+                                "Local Authority: ${mine.localAuthority ?: "Unknown"}",
+                                color = Color.Black
+                            )
+                            Text(
+                                "Coordinates: E=${mine.easting}, N=${mine.northing}",
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text("Say 'back' or 'menu' to return to menu", color = Color.DarkGray)
+                        } ?: run {
+                            Text("Loading mine info...", color = Color.Black)
+                        }
                     }
                 }
             }
