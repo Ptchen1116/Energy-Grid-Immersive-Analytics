@@ -1,23 +1,24 @@
 package com.ucl.energygrid.data
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.LatLng
-import androidx.compose.ui.platform.LocalContext
-import org.locationtech.proj4j.*
-import org.json.JSONArray
 import com.ucl.energygrid.ui.component.PinType
-import com.ucl.energygrid.ui.screen.Mine
-import com.ucl.energygrid.ui.screen.Trend
+import com.ucl.energygrid.ui.component.createPinBitmap
 import com.ucl.energygrid.ui.screen.EnergyDemand
 import com.ucl.energygrid.ui.screen.FloodEvent
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import android.content.Context
-import com.ucl.energygrid.ui.component.createPinBitmap
-import android.util.Log
+import com.ucl.energygrid.ui.screen.Mine
+import com.ucl.energygrid.ui.screen.Trend
+import org.json.JSONArray
+import org.locationtech.proj4j.CRSFactory
+import org.locationtech.proj4j.CoordinateTransformFactory
+import org.locationtech.proj4j.ProjCoordinate
 
 fun convertOSGB36ToWGS84(easting: Double, northing: Double): LatLng {
     val csFactory = CRSFactory()

@@ -1,5 +1,6 @@
 package com.ucl.energygrid.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +14,24 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,11 +50,20 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.auth0.android.jwt.JWT
 import com.google.android.gms.maps.model.LatLng
+import com.ucl.energygrid.data.API.AuthViewModel
+import com.ucl.energygrid.data.API.LoginRequest
+import com.ucl.energygrid.data.API.PinResponse
+import com.ucl.energygrid.data.API.RegisterRequest
+import com.ucl.energygrid.data.API.RetrofitInstance
 import com.ucl.energygrid.data.GeoJsonLoader
 import com.ucl.energygrid.data.RegionFeature
 import com.ucl.energygrid.data.fetchAllFloodCenters
+import com.ucl.energygrid.data.loadMinesFromJson
 import com.ucl.energygrid.data.readAndExtractSitesByType
 import com.ucl.energygrid.ui.component.PinType
 import com.ucl.energygrid.ui.layout.BottomNavigationBar
@@ -48,29 +71,6 @@ import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.AddCircle
-import android.widget.Toast
-import com.ucl.energygrid.data.API.RetrofitInstance
-import com.ucl.energygrid.data.API.RegisterRequest
-import com.ucl.energygrid.data.API.LoginRequest
-import com.ucl.energygrid.data.API.AuthViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.auth0.android.jwt.JWT
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import com.ucl.energygrid.data.API.PinResponse
-import com.ucl.energygrid.data.loadMinesFromJson
 
 
 enum class BottomSheetContent {

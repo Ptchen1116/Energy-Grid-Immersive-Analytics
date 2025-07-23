@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -12,7 +13,6 @@ import android.widget.ImageView
 import androidx.core.graphics.toColorInt
 import com.ucl.energygrid.R
 import com.ucl.energygrid.ui.screen.Trend
-import android.util.Log
 
 enum class PinType {
     CLOSED_MINE,
