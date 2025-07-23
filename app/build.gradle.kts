@@ -1,8 +1,18 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+
+val localProps = Properties().apply {
+    load(rootProject.file("secrets.properties").inputStream())
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+
 }
 
 android {
@@ -84,7 +94,13 @@ dependencies {
     implementation("androidx.wear.compose:compose-navigation:1.3.0")
     implementation("androidx.wear.compose:compose-foundation:1.3.0")
 
-
+    // Firebase Realtime Database
+    implementation("com.google.firebase:firebase-database-ktx:20.2.0")
+    // WebRTC Android SDK
+    implementation("com.dafruits:webrtc:123.0.0")
+    // AndroidX
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
