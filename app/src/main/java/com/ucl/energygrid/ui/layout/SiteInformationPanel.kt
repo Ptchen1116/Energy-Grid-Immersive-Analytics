@@ -1,5 +1,6 @@
 package com.ucl.energygrid.ui.layout
 
+import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -11,15 +12,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,34 +32,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ucl.energygrid.R
-import com.ucl.energygrid.ui.component.TypeTag
-import com.ucl.energygrid.ui.screen.Mine
-import com.ucl.energygrid.ui.screen.EnergyDemand
-import com.ucl.energygrid.ui.screen.FloodEvent
-import androidx.compose.foundation.layout.width
-import com.ucl.energygrid.data.API.RetrofitInstance
-import com.ucl.energygrid.data.API.PinRequest
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.LaunchedEffect
-import com.ucl.energygrid.data.API.AuthViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ucl.energygrid.ui.screen.Trend
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
-import android.view.ViewGroup
 import com.github.mikephil.charting.formatter.ValueFormatter
-import androidx.compose.material3.ButtonDefaults
-import android.util.Log
-import androidx.compose.ui.unit.TextUnit
+import com.ucl.energygrid.R
+import com.ucl.energygrid.data.API.AuthViewModel
+import com.ucl.energygrid.data.API.PinRequest
+import com.ucl.energygrid.data.API.RetrofitInstance
+import com.ucl.energygrid.ui.component.TypeTag
+import com.ucl.energygrid.ui.screen.EnergyDemand
+import com.ucl.energygrid.ui.screen.FloodEvent
+import com.ucl.energygrid.ui.screen.Mine
+import com.ucl.energygrid.ui.screen.Trend
+import kotlinx.coroutines.launch
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
