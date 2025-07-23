@@ -54,6 +54,7 @@ import android.view.ViewGroup
 import com.github.mikephil.charting.formatter.ValueFormatter
 import androidx.compose.material3.ButtonDefaults
 import android.util.Log
+import androidx.compose.ui.unit.TextUnit
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
@@ -275,7 +276,12 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
 }
 
 @Composable
-fun SectionHeader(iconResId: Int, title: String, trailingContent: (@Composable () -> Unit)? = null) {
+fun SectionHeader(
+    iconResId: Int,
+    title: String,
+    trailingContent: (@Composable () -> Unit)? = null,
+    fontSize: TextUnit = 18.sp
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -292,8 +298,8 @@ fun SectionHeader(iconResId: Int, title: String, trailingContent: (@Composable (
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                title,
-                fontSize = 18.sp,
+                text = title,
+                fontSize = fontSize,
                 fontWeight = FontWeight.Bold
             )
 
