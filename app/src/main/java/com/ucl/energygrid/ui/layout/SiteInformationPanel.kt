@@ -54,6 +54,12 @@ import com.ucl.energygrid.ui.screen.FloodEvent
 import com.ucl.energygrid.ui.screen.Mine
 import com.ucl.energygrid.ui.screen.Trend
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
+import org.webrtc.SurfaceViewRenderer
+import org.webrtc.EglBase
+import com.ucl.energygrid.CallingClient
+import androidx.compose.runtime.DisposableEffect
+
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
@@ -256,17 +262,7 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 title = "Contact Onsite Operator"
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(
-                    painter = painterResource(id = R.drawable.uk_map),
-                    contentDescription = "Operator",
-                    modifier = Modifier
-                        .size(200.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                )
-                Text("Cassie Jung", fontWeight = FontWeight.Bold, modifier = Modifier.padding(4.dp))
-                Button(onClick = { /* End Call */ }) {
-                    Text("End Call")
-                }
+                CallingView(isCaller = true)
             }
 
             Spacer(modifier = Modifier.height(100.dp))
@@ -508,5 +504,52 @@ fun FloodHistoryChartMP(title: String, data: List<FloodEvent>) {
                 chart.invalidate()
             }
         )
+    }
+}
+
+@Composable
+fun CallingView(isCaller: Boolean) {
+    val context = LocalContext.current
+
+    val localView = remember { SurfaceViewRenderer(context) }
+    val remoteView = remember { SurfaceViewRenderer(context) }
+
+    var callingClient by remember { mutableStateOf<CallingClient?>(null) }
+    var started by remember { mutableStateOf(false) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            callingClient?.endCall()
+            localView.release()
+            remoteView.release()
+        }
+    }
+
+    Column {
+        AndroidView(
+            factory = { localView },
+            modifier = Modifier.size(200.dp)
+        )
+        AndroidView(
+            factory = { remoteView },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+        )
+
+        Button(onClick = {
+            if (!started) {
+                val client = CallingClient(context, localView, remoteView, isCaller)
+                client.init()
+                if (isCaller) client.startCall()
+                callingClient = client
+                started = true
+            } else {
+                callingClient?.endCall()
+                started = false
+            }
+        }) {
+            Text(if (!started) "Start Call" else "End Call")
+        }
     }
 }
