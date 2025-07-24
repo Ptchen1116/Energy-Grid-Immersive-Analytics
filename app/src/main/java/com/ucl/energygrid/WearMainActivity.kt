@@ -48,12 +48,26 @@ import com.ucl.energygrid.ui.screen.Mine
 import com.ucl.energygrid.ui.screen.Trend
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import com.google.firebase.database.*
+import org.webrtc.*
+import androidx.compose.foundation.layout.size
+import androidx.wear.compose.material.Button
+
+import org.webrtc.SurfaceViewRenderer
+
 
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
     val spokenCommand: StateFlow<String> get() = _spokenCommand
 
-
+    private lateinit var callingClient: CallingClient
+    private lateinit var localRenderer: SurfaceViewRenderer
+    private lateinit var remoteRenderer: SurfaceViewRenderer
+    private lateinit var eglBase: EglBase
 
     private val asrReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -72,27 +86,26 @@ class WearMainActivity : ComponentActivity() {
         sendBroadcast(intent)
     }
 
-    override fun onResume() {
-        super.onResume()
-        val filter = IntentFilter("com.realwear.wearhf.intent.action.SPEECH_EVENT")
-        registerReceiver(asrReceiver, filter, Context.RECEIVER_EXPORTED)
-
-        val sites = getAllSiteLabelsReferencesAndNames(this)
-        val siteLabels = sites.map { it.first.lowercase() }
-        Handler(Looper.getMainLooper()).postDelayed({ sendCommands(siteLabels) }, 100)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        unregisterReceiver(asrReceiver)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
+
+        eglBase = EglBase.create()
+        localRenderer = SurfaceViewRenderer(this)
+        remoteRenderer = SurfaceViewRenderer(this)
+        localRenderer.setMirror(true)
+        remoteRenderer.setMirror(true)
+
+        callingClient = CallingClient(
+            context = this,
+            localView = localRenderer,
+            remoteView = remoteRenderer,
+            isCaller = false
+        )
+        callingClient.init()
 
         setContent {
             val command by spokenCommand.collectAsState()
@@ -109,7 +122,8 @@ class WearMainActivity : ComponentActivity() {
                 if (currentStage == "selectSite") {
                     val selectedSite = sites.firstOrNull {
                         it.first.equals(command, ignoreCase = true) ||
-                                command in listOf("one", "1", "two", "2", "three", "3") && it.first.endsWith(command.takeLast(1))
+                                command in listOf("one", "1", "two", "2", "three", "3") &&
+                                it.first.endsWith(command.takeLast(1))
                     }
                     if (selectedSite != null) {
                         selectedMineReference = selectedSite.second
@@ -168,12 +182,54 @@ class WearMainActivity : ComponentActivity() {
                 }
             }
 
-            WearMainScreen(
-                stage = currentStage,
-                mineName = selectedMineReference,
-                mineInfo = selectedMineInfo
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                WearMainScreen(
+                    stage = currentStage,
+                    mineName = selectedMineReference,
+                    mineInfo = selectedMineInfo
+                )
+
+                AndroidView(
+                    factory = { remoteRenderer },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(160.dp)
+                        .padding(8.dp)
+                )
+
+                AndroidView(
+                    factory = { localRenderer },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .size(80.dp)
+                        .padding(8.dp)
+                )
+            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter("com.realwear.wearhf.intent.action.SPEECH_EVENT")
+        registerReceiver(asrReceiver, filter, Context.RECEIVER_EXPORTED)
+
+        val sites = getAllSiteLabelsReferencesAndNames(this)
+        val siteLabels = sites.map { it.first.lowercase() }
+        Handler(Looper.getMainLooper()).postDelayed({ sendCommands(siteLabels) }, 100)
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(asrReceiver)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        callingClient.endCall()
+        localRenderer.release()
+        remoteRenderer.release()
+        eglBase.release()
     }
 }
 
@@ -459,4 +515,5 @@ fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
         }
     }
 }
+
 
