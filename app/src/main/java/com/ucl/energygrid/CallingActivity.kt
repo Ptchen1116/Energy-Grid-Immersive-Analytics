@@ -43,7 +43,7 @@ class CallingActivity : ComponentActivity() {
 
     private val eglBase: EglBase by lazy { EglBase.create() }
     private var isCaller = false
-    private val pendingCandidates = mutableListOf<IceCandidate>() // 暫存 ICE
+    private val pendingCandidates = mutableListOf<IceCandidate>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,16 +110,21 @@ class CallingActivity : ComponentActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_CODE)
-        } else {
-            initWebRTC()
         }
 
         startCallBtn.setOnClickListener {
             isCaller = true
+            initWebRTC() // 角色決定後才初始化
             startCall()
         }
 
         endCallBtn.setOnClickListener { endCall() }
+
+        // 被叫端（非 Caller）在啟動時就初始化，等待 offer
+        if (!isCaller && ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            == PackageManager.PERMISSION_GRANTED) {
+            initWebRTC()
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -130,7 +135,7 @@ class CallingActivity : ComponentActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CAMERA_CODE && grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            initWebRTC()
+            if (!isCaller) initWebRTC()
         } else {
             Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
         }
@@ -151,11 +156,7 @@ class CallingActivity : ComponentActivity() {
             PeerConnectionFactory.InitializationOptions.builder(this).createInitializationOptions()
         )
 
-        val options = PeerConnectionFactory.Options().apply {
-            disableEncryption = false
-            disableNetworkMonitor = false
-        }
-
+        val options = PeerConnectionFactory.Options()
         val encoderFactory = DefaultVideoEncoderFactory(eglBase.eglBaseContext, true, true)
         val decoderFactory = DefaultVideoDecoderFactory(eglBase.eglBaseContext)
 
@@ -201,7 +202,11 @@ class CallingActivity : ComponentActivity() {
             }
 
             override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
-                Log.i("WebRTC", "Connection state: $newState")
+                runOnUiThread {
+                    if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
+                        Toast.makeText(this@CallingActivity, "Call connected", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
 
             override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {}
@@ -225,7 +230,7 @@ class CallingActivity : ComponentActivity() {
 
         listenForOffer()
         listenForRemoteSDP()
-        listenForRemoteCandidates()
+        listenForRemoteCandidates() // 現在 isCaller 已經正確
     }
 
     private fun startCall() {
@@ -241,8 +246,8 @@ class CallingActivity : ComponentActivity() {
                 }, sdp)
             }
             override fun onSetSuccess() {}
-            override fun onCreateFailure(error: String?) { Log.e("WebRTC", "Offer failed: $error") }
-            override fun onSetFailure(error: String?) { Log.e("WebRTC", "SetLocalDesc failed: $error") }
+            override fun onCreateFailure(error: String?) {}
+            override fun onSetFailure(error: String?) {}
         }, MediaConstraints())
     }
 
@@ -259,8 +264,8 @@ class CallingActivity : ComponentActivity() {
                 }, sdp)
             }
             override fun onSetSuccess() {}
-            override fun onCreateFailure(error: String?) { Log.e("WebRTC", "Answer failed: $error") }
-            override fun onSetFailure(error: String?) { Log.e("WebRTC", "SetLocalDesc failed: $error") }
+            override fun onCreateFailure(error: String?) {}
+            override fun onSetFailure(error: String?) {}
         }, MediaConstraints())
     }
 
@@ -308,8 +313,8 @@ class CallingActivity : ComponentActivity() {
     }
 
     private fun listenForRemoteCandidates() {
-        val candidatesRef = if (isCaller) database.child("calleeCandidates") else database.child("callerCandidates")
-        candidatesRef.addChildEventListener(object : ChildEventListener {
+        val path = if (isCaller) "calleeCandidates" else "callerCandidates"
+        database.child(path).addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val data = snapshot.getValue(IceCandidateData::class.java) ?: return
                 val candidate = IceCandidate(data.sdpMid, data.sdpMLineIndex, data.sdp)

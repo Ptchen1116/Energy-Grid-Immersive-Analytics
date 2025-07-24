@@ -10,7 +10,7 @@
       </SelectionState>
       <SelectionState runConfigName="Calling">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-23T23:21:50.034621Z">
+        <DropdownSelection timestamp="2025-07-23T23:54:38.748275Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="Default" identifier="serial=bd32dc90;connection=02aa02ab" />
