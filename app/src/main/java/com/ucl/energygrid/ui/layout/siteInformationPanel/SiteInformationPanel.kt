@@ -21,11 +21,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.derivedStateOf
+import androidx.lifecycle.ViewModel
+import androidx.compose.runtime.*
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,43 +48,26 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.ucl.energygrid.CallingClient
 import com.ucl.energygrid.R
-import com.ucl.energygrid.data.model.PinRequest
-import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.model.EnergyDemand
 import com.ucl.energygrid.data.model.FloodEvent
 import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.Trend
 import com.ucl.energygrid.ui.component.TypeTag
-import kotlinx.coroutines.launch
 import org.webrtc.SurfaceViewRenderer
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ucl.energygrid.data.remote.apis.PinApi
 
 @Composable
-fun SiteInformationPanel(mine: Mine, userId: Int) {
-    var note by remember { mutableStateOf(mine.note ?: "") }
-    var isPosting by remember { mutableStateOf(false) }
-    var postResult by remember { mutableStateOf<String?>(null) }
-    var isNoteLoaded by remember { mutableStateOf(false) }
-    var isPinned by remember { mutableStateOf(false) }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-        try {
-            val response = RetrofitInstance.pinApi.getPin(userId, mine.reference.toInt())
-            if (response.isSuccessful) {
-                val pin = response.body()
-                note = pin?.note ?: ""
-                isPinned = pin?.id != null && pin.id > 0
-            } else {
-                postResult = "Failed to load note: ${response.code()}"
-            }
-        } catch (e: Exception) {
-            postResult = "Error loading note: ${e.message}"
-        } finally {
-            isNoteLoaded = true
-        }
-    }
+fun SiteInformationPanel(
+    mine: Mine,
+    userId: Int,
+    pinApi: PinApi,
+    viewModel: SiteInformationViewModel = viewModel(
+        key = mine.reference.toString(),
+        factory = SiteInformationViewModelFactory(userId, mine.reference.toInt(), pinApi)
+    )
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -94,8 +79,17 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
         item {
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(mine.name, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C0471))
-            Text("Location: ${mine.northing}°N, ${mine.easting}°E", fontSize = 14.sp, color = Color.Gray)
+            Text(
+                mine.name,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1C0471)
+            )
+            Text(
+                "Location: ${mine.northing}°N, ${mine.easting}°E",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -120,79 +114,42 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
                 )
             } else {
                 OutlinedTextField(
-                    value = note,
-                    onValueChange = { note = it },
+                    value = uiState.note,
+                    onValueChange = { viewModel.updateNote(it) },
                     label = { Text("Note") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    enabled = isNoteLoaded
+                    enabled = uiState.isNoteLoaded
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = {
-                        isPosting = true
-                        postResult = null
-                        coroutineScope.launch {
-                            try {
-                                val response = RetrofitInstance.pinApi.create_or_update_pin(
-                                    userId = userId,
-                                    pinRequest = PinRequest(mine_id = mine.reference.toInt(), note = note)
-                                )
-                                if (response.isSuccessful) {
-                                    postResult = "Note saved successfully"
-                                    isPinned = true
-                                } else {
-                                    postResult = "Failed: ${response.code()}"
-                                }
-                            } catch (e: Exception) {
-                                postResult = "Error: ${e.message}"
-                            } finally {
-                                isPosting = false
-                            }
-                        }
-                    },
-                    enabled = !isPosting && isNoteLoaded
+                    onClick = { viewModel.saveNote() },
+                    enabled = !uiState.isPosting && uiState.isNoteLoaded
                 ) {
-                    Text(if (isPosting) "Saving..." else if (note.isNotEmpty()) "Update Note" else "Add Pin")
+                    Text(
+                        when {
+                            uiState.isPosting -> "Saving..."
+                            uiState.note.isNotEmpty() -> "Update Note"
+                            else -> "Add Pin"
+                        }
+                    )
                 }
 
-                if (isPinned) {
+                if (uiState.isPinned) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                        onClick = {
-                            isPosting = true
-                            postResult = null
-                            coroutineScope.launch {
-                                try {
-                                    val response = RetrofitInstance.pinApi.deletePin(
-                                        userId = userId,
-                                        mineId = mine.reference.toInt()
-                                    )
-                                    if (response.isSuccessful) {
-                                        postResult = "Pin removed successfully"
-                                        note = ""
-                                        isPinned = false
-                                    } else {
-                                        postResult = "Failed to remove pin: ${response.code()}"
-                                    }
-                                } catch (e: Exception) {
-                                    postResult = "Error: ${e.message}"
-                                } finally {
-                                    isPosting = false
-                                }
-                            }
-                        },
+                        onClick = { viewModel.removePin() },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
-                        enabled = !isPosting
+                        enabled = !uiState.isPosting
                     ) {
                         Text("Remove Pin")
                     }
                 }
 
-                postResult?.let {
+                uiState.postResult?.let {
                     Text(
                         text = it,
                         color = if (it.startsWith("Note saved") || it.startsWith("Pin removed")) Color(0xFF00C853) else Color.Red,
@@ -262,6 +219,7 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
         }
     }
 }
+
 
 @Composable
 fun SectionHeader(
