@@ -1,4 +1,4 @@
-package com.ucl.energygrid.data
+package com.ucl.energygrid.data.repository
 
 import android.util.Log
 import com.ucl.energygrid.data.model.RegionFeature
@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
 
-object GeoJsonLoader {
+object GeoJsonRepository {
     fun loadGeoJsonFeatures(onResult: (List<RegionFeature>) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {

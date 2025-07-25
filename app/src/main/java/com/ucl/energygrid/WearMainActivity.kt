@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.wear.compose.material.Text
-import com.ucl.energygrid.data.getAllSiteLabelsReferencesAndNames
-import com.ucl.energygrid.data.getInfoByReference
+import com.ucl.energygrid.data.repository.getAllSiteLabelsReferencesAndNames
+import com.ucl.energygrid.data.repository.getInfoByReference
 import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.Trend
 import com.ucl.energygrid.ui.component.TypeTag

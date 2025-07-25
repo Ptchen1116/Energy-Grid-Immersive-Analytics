@@ -1,4 +1,4 @@
-package com.ucl.energygrid.data
+package com.ucl.energygrid.data.repository
 
 import android.content.Context
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader

@@ -1,16 +1,11 @@
-package com.ucl.energygrid.data
+package com.ucl.energygrid.data.repository
 
 
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolygonOptions
-import com.google.maps.android.compose.MapEffect
 import com.ucl.energygrid.AppEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -135,32 +130,6 @@ fun drawFloodPolygons(context: Context, map: GoogleMap) {
                         .strokeColor(Color.BLACK)
                         .strokeWidth(1f)
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun FloodPolygonsOverlay() {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
-    MapEffect { map ->
-        coroutineScope.launch {
-            val floodPolygons = fetchFloodPolygons(context)
-            for (meta in floodPolygons) {
-                try {
-                    val points = loadPolygonPoints(meta.polygonUrl)
-                    map.addPolygon(
-                        PolygonOptions()
-                            .addAll(points)
-                            .fillColor(severityToColor(meta.severityLevel))
-                            .strokeColor(Color.BLACK)
-                            .strokeWidth(1f)
-                    )
-                } catch (e: Exception) {
-                    Log.e("FloodPolygon", "Failed to load polygon: ${e.message}")
-                }
             }
         }
     }
