@@ -7,13 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.ucl.energygrid.data.API.PinResponse
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
-import com.ucl.energygrid.data.GeoJsonLoader
-import com.ucl.energygrid.data.fetchAllFloodCenters
-import com.ucl.energygrid.data.loadMinesFromJson
+import com.ucl.energygrid.data.repository.GeoJsonRepository
+import com.ucl.energygrid.data.repository.fetchAllFloodCenters
+import com.ucl.energygrid.data.repository.loadMinesFromJson
 import com.ucl.energygrid.data.model.BottomSheetContent
 import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.RegionFeature
-import com.ucl.energygrid.data.readAndExtractSitesByType
+import com.ucl.energygrid.data.repository.readAndExtractSitesByType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -81,7 +81,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _windSites.value = readAndExtractSitesByType(appContext, category ="wind")
             _hydroelectricSites.value = readAndExtractSitesByType(appContext, category ="hydroelectric")
             _floodCenters.value = fetchAllFloodCenters(appContext)
-            GeoJsonLoader.loadGeoJsonFeatures { features ->
+            GeoJsonRepository.loadGeoJsonFeatures { features ->
                 _regionFeatures.value = features
             }
         }

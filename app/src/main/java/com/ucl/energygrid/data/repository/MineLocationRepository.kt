@@ -1,4 +1,4 @@
-package com.ucl.energygrid.data
+package com.ucl.energygrid.data.repository
 
 import android.content.Context
 import android.util.Log
