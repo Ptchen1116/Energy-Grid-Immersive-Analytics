@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import android.util.Log
 
 class MainViewModel(private val context: Context) : ViewModel() {
-
     private val _currentBottomSheet = MutableStateFlow(BottomSheetContent.None)
     val currentBottomSheet: StateFlow<BottomSheetContent> = _currentBottomSheet
 

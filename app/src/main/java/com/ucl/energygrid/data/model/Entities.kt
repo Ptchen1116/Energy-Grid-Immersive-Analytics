@@ -54,3 +54,26 @@ data class RegionFeature(
     val nutsCode: String,
     val polygons: List<List<List<Double>>>
 )
+
+data class RegisterRequest(
+    val username: String,
+    val email: String,
+    val password: String
+)
+
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
+
+data class LoginResponse(
+    val access_token: String,
+    val token_type: String
+)
+
+data class RegisterResponse(
+    val id: Int,
+    val username: String,
+    val email: String,
+    val hashed_password: String
+)
