@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.auth0.android.jwt.JWT
 import com.google.android.gms.maps.model.LatLng
-import com.ucl.energygrid.data.API.AuthViewModel
 import com.ucl.energygrid.data.API.LoginRequest
 import com.ucl.energygrid.data.API.PinResponse
 import com.ucl.energygrid.data.API.RegisterRequest
@@ -70,44 +69,36 @@ import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
-import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.BottomSheetContent
-import com.ucl.energygrid.data.model.RegionFeature
 import com.ucl.energygrid.data.model.RenewableSite
-
+import androidx.compose.runtime.collectAsState
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
-    var currentBottomSheet by remember { mutableStateOf(BottomSheetContent.None) }
-    val scaffoldState = rememberBottomSheetScaffoldState()
-    val coroutineScope = rememberCoroutineScope()
-    val sheetHeightPx = remember { mutableIntStateOf(0) }
-    val density = LocalDensity.current
-
-    var closedMine by remember { mutableStateOf(false) }
-    var closingMine by remember { mutableStateOf(false) }
-
-    var selectedMine by remember { mutableStateOf<Mine?>(null) }
-
-
+fun MainScreen(authViewModel: AuthViewModel = viewModel(), mainViewModel: MainViewModel = viewModel(
+    factory = MainViewModelFactory(LocalContext.current)
+)) {
     val context = LocalContext.current
-    var showFloodRisk by remember { mutableStateOf(false) }
-    val floodCenters = remember { mutableStateListOf<LatLng>() }
-    val snackbarHostState = remember { SnackbarHostState() }
 
-    var showSolar by remember { mutableStateOf(false) }
-    var showWind by remember { mutableStateOf(false) }
-    var showHydroelectric by remember { mutableStateOf(false) }
+    val currentBottomSheet by mainViewModel.currentBottomSheet.collectAsState()
+    val closedMine by mainViewModel.closedMine.collectAsState()
+    val closingMine by mainViewModel.closingMine.collectAsState()
+    val selectedMine by mainViewModel.selectedMine.collectAsState()
 
-    val solarSites = readAndExtractSitesByType(context, category = "solar")
-    val windSites = readAndExtractSitesByType(context, category = "wind")
-    val hydroelectricSites = readAndExtractSitesByType(context, category = "hydroelectric")
+    val showFloodRisk by mainViewModel.showFloodRisk.collectAsState()
+    val floodCenters by mainViewModel.floodCenters.collectAsState()
+    val showSolar by mainViewModel.showSolar.collectAsState()
+    val showWind by mainViewModel.showWind.collectAsState()
+    val showHydroelectric by mainViewModel.showHydroelectric.collectAsState()
+    val energyDemandHeatmap by mainViewModel.energyDemandHeatmap.collectAsState()
+    val selectedYear by mainViewModel.selectedYear.collectAsState()
 
-    val regionFeatures = remember { mutableStateListOf<RegionFeature>() }
-    var energyDemandHeatmap by remember { mutableStateOf(false) }
-    var selectedYear by remember { mutableStateOf(2025) }
+    val solarSites by mainViewModel.solarSites.collectAsState()
+    val windSites by mainViewModel.windSites.collectAsState()
+    val hydroelectricSites by mainViewModel.hydroelectricSites.collectAsState()
+    val regionFeatures by mainViewModel.regionFeatures.collectAsState()
+    val allMines by mainViewModel.allMines.collectAsState()
 
     var showLoginDialog by remember { mutableStateOf(false) }
     var showRegisterDialog by remember { mutableStateOf(false) }
@@ -116,24 +107,17 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
     var pinsExpanded by remember { mutableStateOf(false) }
     var myPins by remember { mutableStateOf<List<PinResponse>>(emptyList()) }
     var showMyPinsMarkers by remember { mutableStateOf(false) }
-    val allMines = remember { loadMinesFromJson(context) }
-
-    LaunchedEffect(Unit) {
-        val fetchedCenters = fetchAllFloodCenters(context)
-        floodCenters.clear()
-        floodCenters.addAll(fetchedCenters)
-    }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scaffoldState = rememberBottomSheetScaffoldState()
+    val coroutineScope = rememberCoroutineScope()
+    val sheetHeightPx = remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
 
     LaunchedEffect(showFloodRisk, floodCenters.size) {
         if (showFloodRisk && floodCenters.isEmpty()) {
-            snackbarHostState.showSnackbar("No current flood risk areas.")
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        GeoJsonLoader.loadGeoJsonFeatures { features ->
-            regionFeatures.clear()
-            regionFeatures.addAll(features)
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar("No current flood risk areas.")
+            }
         }
     }
 
@@ -283,23 +267,23 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                             }
                             BottomSheetContent.MapControl -> MapControlPanel(
                                 floodingRisk = showFloodRisk,
-                                onFloodingRiskChange = { showFloodRisk = it },
+                                onFloodingRiskChange = { mainViewModel.toggleShowFloodRisk(it) },
                                 showSolar = showSolar,
-                                onSolarChange = { showSolar = it },
+                                onSolarChange = { mainViewModel.toggleShowSolar(it) },
                                 showWind = showWind,
-                                onWindChange = { showWind = it },
+                                onWindChange = { mainViewModel.toggleShowWind(it) },
                                 showHydroelectric = showHydroelectric,
-                                onHydroelectricChange = { showHydroelectric = it },
+                                onHydroelectricChange = { mainViewModel.toggleShowHydroelectric(it) },
                                 closedMine = closedMine,
-                                onClosedMineChange = { closedMine = it },
+                                onClosedMineChange = { mainViewModel.updateClosedMine(it) },
                                 closingMine = closingMine,
-                                onClosingMineChange = { closingMine = it },
+                                onClosingMineChange = { mainViewModel.updateClosingMine(it) },
                             )
                             BottomSheetContent.TimeSimulation -> TimeSimulationPanel(
                                 energyDemandHeatmap = energyDemandHeatmap,
-                                onEnergyDemandHeatmapChange = { energyDemandHeatmap = it },
+                                onEnergyDemandHeatmapChange = { mainViewModel.toggleEnergyDemandHeatmap(it) },
                                 selectedYear = selectedYear,
-                                onSelectedYearChange = { selectedYear = it }
+                                onSelectedYearChange = { mainViewModel.changeSelectedYear(it) }
                             )
                             else -> Spacer(modifier = Modifier.height(0.dp))
                         }
@@ -359,18 +343,20 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                         closingMine = closingMine,
                         markerIcons = emptyMap(),
                         onSiteSelected = { mine ->
-                            selectedMine = mine
+                            mainViewModel.onSelectedMineChange(mine)
                             coroutineScope.launch {
-                                currentBottomSheet = BottomSheetContent.SiteInfo
+                                mainViewModel.onBottomSheetChange(BottomSheetContent.SiteInfo)
                                 scaffoldState.bottomSheetState.expand()
                             }
                         },
                         myPins = if (showMyPinsMarkers) myPins else emptyList(),
                         allMines = allMines,
                         onPinSelected = { mine ->
-                            selectedMine = mine
-                            currentBottomSheet = BottomSheetContent.SiteInfo
-                            coroutineScope.launch { scaffoldState.bottomSheetState.expand() }
+                            mainViewModel.onSelectedMineChange(mine)
+                            coroutineScope.launch {
+                                mainViewModel.onBottomSheetChange(BottomSheetContent.SiteInfo)
+                                scaffoldState.bottomSheetState.expand()
+                            }
                         },
                         showMyPinsMarkers = showMyPinsMarkers,
                         onShowMyPinsClick = {
@@ -445,10 +431,10 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                 onMapControlClick = {
                     coroutineScope.launch {
                         if (currentBottomSheet == BottomSheetContent.MapControl) {
-                            currentBottomSheet = BottomSheetContent.None
+                            mainViewModel.onBottomSheetChange(BottomSheetContent.None)
                         } else {
                             val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-                            currentBottomSheet = BottomSheetContent.MapControl
+                            mainViewModel.onBottomSheetChange(BottomSheetContent.MapControl)
                             if (!isExpanded) scaffoldState.bottomSheetState.expand()
                         }
                     }
@@ -456,10 +442,10 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                 onSiteInfoClick = {
                     coroutineScope.launch {
                         if (currentBottomSheet == BottomSheetContent.SiteInfo) {
-                            currentBottomSheet = BottomSheetContent.None
+                            mainViewModel.onBottomSheetChange(BottomSheetContent.None)
                         } else {
                             val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-                            currentBottomSheet = BottomSheetContent.SiteInfo
+                            mainViewModel.onBottomSheetChange(BottomSheetContent.SiteInfo)
                             if (!isExpanded) scaffoldState.bottomSheetState.expand()
                         }
                     }
@@ -467,10 +453,10 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel()) {
                 onSimulationClick = {
                     coroutineScope.launch {
                         if (currentBottomSheet == BottomSheetContent.TimeSimulation) {
-                            currentBottomSheet = BottomSheetContent.None
+                            mainViewModel.onBottomSheetChange(BottomSheetContent.None)
                         } else {
                             val isExpanded = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-                            currentBottomSheet = BottomSheetContent.TimeSimulation
+                            mainViewModel.onBottomSheetChange(BottomSheetContent.TimeSimulation)
                             if (!isExpanded) scaffoldState.bottomSheetState.expand()
                         }
                     }
