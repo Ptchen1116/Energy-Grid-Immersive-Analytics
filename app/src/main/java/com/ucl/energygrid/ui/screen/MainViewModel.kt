@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
-import com.ucl.energygrid.data.API.PinResponse
+import com.ucl.energygrid.data.model.PinResponse
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.repository.GeoJsonRepository
 import com.ucl.energygrid.data.repository.fetchAllFloodCenters

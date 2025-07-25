@@ -21,14 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ucl.energygrid.ui.component.TabSelectionIndicator
 
-
-enum class BottomSheetContent {
-    None,
-    SiteInfo,
-    MapControl,
-    TimeSimulation
-}
-
 @Composable
 fun MapControlPanel(
     floodingRisk: Boolean,

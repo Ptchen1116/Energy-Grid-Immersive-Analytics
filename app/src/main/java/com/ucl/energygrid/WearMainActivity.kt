@@ -43,11 +43,11 @@ import com.ucl.energygrid.data.repository.getInfoByReference
 import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.Trend
 import com.ucl.energygrid.ui.component.TypeTag
-import com.ucl.energygrid.ui.layout.EnergyLineChartMP
-import com.ucl.energygrid.ui.layout.FloodHistoryChartMP
-import com.ucl.energygrid.ui.layout.FloodRiskTag
-import com.ucl.energygrid.ui.layout.SectionHeader
-import com.ucl.energygrid.ui.layout.TrendTag
+import com.ucl.energygrid.ui.layout.siteInformationPanel.EnergyLineChartMP
+import com.ucl.energygrid.ui.layout.siteInformationPanel.FloodHistoryChartMP
+import com.ucl.energygrid.ui.layout.siteInformationPanel.FloodRiskTag
+import com.ucl.energygrid.ui.layout.siteInformationPanel.SectionHeader
+import com.ucl.energygrid.ui.layout.siteInformationPanel.TrendTag
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.webrtc.EglBase

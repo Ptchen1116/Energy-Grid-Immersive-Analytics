@@ -1,4 +1,4 @@
-package com.ucl.energygrid.ui.screen
+package com.ucl.energygrid.ui.layout.ukMap
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +30,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ucl.energygrid.R
-import com.ucl.energygrid.data.API.PinResponse
+import com.ucl.energygrid.data.model.PinResponse
 import com.ucl.energygrid.data.repository.MinesMarkers
 import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
 import com.ucl.energygrid.data.repository.fetchEnergyForecast
