@@ -1,4 +1,4 @@
-package com.ucl.energygrid.ui.layout
+package com.ucl.energygrid.ui.layout.siteInformationPanel
 
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
@@ -46,7 +46,7 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.ucl.energygrid.CallingClient
 import com.ucl.energygrid.R
-import com.ucl.energygrid.data.API.PinRequest
+import com.ucl.energygrid.data.model.PinRequest
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.model.EnergyDemand
 import com.ucl.energygrid.data.model.FloodEvent
