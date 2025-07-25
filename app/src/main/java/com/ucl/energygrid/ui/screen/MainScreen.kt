@@ -63,6 +63,7 @@ import com.ucl.energygrid.ui.layout.siteInformationPanel.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.timeSimulationPanel.TimeSimulationPanel
 import com.ucl.energygrid.ui.layout.ukMap.UKMap
 import kotlinx.coroutines.launch
+import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -215,7 +216,11 @@ fun MainScreen(
                         when (currentBottomSheet) {
                             BottomSheetContent.SiteInfo -> {
                                 selectedMine?.let {
-                                    SiteInformationPanel(mine = it, userIdInt)
+                                    SiteInformationPanel(
+                                        mine = it,
+                                        userId = userIdInt,
+                                        pinApi = RetrofitInstance.pinApi
+                                    )
                                 }
                             }
                             BottomSheetContent.MapControl -> MapControlPanel(
