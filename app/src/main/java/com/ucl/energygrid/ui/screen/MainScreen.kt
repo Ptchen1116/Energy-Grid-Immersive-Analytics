@@ -61,14 +61,15 @@ import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
+import android.app.Application
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     authViewModel: AuthViewModel = viewModel(),
-    mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory(LocalContext.current))
 )  {
-    val context = LocalContext.current
+    val context = LocalContext.current.applicationContext as Application
+    val mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory(context))
 
     val currentBottomSheet by mainViewModel.currentBottomSheet.collectAsState()
     val closedMine by mainViewModel.closedMine.collectAsState()

@@ -18,8 +18,12 @@ import com.ucl.energygrid.data.API.PinResponse
 import com.ucl.energygrid.data.API.RetrofitInstance
 import kotlinx.coroutines.flow.asStateFlow
 import android.util.Log
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 
-class MainViewModel(private val context: Context) : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
+    private val appContext = getApplication<Application>()
+
     private val _currentBottomSheet = MutableStateFlow(BottomSheetContent.None)
     val currentBottomSheet: StateFlow<BottomSheetContent> = _currentBottomSheet
 
@@ -74,11 +78,11 @@ class MainViewModel(private val context: Context) : ViewModel() {
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            _allMines.value = loadMinesFromJson(context)
-            _solarSites.value = readAndExtractSitesByType(context, category = "solar")
-            _windSites.value = readAndExtractSitesByType(context, category ="wind")
-            _hydroelectricSites.value = readAndExtractSitesByType(context, category ="hydroelectric")
-            _floodCenters.value = fetchAllFloodCenters(context)
+            _allMines.value = loadMinesFromJson(appContext)
+            _solarSites.value = readAndExtractSitesByType(appContext, category = "solar")
+            _windSites.value = readAndExtractSitesByType(appContext, category ="wind")
+            _hydroelectricSites.value = readAndExtractSitesByType(appContext, category ="hydroelectric")
+            _floodCenters.value = fetchAllFloodCenters(appContext)
             GeoJsonLoader.loadGeoJsonFeatures { features ->
                 _regionFeatures.value = features
             }
