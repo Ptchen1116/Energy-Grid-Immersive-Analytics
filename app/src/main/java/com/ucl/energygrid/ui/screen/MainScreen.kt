@@ -69,8 +69,6 @@ import com.ucl.energygrid.data.model.BottomSheetContent
 import com.ucl.energygrid.data.model.RenewableSite
 import androidx.compose.runtime.collectAsState
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -98,14 +96,15 @@ fun MainScreen(
     val regionFeatures by mainViewModel.regionFeatures.collectAsState()
     val allMines by mainViewModel.allMines.collectAsState()
 
+    val myPins by mainViewModel.myPins.collectAsState()
+    val showMyPinsMarkers by mainViewModel.showMyPinsMarkers.collectAsState()
+
     var showLoginDialog by remember { mutableStateOf(false) }
     var showRegisterDialog by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val userId by authViewModel.userId.collectAsState()
     var pinsExpanded by remember { mutableStateOf(false) }
-    var myPins by remember { mutableStateOf<List<PinResponse>>(emptyList()) }
-    var showMyPinsMarkers by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
@@ -148,24 +147,11 @@ fun MainScreen(
                         DropdownMenuItem(
                             text = { Text("My Pins") },
                             onClick = {
-                                coroutineScope.launch {
-                                    try {
-                                        if (isLoggedIn) {
-                                            val userId = authViewModel.userId.value?.toIntOrNull() ?: return@launch
-                                            val api = RetrofitInstance.pinApi
-                                            val response = api.getAllPins(userId)
-                                            if (response.isSuccessful) {
-                                                myPins = response.body() ?: emptyList()
-                                                showMyPinsMarkers = true
-                                            } else {
-                                                Toast.makeText(context, "Failed to load pins: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
-                                            }
-                                        } else {
-                                            showLoginDialog = true
-                                        }
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Failed to load pins: ${e.message}", Toast.LENGTH_SHORT).show()
-                                    }
+                                if (isLoggedIn) {
+                                    val userIdInt = userId?.toIntOrNull() ?: return@DropdownMenuItem
+                                    mainViewModel.loadMyPins(userIdInt, isLoggedIn)
+                                } else {
+                                    showLoginDialog = true
                                 }
                                 expanded = false
                             }
@@ -361,27 +347,14 @@ fun MainScreen(
                         showMyPinsMarkers = showMyPinsMarkers,
                         onShowMyPinsClick = {
                             if (!showMyPinsMarkers) {
-                                coroutineScope.launch {
-                                    try {
-                                        if (isLoggedIn) {
-                                            val userId = authViewModel.userId.value?.toIntOrNull() ?: return@launch
-                                            val api = RetrofitInstance.pinApi
-                                            val response = api.getAllPins(userId)
-                                            if (response.isSuccessful) {
-                                                myPins = response.body() ?: emptyList()
-                                                showMyPinsMarkers = true
-                                            } else {
-                                                Toast.makeText(context, "Failed to load pins: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
-                                            }
-                                        } else {
-                                            showLoginDialog = true
-                                        }
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "Failed to load pins: ${e.message}", Toast.LENGTH_SHORT).show()
-                                    }
+                                if (isLoggedIn) {
+                                    val userIdInt = userId?.toIntOrNull() ?: return@UKMap
+                                    mainViewModel.loadMyPins(userIdInt, isLoggedIn)
+                                } else {
+                                    showLoginDialog = true
                                 }
                             } else {
-                                showMyPinsMarkers = false
+                                mainViewModel.clearMyPins()
                             }
                         }
                     )
