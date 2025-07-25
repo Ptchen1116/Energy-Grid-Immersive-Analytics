@@ -62,9 +62,6 @@ import androidx.compose.runtime.DisposableEffect
 
 @Composable
 fun SiteInformationPanel(mine: Mine, userId: Int) {
-    val authViewModel: AuthViewModel = viewModel()
-    val isLoggedIn by authViewModel.isLoggedIn
-
     var note by remember { mutableStateOf(mine.note ?: "") }
     var isPosting by remember { mutableStateOf(false) }
     var postResult by remember { mutableStateOf<String?>(null) }
@@ -118,7 +115,7 @@ fun SiteInformationPanel(mine: Mine, userId: Int) {
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (!isLoggedIn) {
+            if (userId == -1) {
                 Text(
                     text = "Login to pin the location",
                     color = Color.Gray,
