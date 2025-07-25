@@ -20,6 +20,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,15 +29,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -44,20 +44,17 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.ucl.energygrid.CallingClient
 import com.ucl.energygrid.R
-import com.ucl.energygrid.data.API.AuthViewModel
 import com.ucl.energygrid.data.API.PinRequest
 import com.ucl.energygrid.data.API.RetrofitInstance
-import com.ucl.energygrid.ui.component.TypeTag
 import com.ucl.energygrid.data.model.EnergyDemand
 import com.ucl.energygrid.data.model.FloodEvent
 import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.Trend
+import com.ucl.energygrid.ui.component.TypeTag
 import kotlinx.coroutines.launch
-import androidx.compose.ui.platform.LocalContext
 import org.webrtc.SurfaceViewRenderer
-import com.ucl.energygrid.CallingClient
-import androidx.compose.runtime.DisposableEffect
 
 
 @Composable

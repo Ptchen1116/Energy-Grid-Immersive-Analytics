@@ -1,13 +1,12 @@
 package com.ucl.energygrid.data.API
 
+import com.ucl.energygrid.data.model.LoginRequest
+import com.ucl.energygrid.data.model.LoginResponse
+import com.ucl.energygrid.data.model.RegisterRequest
+import com.ucl.energygrid.data.model.RegisterResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
-
-import com.ucl.energygrid.data.model.LoginRequest
-import com.ucl.energygrid.data.model.RegisterRequest
-import com.ucl.energygrid.data.model.LoginResponse
-import com.ucl.energygrid.data.model.RegisterResponse
 
 interface UserApi {
     @POST("/users/register")
