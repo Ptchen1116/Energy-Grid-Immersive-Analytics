@@ -1,25 +1,23 @@
 package com.ucl.energygrid.ui.screen
 
-import android.content.Context
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import com.google.android.gms.maps.model.LatLng
+import com.ucl.energygrid.data.API.PinResponse
+import com.ucl.energygrid.data.API.RetrofitInstance
 import com.ucl.energygrid.data.GeoJsonLoader
 import com.ucl.energygrid.data.fetchAllFloodCenters
 import com.ucl.energygrid.data.loadMinesFromJson
-import com.ucl.energygrid.data.readAndExtractSitesByType
-import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.BottomSheetContent
+import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.RegionFeature
-import com.ucl.energygrid.data.API.PinResponse
-import com.ucl.energygrid.data.API.RetrofitInstance
+import com.ucl.energygrid.data.readAndExtractSitesByType
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import android.util.Log
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val appContext = getApplication<Application>()

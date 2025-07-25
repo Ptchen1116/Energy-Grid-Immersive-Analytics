@@ -1,8 +1,8 @@
 package com.ucl.energygrid.ui.screen
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import android.app.Application
 
 class MainViewModelFactory(
     private val application: Application

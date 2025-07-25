@@ -1,5 +1,6 @@
 package com.ucl.energygrid.ui.screen
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,7 +62,6 @@ import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
-import android.app.Application
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

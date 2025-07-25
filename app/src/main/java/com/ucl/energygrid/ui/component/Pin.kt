@@ -12,94 +12,12 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.graphics.toColorInt
 import com.ucl.energygrid.R
-import com.ucl.energygrid.data.model.Trend
 import com.ucl.energygrid.data.model.PinType
+import com.ucl.energygrid.data.model.Trend
 
 
 fun Int.dpToPx(context: Context): Int =
     (this * context.resources.displayMetrics.density).toInt()
-
-fun addPin(
-    context: Context,
-    parent: ViewGroup,
-    xDp: Int,
-    yDp: Int,
-    widthDp: Int,
-    heightDp: Int,
-    type: PinType
-) {
-    val iconResId = when (type) {
-        PinType.USER_PIN -> R.drawable.pin_my_pin
-        PinType.CLOSED_MINE -> R.drawable.pin_closed_mine
-        PinType.CLOSING_MINE -> R.drawable.pin_closing_mine
-        PinType.SOLAR -> R.drawable.solar_site
-        PinType.WIND -> R.drawable.wind_site
-        PinType.HYDROELECTRIC -> R.drawable.hydroelectric_site
-        PinType.FLOODING_RISK -> R.drawable.flooding_risk
-    }
-
-    val pinColor = when (type) {
-        PinType.USER_PIN -> "#F44336".toColorInt()
-        PinType.CLOSED_MINE -> "#F44336".toColorInt()
-        PinType.CLOSING_MINE -> "#F44336".toColorInt()
-        PinType.SOLAR -> "#FFA000".toColorInt()
-        PinType.WIND -> "#4CAF50".toColorInt()
-        PinType.HYDROELECTRIC -> "#2196F3".toColorInt()
-        PinType.FLOODING_RISK -> "#F44336".toColorInt()
-    }
-
-    val pinSizePx = widthDp.dpToPx(context)
-
-    val pinBitmap = Bitmap.createBitmap(pinSizePx, pinSizePx, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(pinBitmap)
-    val paint = Paint().apply {
-        color = pinColor
-        style = Paint.Style.FILL
-        isAntiAlias = true
-    }
-    val strokePaint = Paint().apply {
-        color = Color.WHITE
-        style = Paint.Style.STROKE
-        strokeWidth = 1.dpToPx(context).toFloat()
-        isAntiAlias = true
-    }
-
-    val radius = pinSizePx / 2f
-    canvas.drawCircle(radius, radius, radius - 2.dpToPx(context), paint)
-    canvas.drawCircle(radius, radius, radius - 2.dpToPx(context), strokePaint)
-
-    val pinContainer = FrameLayout(context).apply {
-        layoutParams = FrameLayout.LayoutParams(
-            pinSizePx, pinSizePx
-        ).apply {
-            setMargins(xDp.dpToPx(context), yDp.dpToPx(context), 0, 0)
-        }
-    }
-
-    val pinImage = ImageView(context).apply {
-        setImageBitmap(pinBitmap)
-        contentDescription = "Location pin"
-        layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        )
-    }
-
-    val iconOverlay = ImageView(context).apply {
-        setImageResource(iconResId)
-        setColorFilter(Color.WHITE)
-        contentDescription = "${type.name.lowercase()} icon"
-        layoutParams = FrameLayout.LayoutParams(
-            18.dpToPx(context), 18.dpToPx(context)
-        ).apply {
-            gravity = android.view.Gravity.CENTER
-        }
-    }
-
-    pinContainer.addView(pinImage)
-    pinContainer.addView(iconOverlay)
-    parent.addView(pinContainer)
-}
 
 fun createPinBitmap(
     context: Context,
