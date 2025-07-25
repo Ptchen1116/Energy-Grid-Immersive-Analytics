@@ -61,54 +61,21 @@ import com.ucl.energygrid.data.API.PinResponse
 import com.ucl.energygrid.data.API.RegisterRequest
 import com.ucl.energygrid.data.API.RetrofitInstance
 import com.ucl.energygrid.data.GeoJsonLoader
-import com.ucl.energygrid.data.RegionFeature
 import com.ucl.energygrid.data.fetchAllFloodCenters
 import com.ucl.energygrid.data.loadMinesFromJson
 import com.ucl.energygrid.data.readAndExtractSitesByType
-import com.ucl.energygrid.ui.component.PinType
+import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.ui.layout.BottomNavigationBar
 import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
+import com.ucl.energygrid.data.model.Mine
+import com.ucl.energygrid.data.model.BottomSheetContent
+import com.ucl.energygrid.data.model.RegionFeature
+import com.ucl.energygrid.data.model.RenewableSite
 
 
-enum class BottomSheetContent {
-    None,
-    SiteInfo,
-    MapControl,
-    TimeSimulation
-}
-
-data class RenewableSite(
-    val name: String,
-    val location: LatLng,
-    val type: PinType
-)
-
-data class EnergyDemand(
-    val year: Int,
-    val value: Double
-)
-
-enum class Trend { INCREASING, DECREASING, STABLE }
-
-data class FloodEvent(val year: Int, val events: Int)
-
-data class Mine(
-    val reference: String,
-    val name: String,
-    val status: String?,
-    val easting: Double,
-    val northing: Double,
-    val localAuthority: String?,
-    val note: String?,
-    val floodRiskLevel: String?,
-    val floodHistory: List<FloodEvent>?,
-    val energyDemandHistory: List<EnergyDemand>?,
-    val forecastEnergyDemand: List<EnergyDemand>?,
-    val trend: Trend? = null
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
