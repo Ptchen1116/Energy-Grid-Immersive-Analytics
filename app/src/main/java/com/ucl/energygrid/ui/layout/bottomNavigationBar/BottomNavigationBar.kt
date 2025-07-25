@@ -1,4 +1,4 @@
-package com.ucl.energygrid.ui.layout
+package com.ucl.energygrid.ui.layout.bottomNavigationBar
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

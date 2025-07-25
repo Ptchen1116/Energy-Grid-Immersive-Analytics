@@ -1,4 +1,4 @@
-package com.ucl.energygrid.ui.layout
+package com.ucl.energygrid.ui.layout.timeSimulationPanel
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
