@@ -59,10 +59,6 @@ import com.ucl.energygrid.data.API.LoginRequest
 import com.ucl.energygrid.data.API.PinResponse
 import com.ucl.energygrid.data.API.RegisterRequest
 import com.ucl.energygrid.data.API.RetrofitInstance
-import com.ucl.energygrid.data.GeoJsonLoader
-import com.ucl.energygrid.data.fetchAllFloodCenters
-import com.ucl.energygrid.data.loadMinesFromJson
-import com.ucl.energygrid.data.readAndExtractSitesByType
 import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.ui.layout.BottomNavigationBar
 import com.ucl.energygrid.ui.layout.MapControlPanel
@@ -74,11 +70,13 @@ import com.ucl.energygrid.data.model.RenewableSite
 import androidx.compose.runtime.collectAsState
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(authViewModel: AuthViewModel = viewModel(), mainViewModel: MainViewModel = viewModel(
-    factory = MainViewModelFactory(LocalContext.current)
-)) {
+fun MainScreen(
+    authViewModel: AuthViewModel = viewModel(),
+    mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory(LocalContext.current))
+)  {
     val context = LocalContext.current
 
     val currentBottomSheet by mainViewModel.currentBottomSheet.collectAsState()
@@ -103,7 +101,8 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel(), mainViewModel: MainVi
     var showLoginDialog by remember { mutableStateOf(false) }
     var showRegisterDialog by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
-    val isLoggedIn by authViewModel.isLoggedIn
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val userId by authViewModel.userId.collectAsState()
     var pinsExpanded by remember { mutableStateOf(false) }
     var myPins by remember { mutableStateOf<List<PinResponse>>(emptyList()) }
     var showMyPinsMarkers by remember { mutableStateOf(false) }
@@ -256,13 +255,14 @@ fun MainScreen(authViewModel: AuthViewModel = viewModel(), mainViewModel: MainVi
                                     .calculateBottomPadding()
                             )
                     ) {
-                        val authViewModel: AuthViewModel = viewModel()
-                        val userId: Int = authViewModel.userId.value?.toIntOrNull() ?: -1
+                        val userIdInt = userId?.toIntOrNull() ?: -1
+
+                        println("userIdInt = $userIdInt")
 
                         when (currentBottomSheet) {
                             BottomSheetContent.SiteInfo -> {
                                 selectedMine?.let {
-                                    SiteInformationPanel(mine = it, userId)
+                                    SiteInformationPanel(mine = it, userIdInt)
                                 }
                             }
                             BottomSheetContent.MapControl -> MapControlPanel(
