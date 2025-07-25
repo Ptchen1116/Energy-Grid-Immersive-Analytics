@@ -47,7 +47,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.ucl.energygrid.CallingClient
 import com.ucl.energygrid.R
 import com.ucl.energygrid.data.API.PinRequest
-import com.ucl.energygrid.data.API.RetrofitInstance
+import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.model.EnergyDemand
 import com.ucl.energygrid.data.model.FloodEvent
 import com.ucl.energygrid.data.model.Mine

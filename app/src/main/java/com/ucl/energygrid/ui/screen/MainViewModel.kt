@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.ucl.energygrid.data.API.PinResponse
-import com.ucl.energygrid.data.API.RetrofitInstance
+import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.GeoJsonLoader
 import com.ucl.energygrid.data.fetchAllFloodCenters
 import com.ucl.energygrid.data.loadMinesFromJson

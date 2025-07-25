@@ -1,4 +1,4 @@
-package com.ucl.energygrid.data.API
+package com.ucl.energygrid.data.remote.apis
 
 import retrofit2.Response
 import retrofit2.http.Body
@@ -6,17 +6,9 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import com.ucl.energygrid.data.model.PinResponse
+import com.ucl.energygrid.data.model.PinRequest
 
-data class PinRequest(
-    val mine_id: Int,
-    val note: String
-)
-
-data class PinResponse(
-    val mine_id: Int,
-    val note: String,
-    val id: Int
-)
 
 interface PinApi {
     @POST("/api/users/{user_id}/pins")
