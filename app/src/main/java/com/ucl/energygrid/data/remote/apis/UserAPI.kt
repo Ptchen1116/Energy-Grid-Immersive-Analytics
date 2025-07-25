@@ -1,4 +1,4 @@
-package com.ucl.energygrid.data.API
+package com.ucl.energygrid.data.remote.apis
 
 import com.ucl.energygrid.data.model.LoginRequest
 import com.ucl.energygrid.data.model.LoginResponse

@@ -3,7 +3,7 @@ package com.ucl.energygrid.ui.screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.auth0.android.jwt.JWT
-import com.ucl.energygrid.data.API.RetrofitInstance
+import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.model.LoginRequest
 import com.ucl.energygrid.data.model.RegisterRequest
 import kotlinx.coroutines.flow.MutableSharedFlow

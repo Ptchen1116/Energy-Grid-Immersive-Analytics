@@ -1,4 +1,4 @@
-package com.ucl.energygrid.data.API
+package com.ucl.energygrid.data.remote.apis
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
