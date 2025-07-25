@@ -1,6 +1,5 @@
 package com.ucl.energygrid.ui.screen
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,9 +34,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,21 +52,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.auth0.android.jwt.JWT
 import com.google.android.gms.maps.model.LatLng
-import com.ucl.energygrid.data.API.LoginRequest
-import com.ucl.energygrid.data.API.PinResponse
-import com.ucl.energygrid.data.API.RegisterRequest
-import com.ucl.energygrid.data.API.RetrofitInstance
+import com.ucl.energygrid.data.model.BottomSheetContent
 import com.ucl.energygrid.data.model.PinType
+import com.ucl.energygrid.data.model.RenewableSite
 import com.ucl.energygrid.ui.layout.BottomNavigationBar
 import com.ucl.energygrid.ui.layout.MapControlPanel
 import com.ucl.energygrid.ui.layout.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.TimeSimulationPanel
 import kotlinx.coroutines.launch
-import com.ucl.energygrid.data.model.BottomSheetContent
-import com.ucl.energygrid.data.model.RenewableSite
-import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,6 +103,12 @@ fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
     val sheetHeightPx = remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
+
+    LaunchedEffect(Unit) {
+        authViewModel.uiMessage.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
     LaunchedEffect(showFloodRisk, floodCenters.size) {
         if (showFloodRisk && floodCenters.isEmpty()) {
@@ -171,31 +170,8 @@ fun MainScreen(
             LoginDialog(
                 onDismiss = { showLoginDialog = false },
                 onLogin = { email, password ->
-                    coroutineScope.launch {
-                        try {
-                            val api = RetrofitInstance.userApi
-                            val response = api.login(LoginRequest(email, password))
-                            if (response.isSuccessful) {
-                                val loginResponse = response.body()
-                                val token = loginResponse?.access_token
-                                if (token != null) {
-                                    val jwt = JWT(token)
-                                    val userId = jwt.getClaim("sub").asString() ?: jwt.getClaim("id").asString() ?: ""
-                                    authViewModel.loginSuccess(token, userId)
-                                    Toast.makeText(context, "Login success! UserId: $userId", Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Login failed: ${response.errorBody()?.string()}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(context, "Login error: ${e.message}", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    }
+                    authViewModel.login(email, password)
+                    showLoginDialog = false
                 }
             )
         }
@@ -204,23 +180,12 @@ fun MainScreen(
             RegisterDialog(
                 onDismiss = { showRegisterDialog = false },
                 onRegister = { username, email, password ->
-                    coroutineScope.launch {
-                        try {
-                            val api = RetrofitInstance.userApi
-                            val response = api.register(RegisterRequest(username, email, password))
-                            if (response.isSuccessful) {
-                                Toast.makeText(context, "Register successful!", Toast.LENGTH_SHORT).show()
-                                showRegisterDialog = false
-                            } else {
-                                Toast.makeText(context, "Register failed: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(context, "Register error: ${e.message}", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                    authViewModel.register(username, email, password)
+                    showRegisterDialog = false
                 }
             )
         }
+
         Box(modifier = Modifier.weight(1f)) {
             BottomSheetScaffold(
                 scaffoldState = scaffoldState,
