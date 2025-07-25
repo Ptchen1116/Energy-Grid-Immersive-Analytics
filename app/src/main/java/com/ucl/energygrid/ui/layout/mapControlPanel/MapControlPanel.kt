@@ -1,4 +1,4 @@
-package com.ucl.energygrid.ui.layout
+package com.ucl.energygrid.ui.layout.mapControlPanel
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

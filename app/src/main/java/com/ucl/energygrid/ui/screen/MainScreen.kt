@@ -57,10 +57,10 @@ import com.google.android.gms.maps.model.LatLng
 import com.ucl.energygrid.data.model.BottomSheetContent
 import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.data.model.RenewableSite
-import com.ucl.energygrid.ui.layout.BottomNavigationBar
-import com.ucl.energygrid.ui.layout.MapControlPanel
+import com.ucl.energygrid.ui.layout.bottomNavigationBar.BottomNavigationBar
+import com.ucl.energygrid.ui.layout.mapControlPanel.MapControlPanel
 import com.ucl.energygrid.ui.layout.siteInformationPanel.SiteInformationPanel
-import com.ucl.energygrid.ui.layout.TimeSimulationPanel
+import com.ucl.energygrid.ui.layout.timeSimulationPanel.TimeSimulationPanel
 import com.ucl.energygrid.ui.layout.ukMap.UKMap
 import kotlinx.coroutines.launch
 
