@@ -9,12 +9,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
-import com.ucl.energygrid.ui.component.PinType
+import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.ui.component.createPinBitmap
-import com.ucl.energygrid.ui.screen.EnergyDemand
-import com.ucl.energygrid.ui.screen.FloodEvent
-import com.ucl.energygrid.ui.screen.Mine
-import com.ucl.energygrid.ui.screen.Trend
+import com.ucl.energygrid.data.model.EnergyDemand
+import com.ucl.energygrid.data.model.FloodEvent
+import com.ucl.energygrid.data.model.Mine
+import com.ucl.energygrid.data.model.Trend
 import org.json.JSONArray
 import org.locationtech.proj4j.CRSFactory
 import org.locationtech.proj4j.CoordinateTransformFactory

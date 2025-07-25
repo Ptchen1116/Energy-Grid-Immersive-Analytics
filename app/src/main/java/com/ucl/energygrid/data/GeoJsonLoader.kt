@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
+import com.ucl.energygrid.data.model.RegionFeature
 
 object GeoJsonLoader {
     fun loadGeoJsonFeatures(onResult: (List<RegionFeature>) -> Unit) {

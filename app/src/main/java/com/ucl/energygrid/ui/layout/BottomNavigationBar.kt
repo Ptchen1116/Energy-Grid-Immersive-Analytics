@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ucl.energygrid.R
 import com.ucl.energygrid.ui.component.BottomNavItem
-import com.ucl.energygrid.ui.screen.BottomSheetContent
+import com.ucl.energygrid.data.model.BottomSheetContent
 
 
 @Composable

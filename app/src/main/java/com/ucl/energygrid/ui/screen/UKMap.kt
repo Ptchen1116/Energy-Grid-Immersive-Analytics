@@ -32,10 +32,12 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.ucl.energygrid.R
 import com.ucl.energygrid.data.API.PinResponse
 import com.ucl.energygrid.data.MinesMarkers
-import com.ucl.energygrid.data.RegionFeature
+import com.ucl.energygrid.data.model.RegionFeature
 import com.ucl.energygrid.data.convertOSGB36ToWGS84
 import com.ucl.energygrid.data.fetchEnergyForecast
-import com.ucl.energygrid.ui.component.PinType
+import com.ucl.energygrid.data.model.PinType
+import com.ucl.energygrid.data.model.RenewableSite
+import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.ui.component.createPinBitmap
 
 

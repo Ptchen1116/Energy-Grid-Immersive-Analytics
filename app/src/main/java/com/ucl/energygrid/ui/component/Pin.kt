@@ -12,17 +12,9 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.graphics.toColorInt
 import com.ucl.energygrid.R
-import com.ucl.energygrid.ui.screen.Trend
+import com.ucl.energygrid.data.model.Trend
+import com.ucl.energygrid.data.model.PinType
 
-enum class PinType {
-    CLOSED_MINE,
-    CLOSING_MINE,
-    SOLAR,
-    WIND,
-    HYDROELECTRIC,
-    FLOODING_RISK,
-    USER_PIN
-}
 
 fun Int.dpToPx(context: Context): Int =
     (this * context.resources.displayMetrics.density).toInt()

@@ -49,14 +49,13 @@ import com.ucl.energygrid.data.API.AuthViewModel
 import com.ucl.energygrid.data.API.PinRequest
 import com.ucl.energygrid.data.API.RetrofitInstance
 import com.ucl.energygrid.ui.component.TypeTag
-import com.ucl.energygrid.ui.screen.EnergyDemand
-import com.ucl.energygrid.ui.screen.FloodEvent
-import com.ucl.energygrid.ui.screen.Mine
-import com.ucl.energygrid.ui.screen.Trend
+import com.ucl.energygrid.data.model.EnergyDemand
+import com.ucl.energygrid.data.model.FloodEvent
+import com.ucl.energygrid.data.model.Mine
+import com.ucl.energygrid.data.model.Trend
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import org.webrtc.SurfaceViewRenderer
-import org.webrtc.EglBase
 import com.ucl.energygrid.CallingClient
 import androidx.compose.runtime.DisposableEffect
 
