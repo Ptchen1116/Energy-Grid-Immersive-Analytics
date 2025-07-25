@@ -14,7 +14,10 @@ import com.ucl.energygrid.data.readAndExtractSitesByType
 import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.BottomSheetContent
 import com.ucl.energygrid.data.model.RegionFeature
-
+import com.ucl.energygrid.data.API.PinResponse
+import com.ucl.energygrid.data.API.RetrofitInstance
+import kotlinx.coroutines.flow.asStateFlow
+import android.util.Log
 
 class MainViewModel(private val context: Context) : ViewModel() {
 
@@ -126,5 +129,37 @@ class MainViewModel(private val context: Context) : ViewModel() {
 
     fun updateClosingMine(mine: Boolean) {
         _closingMine.value = mine
+    }
+
+    private val _myPins = MutableStateFlow<List<PinResponse>>(emptyList())
+    val myPins: StateFlow<List<PinResponse>> = _myPins.asStateFlow()
+
+    private val _showMyPinsMarkers = MutableStateFlow(false)
+    val showMyPinsMarkers: StateFlow<Boolean> = _showMyPinsMarkers.asStateFlow()
+
+    fun loadMyPins(userId: Int, isLoggedIn: Boolean) {
+        if (!isLoggedIn) {
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val api = RetrofitInstance.pinApi
+                val response = api.getAllPins(userId)
+                if (response.isSuccessful) {
+                    _myPins.value = response.body() ?: emptyList()
+                    _showMyPinsMarkers.value = true
+                } else {
+                    Log.e("MainViewModel", "Failed to load pins: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Exception loading pins: ${e.message}")
+            }
+        }
+    }
+
+    fun clearMyPins() {
+        _showMyPinsMarkers.value = false
+        _myPins.value = emptyList()
     }
 }
