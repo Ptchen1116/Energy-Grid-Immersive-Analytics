@@ -64,6 +64,7 @@ import com.ucl.energygrid.ui.layout.timeSimulationPanel.TimeSimulationPanel
 import com.ucl.energygrid.ui.layout.ukMap.UKMap
 import kotlinx.coroutines.launch
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
+import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,6 +73,7 @@ fun MainScreen(
 )  {
     val context = LocalContext.current.applicationContext as Application
     val mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory(context))
+    val ukMapViewModel: UKMapViewModel = viewModel()
 
     val currentBottomSheet by mainViewModel.currentBottomSheet.collectAsState()
     val closedMine by mainViewModel.closedMine.collectAsState()
@@ -291,6 +293,7 @@ fun MainScreen(
                     }
 
                     UKMap(
+                        viewModel = ukMapViewModel,
                         floodCenters = floodCenters,
                         showMarkers = showFloodRisk,
                         renewableSites = renewableMarkers,
@@ -299,7 +302,6 @@ fun MainScreen(
                         year = selectedYear,
                         closedMine = closedMine,
                         closingMine = closingMine,
-                        markerIcons = emptyMap(),
                         onSiteSelected = { mine ->
                             mainViewModel.onSelectedMineChange(mine)
                             coroutineScope.launch {
@@ -316,7 +318,6 @@ fun MainScreen(
                                 scaffoldState.bottomSheetState.expand()
                             }
                         },
-                        showMyPinsMarkers = showMyPinsMarkers,
                         onShowMyPinsClick = {
                             if (!showMyPinsMarkers) {
                                 if (isLoggedIn) {
