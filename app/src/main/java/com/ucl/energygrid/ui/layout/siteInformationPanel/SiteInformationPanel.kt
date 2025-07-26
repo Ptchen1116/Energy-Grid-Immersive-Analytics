@@ -21,11 +21,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.*
 import androidx.compose.runtime.setValue
@@ -46,7 +43,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
-import com.ucl.energygrid.CallingClient
+import com.ucl.energygrid.CallingViewModel
 import com.ucl.energygrid.R
 import com.ucl.energygrid.data.model.EnergyDemand
 import com.ucl.energygrid.data.model.FloodEvent
@@ -56,6 +53,8 @@ import com.ucl.energygrid.ui.component.TypeTag
 import org.webrtc.SurfaceViewRenderer
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucl.energygrid.data.remote.apis.PinApi
+import androidx.lifecycle.ViewModelProvider
+
 
 @Composable
 fun SiteInformationPanel(
@@ -459,18 +458,32 @@ fun FloodHistoryChartMP(title: String, data: List<FloodEvent>) {
 }
 
 @Composable
-fun CallingView(isCaller: Boolean) {
+fun CallingView(
+    isCaller: Boolean,
+) {
     val context = LocalContext.current
+
+    val callingViewModel: CallingViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return CallingViewModel(context, isCaller) as T
+            }
+        }
+    )
 
     val localView = remember { SurfaceViewRenderer(context) }
     val remoteView = remember { SurfaceViewRenderer(context) }
 
-    var callingClient by remember { mutableStateOf<CallingClient?>(null) }
-    var started by remember { mutableStateOf(false) }
+    val isStarted by callingViewModel.isStarted.collectAsState()
+
+    LaunchedEffect(localView, remoteView) {
+        callingViewModel.init(localView, remoteView)
+    }
 
     DisposableEffect(Unit) {
         onDispose {
-            callingClient?.endCall()
+            callingViewModel.endCall()
             localView.release()
             remoteView.release()
         }
@@ -489,18 +502,13 @@ fun CallingView(isCaller: Boolean) {
         )
 
         Button(onClick = {
-            if (!started) {
-                val client = CallingClient(context, localView, remoteView, isCaller)
-                client.init()
-                if (isCaller) client.startCall()
-                callingClient = client
-                started = true
+            if (!isStarted) {
+                callingViewModel.startCall()
             } else {
-                callingClient?.endCall()
-                started = false
+                callingViewModel.endCall()
             }
         }) {
-            Text(if (!started) "Start Call" else "End Call")
+            Text(if (!isStarted) "Start Call" else "End Call")
         }
     }
 }
