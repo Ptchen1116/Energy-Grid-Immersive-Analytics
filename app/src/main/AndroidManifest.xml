@@ -47,9 +47,6 @@
                 android:name="com.google.android.wearable.standalone"
                 android:value="true" />
         </activity>
-
-        <!-- Calling Entry -->
-        <activity android:name=".CallingActivity" android:exported="true" />
     </application>
 
 </manifest>
