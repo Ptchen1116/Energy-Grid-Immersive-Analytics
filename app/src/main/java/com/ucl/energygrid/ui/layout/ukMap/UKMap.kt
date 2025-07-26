@@ -11,7 +11,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,16 +32,16 @@ import com.ucl.energygrid.R
 import com.ucl.energygrid.data.model.PinResponse
 import com.ucl.energygrid.data.repository.MinesMarkers
 import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
-import com.ucl.energygrid.data.repository.fetchEnergyForecast
 import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.data.model.RegionFeature
 import com.ucl.energygrid.data.model.RenewableSite
 import com.ucl.energygrid.ui.component.createPinBitmap
-
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun UKMap(
+    viewModel: UKMapViewModel,
     floodCenters: List<LatLng>,
     showMarkers: Boolean,
     renewableSites: List<RenewableSite> = emptyList(),
@@ -51,22 +50,21 @@ fun UKMap(
     year: Int,
     closedMine: Boolean,
     closingMine: Boolean,
-    markerIcons: Map<PinType, BitmapDescriptor>,
     onSiteSelected: (Mine) -> Unit,
     myPins: List<PinResponse> = emptyList(),
     allMines: List<Mine> = emptyList(),
     onPinSelected: (Mine) -> Unit,
-    showMyPinsMarkers: Boolean,
     onShowMyPinsClick: () -> Unit,
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
-    val ukBounds = LatLngBounds(
-        LatLng(49.9, -8.6),
-        LatLng(60.9, 1.8)
-    )
+    val energyConsumption by viewModel.energyConsumption.collectAsState()
 
+    LaunchedEffect(year) {
+        viewModel.loadForecast(year)
+    }
+
+    val ukBounds = LatLngBounds(LatLng(49.9, -8.6), LatLng(60.9, 1.8))
     val cameraPositionState = rememberCameraPositionState()
 
     LaunchedEffect(Unit) {
@@ -79,36 +77,24 @@ fun UKMap(
     val dynamicMarkerIcons = remember { mutableMapOf<PinType, BitmapDescriptor>() }
     var selectedRegion by remember { mutableStateOf<RegionFeature?>(null) }
 
-    var energyConsumption by remember { mutableStateOf<Map<String, Pair<Double, String>>>(emptyMap()) }
-
-    LaunchedEffect(year) {
-        energyConsumption = fetchEnergyForecast(year)
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             onMapClick = { selectedRegion = null }
         ) {
-            // Load icons once
             if (dynamicMarkerIcons.isEmpty()) {
                 PinType.values().forEach { type ->
                     dynamicMarkerIcons[type] = BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, type))
                 }
             }
 
-            MinesMarkers(
-                closedMine = closedMine,
-                closingMine = closingMine,
-                onSiteSelected = onSiteSelected
-            )
+            MinesMarkers(closedMine = closedMine, closingMine = closingMine, onSiteSelected = onSiteSelected)
 
             myPins.forEach { pin ->
                 val mine = allMines.find { it.reference == pin.mine_id.toString() }
                 if (mine != null) {
                     val position = convertOSGB36ToWGS84(mine.easting, mine.northing)
-
                     Marker(
                         state = MarkerState(position = position),
                         title = mine.name ?: "My Pin",
@@ -189,14 +175,11 @@ fun UKMap(
             }
         }
 
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        // Buttons
+        Box(modifier = Modifier.fillMaxSize()) {
             FloatingActionButton(
                 onClick = { /* TODO: Reset action */ },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(end = 16.dp, top = 16.dp),
+                modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp, top = 16.dp),
                 containerColor = Color.White
             ) {
                 Icon(
@@ -208,10 +191,8 @@ fun UKMap(
             }
 
             FloatingActionButton(
-                onClick = { onShowMyPinsClick()},
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(end = 16.dp, top = 88.dp),
+                onClick = { onShowMyPinsClick() },
+                modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp, top = 88.dp),
                 containerColor = Color.White
             ) {
                 Icon(
