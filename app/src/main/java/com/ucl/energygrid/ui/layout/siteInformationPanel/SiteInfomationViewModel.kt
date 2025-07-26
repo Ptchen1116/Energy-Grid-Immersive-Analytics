@@ -1,13 +1,13 @@
 package com.ucl.energygrid.ui.layout.siteInformationPanel
 
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ucl.energygrid.data.model.PinRequest
+import com.ucl.energygrid.data.remote.apis.PinApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.ucl.energygrid.data.remote.apis.PinApi
-import com.ucl.energygrid.data.model.PinRequest
+import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 

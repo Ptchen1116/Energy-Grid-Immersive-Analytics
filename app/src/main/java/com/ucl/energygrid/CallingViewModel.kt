@@ -1,50 +1,28 @@
 package com.ucl.energygrid
 
-import android.content.Context
-import org.webrtc.SurfaceViewRenderer
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.lifecycle.viewModelScope
+import com.ucl.energygrid.data.repository.WebRtcRepository
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import org.webrtc.SurfaceViewRenderer
 
 
 class CallingViewModel(
-    private val context: Context,
-    private val isCaller: Boolean,
+    private val repo: WebRtcRepository
 ) : ViewModel() {
 
-    private val _isStarted = MutableStateFlow(false)
-    val isStarted: StateFlow<Boolean> = _isStarted.asStateFlow()
+    val isConnected: StateFlow<Boolean> = repo.isConnected
 
-    private var callingClient: CallingClient? = null
-
-    lateinit var localView: SurfaceViewRenderer
-    lateinit var remoteView: SurfaceViewRenderer
-
-    fun init(localView: SurfaceViewRenderer, remoteView: SurfaceViewRenderer) {
-        this.localView = localView
-        this.remoteView = remoteView
-        callingClient = CallingClient(context, localView, remoteView, isCaller)
-        callingClient?.init()
+    fun init(localView: SurfaceViewRenderer, remoteView: SurfaceViewRenderer, isCaller: Boolean) {
+        repo.init(localView, remoteView, isCaller)
     }
 
-    fun startCall() {
-        if (_isStarted.value) return
-        callingClient?.let {
-            if (isCaller) {
-                it.startCall()
-            }
-            _isStarted.value = true
-        }
-    }
-
-    fun endCall() {
-        callingClient?.endCall()
-        _isStarted.value = false
-    }
+    fun startCall() = viewModelScope.launch { repo.startCall() }
+    fun endCall() = viewModelScope.launch { repo.endCall() }
 
     override fun onCleared() {
         super.onCleared()
-        endCall()
+        repo.endCall()
     }
 }

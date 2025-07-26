@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,11 +38,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.wear.compose.material.Text
-import com.ucl.energygrid.data.repository.getAllSiteLabelsReferencesAndNames
-import com.ucl.energygrid.data.repository.getInfoByReference
 import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.Trend
+import com.ucl.energygrid.data.repository.WebRtcRepository
+import com.ucl.energygrid.data.repository.getAllSiteLabelsReferencesAndNames
+import com.ucl.energygrid.data.repository.getInfoByReference
 import com.ucl.energygrid.ui.component.TypeTag
 import com.ucl.energygrid.ui.layout.siteInformationPanel.EnergyLineChartMP
 import com.ucl.energygrid.ui.layout.siteInformationPanel.FloodHistoryChartMP
@@ -53,12 +57,10 @@ import kotlinx.coroutines.flow.StateFlow
 import org.webrtc.EglBase
 import org.webrtc.SurfaceViewRenderer
 
-
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
     val spokenCommand: StateFlow<String> get() = _spokenCommand
 
-    private lateinit var callingClient: CallingClient
     private lateinit var localRenderer: SurfaceViewRenderer
     private lateinit var remoteRenderer: SurfaceViewRenderer
     private lateinit var eglBase: EglBase
@@ -93,13 +95,17 @@ class WearMainActivity : ComponentActivity() {
         localRenderer.setMirror(true)
         remoteRenderer.setMirror(true)
 
-        callingClient = CallingClient(
-            context = this,
-            localView = localRenderer,
-            remoteView = remoteRenderer,
-            isCaller = false
-        )
-        callingClient.init()
+        val viewModel: CallingViewModel by viewModels {
+            val repo = WebRtcRepository(applicationContext)
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    @Suppress("UNCHECKED_CAST")
+                    return CallingViewModel(repo) as T
+                }
+            }
+        }
+
+        viewModel.init(localRenderer, remoteRenderer, isCaller = false)
 
         setContent {
             val command by spokenCommand.collectAsState()
@@ -107,7 +113,6 @@ class WearMainActivity : ComponentActivity() {
             val sites = remember { getAllSiteLabelsReferencesAndNames(context) }
 
             var currentStage by remember { mutableStateOf("selectSite") }
-            var selectedMine by remember { mutableStateOf<String?>(null) }
             var selectedMineReference by remember { mutableStateOf<String?>(null) }
             var selectedMineInfo by remember { mutableStateOf<Mine?>(null) }
 
@@ -210,7 +215,6 @@ class WearMainActivity : ComponentActivity() {
         val sites = getAllSiteLabelsReferencesAndNames(this)
         val siteLabels = sites.map { it.first.lowercase() }
         Handler(Looper.getMainLooper()).postDelayed({ sendCommands(siteLabels) }, 100)
-
     }
 
     override fun onPause() {
@@ -220,12 +224,10 @@ class WearMainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        callingClient.endCall()
-        localRenderer.release()
-        remoteRenderer.release()
         eglBase.release()
     }
 }
+
 
 @Composable
 fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
