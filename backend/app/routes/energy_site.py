@@ -5,10 +5,13 @@ from app.models.energy_site import EnergySite
 import csv
 from pyproj import Transformer
 from pathlib import Path
+from pathlib import Path
 
 router = APIRouter()
 
-CSV_PATH = Path("/Users/chenpeitong/Documents/UCL IXN PROJECT/app/src/main/assets/renewable_energy_planning_database.csv")
+BASE_DIR = Path(__file__).resolve().parent
+CSV_PATH = BASE_DIR / "../app/src/main/assets/renewable_energy_planning_database.csv"
+CSV_PATH = CSV_PATH.resolve() 
 
 @router.get("/sites/{category}")
 def get_sites(category: str, db: Session = Depends(get_db)):
