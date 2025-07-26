@@ -1,13 +1,13 @@
 package com.ucl.energygrid.data.remote.apis
 
+import com.ucl.energygrid.data.model.PinRequest
+import com.ucl.energygrid.data.model.PinResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
-import com.ucl.energygrid.data.model.PinResponse
-import com.ucl.energygrid.data.model.PinRequest
 
 
 interface PinApi {

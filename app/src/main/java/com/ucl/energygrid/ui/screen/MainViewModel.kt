@@ -5,14 +5,14 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import com.ucl.energygrid.data.model.BottomSheetContent
+import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.PinResponse
+import com.ucl.energygrid.data.model.RegionFeature
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.repository.GeoJsonRepository
 import com.ucl.energygrid.data.repository.fetchAllFloodCenters
 import com.ucl.energygrid.data.repository.loadMinesFromJson
-import com.ucl.energygrid.data.model.BottomSheetContent
-import com.ucl.energygrid.data.model.Mine
-import com.ucl.energygrid.data.model.RegionFeature
 import com.ucl.energygrid.data.repository.readAndExtractSitesByType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

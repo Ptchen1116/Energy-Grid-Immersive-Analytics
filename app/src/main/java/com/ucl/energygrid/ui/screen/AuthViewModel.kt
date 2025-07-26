@@ -3,9 +3,9 @@ package com.ucl.energygrid.ui.screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.auth0.android.jwt.JWT
-import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.model.LoginRequest
 import com.ucl.energygrid.data.model.RegisterRequest
+import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

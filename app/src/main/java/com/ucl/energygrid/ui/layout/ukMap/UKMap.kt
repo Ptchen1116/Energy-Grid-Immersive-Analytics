@@ -8,6 +8,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,15 +30,14 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ucl.energygrid.R
-import com.ucl.energygrid.data.model.PinResponse
-import com.ucl.energygrid.data.repository.MinesMarkers
-import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
 import com.ucl.energygrid.data.model.Mine
+import com.ucl.energygrid.data.model.PinResponse
 import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.data.model.RegionFeature
 import com.ucl.energygrid.data.model.RenewableSite
+import com.ucl.energygrid.data.repository.MinesMarkers
+import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
 import com.ucl.energygrid.ui.component.createPinBitmap
-import androidx.compose.runtime.collectAsState
 
 @Composable
 fun UKMap(

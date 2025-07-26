@@ -57,14 +57,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.ucl.energygrid.data.model.BottomSheetContent
 import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.data.model.RenewableSite
+import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.ui.layout.bottomNavigationBar.BottomNavigationBar
 import com.ucl.energygrid.ui.layout.mapControlPanel.MapControlPanel
 import com.ucl.energygrid.ui.layout.siteInformationPanel.SiteInformationPanel
 import com.ucl.energygrid.ui.layout.timeSimulationPanel.TimeSimulationPanel
 import com.ucl.energygrid.ui.layout.ukMap.UKMap
-import kotlinx.coroutines.launch
-import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
