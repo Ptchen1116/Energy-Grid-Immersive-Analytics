@@ -1,6 +1,5 @@
 package com.ucl.energygrid.data.repository
 
-
 import android.content.Context
 import android.graphics.Color
 import com.google.android.gms.maps.GoogleMap
@@ -13,7 +12,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
-
 
 data class FloodPolygonMeta(
     val areaId: String,

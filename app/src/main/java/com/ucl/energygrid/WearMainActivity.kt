@@ -56,6 +56,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.webrtc.EglBase
 import org.webrtc.SurfaceViewRenderer
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
@@ -109,15 +114,22 @@ class WearMainActivity : ComponentActivity() {
 
         setContent {
             val command by spokenCommand.collectAsState()
-            val context = LocalContext.current
-            val sites = remember { getAllSiteLabelsReferencesAndNames(context) }
+
+            // 非同步取得 sites
+            val sitesState = produceState<List<Triple<String, String, String>>>(initialValue = emptyList()) {
+                value = getAllSiteLabelsReferencesAndNames()
+            }
+            val sites = sitesState.value
 
             var currentStage by remember { mutableStateOf("selectSite") }
             var selectedMineReference by remember { mutableStateOf<String?>(null) }
             var selectedMineInfo by remember { mutableStateOf<Mine?>(null) }
 
-            LaunchedEffect(command) {
+            LaunchedEffect(command, sites) {
+                if (sites.isEmpty()) return@LaunchedEffect
+
                 Log.i("WearMainCommand", "Received command: '$command'")
+
                 if (currentStage == "selectSite") {
                     val selectedSite = sites.firstOrNull {
                         it.first.equals(command, ignoreCase = true) ||
@@ -126,7 +138,7 @@ class WearMainActivity : ComponentActivity() {
                     }
                     if (selectedSite != null) {
                         selectedMineReference = selectedSite.second
-                        selectedMineInfo = getInfoByReference(context, selectedSite.second)
+                        selectedMineInfo = getInfoByReference(selectedSite.second)
                         currentStage = "menu"
 
                         sendCommands(
@@ -145,8 +157,7 @@ class WearMainActivity : ComponentActivity() {
                             selectedMineReference = null
                             selectedMineInfo = null
                             currentStage = "selectSite"
-                            val siteLabels = sites.map { it.first.lowercase() }
-                            sendCommands(siteLabels)
+                            sendCommands(sites.map { it.first.lowercase() })
                         }
                         "show me basic info" -> {
                             currentStage = "basicInfo"
@@ -212,9 +223,13 @@ class WearMainActivity : ComponentActivity() {
         val filter = IntentFilter("com.realwear.wearhf.intent.action.SPEECH_EVENT")
         registerReceiver(asrReceiver, filter, Context.RECEIVER_EXPORTED)
 
-        val sites = getAllSiteLabelsReferencesAndNames(this)
-        val siteLabels = sites.map { it.first.lowercase() }
-        Handler(Looper.getMainLooper()).postDelayed({ sendCommands(siteLabels) }, 100)
+        lifecycleScope.launch {
+            val sites = getAllSiteLabelsReferencesAndNames()
+            val siteLabels = sites.map { it.first.lowercase() }
+            withContext(Dispatchers.Main) {
+                sendCommands(siteLabels)
+            }
+        }
     }
 
     override fun onPause() {

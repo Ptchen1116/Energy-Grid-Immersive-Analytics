@@ -19,11 +19,17 @@ import org.json.JSONArray
 import org.locationtech.proj4j.CRSFactory
 import org.locationtech.proj4j.CoordinateTransformFactory
 import org.locationtech.proj4j.ProjCoordinate
+import com.ucl.energygrid.data.remote.apis.RetrofitInstance
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 
 fun convertOSGB36ToWGS84(easting: Double, northing: Double): LatLng {
     val csFactory = CRSFactory()
-    val osgb36 = csFactory.createFromName("EPSG:27700")  // British National Grid
-    val wgs84 = csFactory.createFromName("EPSG:4326")    // WGS84 lat/lng
+    val osgb36 = csFactory.createFromName("EPSG:27700")
+    val wgs84 = csFactory.createFromName("EPSG:4326")
 
     val transform = CoordinateTransformFactory().createTransform(osgb36, wgs84)
 
@@ -44,20 +50,28 @@ fun MinesMarkers(
 ) {
     val context = LocalContext.current
 
-    val minesJson = remember {
-        context.assets.open("fake_mine_location_data.json").bufferedReader().use { it.readText() }
-    }
+    var mines by remember { mutableStateOf<List<Mine>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val mines = remember(minesJson) { parseMinesFromJson(minesJson) }
+    LaunchedEffect(closedMine, closingMine) {
+        isLoading = true
+        errorMessage = null
+        try {
+            mines = RetrofitInstance.mineApi.getAllMines()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            errorMessage = "Failed to load mines: ${e.message}"
+            mines = emptyList()
+        }
+        isLoading = false
+    }
 
     val filteredMines = mines.filter {
         (closedMine && it.status == "C") || (closingMine && it.status == "I")
     }
 
     filteredMines.forEach { mine ->
-        Log.d("MinesMarkers", "Mine ${mine.name} trend: ${mine.trend} (type: ${mine.trend?.javaClass?.simpleName})")
-
-
         val latLng = remember(mine.easting, mine.northing) {
             convertOSGB36ToWGS84(mine.easting, mine.northing)
         }
@@ -65,7 +79,7 @@ fun MinesMarkers(
         val pinType = when (mine.status) {
             "C" -> PinType.CLOSED_MINE
             "I" -> PinType.CLOSING_MINE
-            else -> throw IllegalArgumentException("Unknown mine status: ${mine.status}")
+            else -> PinType.CLOSED_MINE
         }
 
         val iconBitmap = remember(mine.trend, pinType) {
@@ -92,7 +106,6 @@ fun MinesMarkers(
         )
     }
 }
-
 
 fun parseMinesFromJson(jsonString: String): List<Mine> {
     val list = mutableListOf<Mine>()
@@ -177,26 +190,27 @@ fun calculateTrend(data: List<EnergyDemand>): Trend? {
 }
 
 
-fun loadMinesFromJson(context: Context): List<Mine> {
+suspend fun getAllMines(): List<Mine> {
     return try {
-        val jsonString = context.assets.open("fake_mine_location_data.json")
-            .bufferedReader()
-            .use { it.readText() }
-        parseMinesFromJson(jsonString)
+        RetrofitInstance.mineApi.getAllMines()
     } catch (e: Exception) {
         e.printStackTrace()
         emptyList()
     }
 }
 
-fun getAllSiteLabelsReferencesAndNames(context: Context): List<Triple<String, String, String>> {
-    val mines = loadMinesFromJson(context)
+suspend fun getAllSiteLabelsReferencesAndNames(): List<Triple<String, String, String>> {
+    val mines = getAllMines()
     return mines.mapIndexed { index, mine ->
         Triple("Site ${index + 1}", mine.reference, mine.name)
     }
 }
 
-fun getInfoByReference(context: Context, reference: String): Mine? {
-    val mines = loadMinesFromJson(context)
-    return mines.firstOrNull { it.reference == reference }
+suspend fun getInfoByReference(reference: String): Mine? {
+    return try {
+        RetrofitInstance.mineApi.getMineByReference(reference)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
 }

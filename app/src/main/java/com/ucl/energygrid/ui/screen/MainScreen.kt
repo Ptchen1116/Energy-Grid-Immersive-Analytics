@@ -303,7 +303,7 @@ fun MainScreen(
                         closedMine = closedMine,
                         closingMine = closingMine,
                         onSiteSelected = { mine ->
-                            mainViewModel.onSelectedMineChange(mine)
+                            mainViewModel.onMineSelected(mine)
                             coroutineScope.launch {
                                 mainViewModel.onBottomSheetChange(BottomSheetContent.SiteInfo)
                                 scaffoldState.bottomSheetState.expand()
