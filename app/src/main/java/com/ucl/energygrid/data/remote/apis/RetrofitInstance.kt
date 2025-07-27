@@ -18,4 +18,8 @@ object RetrofitInstance {
     val pinApi: PinApi by lazy {
         retrofit.create(PinApi::class.java)
     }
+
+    val mineApi: MineApi by lazy {
+        retrofit.create(MineApi::class.java)
+    }
 }

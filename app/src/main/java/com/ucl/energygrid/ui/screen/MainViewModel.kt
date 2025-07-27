@@ -12,7 +12,8 @@ import com.ucl.energygrid.data.model.RegionFeature
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.repository.GeoJsonRepository
 import com.ucl.energygrid.data.repository.fetchAllFloodCenters
-import com.ucl.energygrid.data.repository.loadMinesFromJson
+import com.ucl.energygrid.data.repository.getAllMines
+import com.ucl.energygrid.data.repository.getInfoByReference
 import com.ucl.energygrid.data.repository.readAndExtractSitesByType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -76,10 +77,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            _allMines.value = loadMinesFromJson(appContext)
-            _solarSites.value = readAndExtractSitesByType(appContext, category = "solar")
-            _windSites.value = readAndExtractSitesByType(appContext, category ="wind")
-            _hydroelectricSites.value = readAndExtractSitesByType(appContext, category ="hydroelectric")
+            _allMines.value = getAllMines()
+            _solarSites.value = readAndExtractSitesByType( category = "solar")
+            _windSites.value = readAndExtractSitesByType(category ="wind")
+            _hydroelectricSites.value = readAndExtractSitesByType( category ="hydroelectric")
             _floodCenters.value = fetchAllFloodCenters(appContext)
             GeoJsonRepository.loadGeoJsonFeatures { features ->
                 _regionFeatures.value = features
@@ -87,9 +88,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun selectMine(mine: Mine) {
-        _selectedMine.value = mine
-        _currentBottomSheet.value = BottomSheetContent.SiteInfo
+    fun onMineSelected(mine: Mine) {
+        viewModelScope.launch {
+            val detailedMine = getInfoByReference(mine.reference)
+            if (detailedMine != null) {
+                _selectedMine.value = detailedMine
+            } else {
+                _selectedMine.value = mine
+            }
+        }
     }
 
     fun toggleShowFloodRisk(value: Boolean) {

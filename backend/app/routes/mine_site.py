@@ -1,0 +1,143 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.mine_site import Mine, EnergyDemand, EnergyDemandType,MineResponse
+from app.schemas.mine_site import Mine as MineSchema
+import json
+from pathlib import Path
+
+router = APIRouter()
+
+BASE_DIR = Path(__file__).resolve().parent
+JSON_PATH = "/Users/chenpeitong/Documents/UCL IXN PROJECT/app/src/main/assets/fake_mine_location_data.json"
+
+def load_mines_from_json(db: Session, json_file: Path, target_ref: str = None):
+    with open(json_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    mines_loaded = []
+    for obj in data:
+        if target_ref and obj["Reference"] != target_ref:
+            continue
+
+        mine_ref = obj["Reference"]
+        mine = db.query(Mine).filter_by(reference=mine_ref).first()
+        if not mine:
+            mine = Mine(
+                reference=mine_ref,
+                name=obj["Name"],
+                status=obj["Status"],
+                easting=float(obj["Easting"]),
+                northing=float(obj["Northing"]),
+                local_authority=obj.get("LocalAuthority"),
+                note=obj.get("Note"),
+                flood_risk_level=obj.get("FloodRiskLevel"),
+            )
+            db.add(mine)
+            db.flush()
+
+        if obj.get("EnergyDemandHistory"):
+            for ed in obj["EnergyDemandHistory"]:
+                year = ed.get("year")
+                value = ed.get("value")
+                if year is not None and value is not None:
+                    exists = db.query(EnergyDemand).filter_by(
+                        mine_reference=mine_ref,
+                        year=year,
+                        type=EnergyDemandType.HISTORICAL
+                    ).first()
+                    if not exists:
+                        demand = EnergyDemand(
+                            year=year,
+                            value=value,
+                            type=EnergyDemandType.HISTORICAL,
+                            mine_reference=mine_ref
+                        )
+                        db.add(demand)
+
+        if obj.get("ForecastEnergyDemand"):
+            for ed in obj["ForecastEnergyDemand"]:
+                year = ed.get("year")
+                value = ed.get("value")
+                if year is not None and value is not None:
+                    exists = db.query(EnergyDemand).filter_by(
+                        mine_reference=mine_ref,
+                        year=year,
+                        type=EnergyDemandType.FORECAST
+                    ).first()
+                    if not exists:
+                        demand = EnergyDemand(
+                            year=year,
+                            value=value,
+                            type=EnergyDemandType.FORECAST,
+                            mine_reference=mine_ref
+                        )
+                        db.add(demand)
+
+        mines_loaded.append(mine)
+
+    db.commit()
+    return mines_loaded
+
+
+@router.get("/mines/{reference}", response_model=MineResponse)
+def get_mine(reference: str, db: Session = Depends(get_db)):
+    mine = db.query(Mine).filter(Mine.reference == reference).first()
+    if not mine:
+        raise HTTPException(status_code=404, detail="Mine not found")
+
+    # 手動構建 dict，保證駝峰命名
+    return {
+        "reference": mine.reference,
+        "name": mine.name,
+        "status": mine.status,
+        "easting": mine.easting,
+        "northing": mine.northing,
+        "localAuthority": mine.local_authority,
+        "note": mine.note,
+        "floodRiskLevel": mine.flood_risk_level,
+        "floodHistory": [{"year": f.year, "events": f.events} for f in mine.flood_history],
+        "energyDemandHistory": [
+            {"year": e.year, "value": e.value}
+            for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL
+        ],
+        "forecastEnergyDemand": [
+            {"year": e.year, "value": e.value}
+            for e in mine.energy_demand if e.type == EnergyDemandType.FORECAST
+        ],
+        "trend": None  # 如果要計算趨勢可以在這裡補
+    }
+
+@router.get("/mines", response_model=list[MineSchema])
+def list_mines(db: Session = Depends(get_db)):
+    mines = db.query(Mine).all()
+    if not mines:
+        mines = load_mines_from_json(db, JSON_PATH)
+    return mines
+
+def to_camel(snake_str: str) -> str:
+    parts = snake_str.split('_')
+    return parts[0] + ''.join(word.capitalize() for word in parts[1:])
+
+def orm_to_dict(mine: Mine) -> dict:
+    data = {
+        "reference": mine.reference,
+        "name": mine.name,
+        "status": mine.status,
+        "easting": mine.easting,
+        "northing": mine.northing,
+        "localAuthority": mine.local_authority,
+        "note": mine.note,
+        "floodRiskLevel": mine.flood_risk_level,
+        "floodHistory": [{"year": f.year, "events": f.events} for f in mine.flood_history],
+        "energyDemandHistory": [
+            {"year": e.year, "value": e.value}
+            for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL
+        ],
+        "forecastEnergyDemand": [
+            {"year": e.year, "value": e.value}
+            for e in mine.energy_demand if e.type == EnergyDemandType.FORECAST
+        ],
+        "trend": None 
+    }
+    return data
