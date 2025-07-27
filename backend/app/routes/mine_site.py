@@ -8,7 +8,7 @@ from pathlib import Path
 
 router = APIRouter()
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent  # 假設 backend/ 在專案根
+PROJECT_ROOT = Path(__file__).resolve().parent.parent  
 ASSETS_DIR = PROJECT_ROOT / "app/src/main/assets"
 JSON_PATH = ASSETS_DIR / "fake_mine_location_data.json"
 
@@ -37,6 +37,8 @@ def load_mines_from_json(db: Session, json_file: Path, target_ref: str = None):
             db.add(mine)
             db.flush()
 
+        energy_history = []  
+
         if obj.get("EnergyDemandHistory"):
             for ed in obj["EnergyDemandHistory"]:
                 year = ed.get("year")
@@ -55,6 +57,7 @@ def load_mines_from_json(db: Session, json_file: Path, target_ref: str = None):
                             mine_reference=mine_ref
                         )
                         db.add(demand)
+                    energy_history.append(EnergyDemand(year=year, value=value, type=EnergyDemandType.HISTORICAL))
 
         if obj.get("ForecastEnergyDemand"):
             for ed in obj["ForecastEnergyDemand"]:
@@ -75,11 +78,25 @@ def load_mines_from_json(db: Session, json_file: Path, target_ref: str = None):
                         )
                         db.add(demand)
 
+        energy_history_sorted = sorted(energy_history, key=lambda x: x.year)
+
         mines_loaded.append(mine)
 
     db.commit()
     return mines_loaded
 
+
+def calculate_trend(energy_history: list[EnergyDemand]) -> str | None:
+    if len(energy_history) < 2:
+        return None
+    first = energy_history[0].value
+    last = energy_history[-1].value
+    if last > first:
+        return "INCREASING"
+    elif last < first:
+        return "DECREASING"
+    else:
+        return "STABLE"
 
 @router.get("/mines/{reference}", response_model=MineResponse)
 def get_mine(reference: str, db: Session = Depends(get_db)):
@@ -87,7 +104,10 @@ def get_mine(reference: str, db: Session = Depends(get_db)):
     if not mine:
         raise HTTPException(status_code=404, detail="Mine not found")
 
-    # 手動構建 dict，保證駝峰命名
+    historical = [e for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL]
+
+    trend = calculate_trend(historical)
+
     return {
         "reference": mine.reference,
         "name": mine.name,
@@ -100,27 +120,31 @@ def get_mine(reference: str, db: Session = Depends(get_db)):
         "floodHistory": [{"year": f.year, "events": f.events} for f in mine.flood_history],
         "energyDemandHistory": [
             {"year": e.year, "value": e.value}
-            for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL
+            for e in historical
         ],
         "forecastEnergyDemand": [
             {"year": e.year, "value": e.value}
             for e in mine.energy_demand if e.type == EnergyDemandType.FORECAST
         ],
-        "trend": None  # 如果要計算趨勢可以在這裡補
+        "trend": trend
     }
 
-@router.get("/mines", response_model=list[MineSchema])
+@router.get("/mines", response_model=list[MineResponse])
 def list_mines(db: Session = Depends(get_db)):
     mines = db.query(Mine).all()
     if not mines:
         mines = load_mines_from_json(db, JSON_PATH)
-    return mines
+    return [orm_to_dict(mine) for mine in mines]
+
 
 def to_camel(snake_str: str) -> str:
     parts = snake_str.split('_')
     return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
 def orm_to_dict(mine: Mine) -> dict:
+    historical = [e for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL]
+    trend = calculate_trend(sorted(historical, key=lambda x: x.year))
+
     data = {
         "reference": mine.reference,
         "name": mine.name,
@@ -133,12 +157,12 @@ def orm_to_dict(mine: Mine) -> dict:
         "floodHistory": [{"year": f.year, "events": f.events} for f in mine.flood_history],
         "energyDemandHistory": [
             {"year": e.year, "value": e.value}
-            for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL
+            for e in historical
         ],
         "forecastEnergyDemand": [
             {"year": e.year, "value": e.value}
             for e in mine.energy_demand if e.type == EnergyDemandType.FORECAST
         ],
-        "trend": None 
+        "trend": trend,
     }
     return data

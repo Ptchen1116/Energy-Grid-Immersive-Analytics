@@ -49,6 +49,7 @@ class Mine(Base):
 
     flood_history = relationship("FloodEvent", back_populates="mine", cascade="all, delete")
     energy_demand = relationship("EnergyDemand", back_populates="mine", cascade="all, delete")
+    
 
 
 class FloodEvent(Base):
