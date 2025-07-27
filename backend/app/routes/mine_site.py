@@ -8,8 +8,9 @@ from pathlib import Path
 
 router = APIRouter()
 
-BASE_DIR = Path(__file__).resolve().parent
-JSON_PATH = "/Users/chenpeitong/Documents/UCL IXN PROJECT/app/src/main/assets/fake_mine_location_data.json"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent  # 假設 backend/ 在專案根
+ASSETS_DIR = PROJECT_ROOT / "app/src/main/assets"
+JSON_PATH = ASSETS_DIR / "fake_mine_location_data.json"
 
 def load_mines_from_json(db: Session, json_file: Path, target_ref: str = None):
     with open(json_file, "r", encoding="utf-8") as f:
