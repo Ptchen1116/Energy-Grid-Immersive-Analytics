@@ -166,6 +166,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+
     fun clearMyPins() {
         _showMyPinsMarkers.value = false
         _myPins.value = emptyList()
