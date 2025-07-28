@@ -54,6 +54,8 @@ import com.ucl.energygrid.data.remote.apis.PinApi
 import com.ucl.energygrid.data.repository.WebRtcRepository
 import com.ucl.energygrid.ui.component.TypeTag
 import org.webrtc.SurfaceViewRenderer
+import com.ucl.energygrid.ui.screen.MainViewModel
+
 
 
 @Composable
@@ -67,6 +69,7 @@ fun SiteInformationPanel(
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val mainViewModel: MainViewModel = viewModel()
 
     LazyColumn(
         modifier = Modifier
@@ -140,8 +143,9 @@ fun SiteInformationPanel(
                 if (uiState.isPinned) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                        onClick = { viewModel.removePin() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
+                        onClick = { viewModel.removePin()
+                            mainViewModel.loadMyPins(userId, true) },
+                        colors = ButtonDefaults.buttonColors(),
                         enabled = !uiState.isPosting
                     ) {
                         Text("Remove Pin")
@@ -201,6 +205,8 @@ fun SiteInformationPanel(
             mine.energyDemandHistory?.let {
                 EnergyLineChartMP("Historical Energy Demand Graph", it, null)
             } ?: Text("No energy history available", color = Color.Gray)
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             mine.forecastEnergyDemand?.let {
                 EnergyLineChartMP("Forecast Energy Demand Graph", it, null)
@@ -488,7 +494,9 @@ fun CallingView(isCaller: Boolean) {
         }
     }
 
-    Column {
+    Column (
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         AndroidView(
             factory = { localView },
             modifier = Modifier.size(200.dp)
@@ -496,7 +504,7 @@ fun CallingView(isCaller: Boolean) {
         AndroidView(
             factory = { remoteView },
             modifier = Modifier
-                .fillMaxWidth()
+                .width(300.dp)
                 .height(300.dp)
         )
 
