@@ -137,13 +137,13 @@ fun UKMap(
             if (energyDemandHeatmap) {
                 regionFeatures.forEach { region ->
                     val nutsCode = region.nutsCode
-                    val demand = energyConsumption[nutsCode]?.value  // 用 ForecastItem 的 value
+                    val demand = energyConsumption[nutsCode]?.value
 
                     val baseColor = when {
                         demand == null -> Color.Transparent
-                        demand < 10000.0 -> Color(0xFF00FF00)   // 綠
-                        demand < 20000.0 -> Color(0xFFFFFF00)   // 黃
-                        else -> Color(0xFFFF0000)               // 紅
+                        demand < 10000.0 -> Color(0xFF00FF00)
+                        demand < 20000.0 -> Color(0xFFFFFF00)
+                        else -> Color(0xFFFF0000)
                     }
 
                     val isSelected = selectedRegion?.nutsCode == nutsCode
