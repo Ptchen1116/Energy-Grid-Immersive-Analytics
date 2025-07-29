@@ -10,7 +10,7 @@ from pathlib import Path
 router = APIRouter()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-CSV_PATH = (BASE_DIR / "../src/main/assets/renewable_energy_planning_database.csv").resolve()
+CSV_PATH = (BASE_DIR / "../app/src/main/assets/renewable_energy_planning_database.csv").resolve()
 
 @router.get("/sites/{category}")
 def get_sites(category: str, db: Session = Depends(get_db)):
