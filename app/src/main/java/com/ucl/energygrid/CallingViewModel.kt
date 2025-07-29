@@ -6,6 +6,7 @@ import com.ucl.energygrid.data.repository.WebRtcRepository
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.webrtc.SurfaceViewRenderer
+import kotlinx.coroutines.flow.MutableStateFlow
 
 
 class CallingViewModel(
@@ -24,5 +25,15 @@ class CallingViewModel(
     override fun onCleared() {
         super.onCleared()
         repo.endCall()
+    }
+
+    val incomingCall: StateFlow<Boolean> = repo.incomingCall
+
+    fun acceptCall() = viewModelScope.launch {
+        repo.acceptIncomingCall()
+    }
+
+    fun rejectCall() = viewModelScope.launch {
+        repo.rejectIncomingCall()
     }
 }

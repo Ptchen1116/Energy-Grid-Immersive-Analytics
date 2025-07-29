@@ -31,7 +31,7 @@ import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoCapturer
 import org.webrtc.VideoSource
 import org.webrtc.VideoTrack
-
+import kotlinx.coroutines.flow.StateFlow
 
 class WebRtcRepository(private val context: Context) {
     private val eglBase = EglBase.create()
@@ -53,10 +53,22 @@ class WebRtcRepository(private val context: Context) {
     ).reference.child("calls").child("test-call")
 
     private val pendingCandidates = mutableListOf<IceCandidate>()
+    private val _incomingCall = MutableStateFlow(false)
+    val incomingCall: StateFlow<Boolean> get() = _incomingCall
 
     val isConnected = MutableStateFlow(false)
 
+    // 監聽器變數，用來移除
+    private var offerListener: ValueEventListener? = null
+    private var answerListener: ValueEventListener? = null
+    private var candidateListener: ChildEventListener? = null
+
     fun init(localView: SurfaceViewRenderer, remoteView: SurfaceViewRenderer, isCaller: Boolean) {
+        if (this::peerConnectionFactory.isInitialized && peerConnection != null) {
+            // 已經初始化過，避免重複初始化
+            return
+        }
+
         this.localView = localView
         this.remoteView = remoteView
         this.isCaller = isCaller
@@ -176,35 +188,51 @@ class WebRtcRepository(private val context: Context) {
             videoCapturer?.stopCapture()
         } catch (_: Exception) {}
         videoCapturer?.dispose()
-        localVideoSource.dispose()
-        localAudioSource.dispose()
+        if (this::localVideoSource.isInitialized) localVideoSource.dispose()
+        if (this::localAudioSource.isInitialized) localAudioSource.dispose()
 
         peerConnection?.close()
         peerConnection = null
-        database.removeValue()
+
+        // 移除監聽器
+        offerListener?.let { database.child("offer").removeEventListener(it) }
+        answerListener?.let { database.child("answer").removeEventListener(it) }
+        candidateListener?.let {
+            val path = if (isCaller) "calleeCandidates" else "callerCandidates"
+            database.child(path).removeEventListener(it)
+        }
+
+        // 清理 signaling 資料
+        clearSignaling()
+
+        pendingCandidates.clear()
         isConnected.value = false
     }
 
+    private fun clearSignaling() {
+        database.child("offer").removeValue()
+        database.child("answer").removeValue()
+        database.child("callerCandidates").removeValue()
+        database.child("calleeCandidates").removeValue()
+    }
+
+    private var pendingOffer: SessionDescription? = null
+
     private fun listenForOffer() {
-        database.child("offer").addValueEventListener(object : ValueEventListener {
+        offerListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists() && !isCaller) {
+                    _incomingCall.value = true
+
                     val sdp = snapshot.getValue(String::class.java) ?: return
-                    val desc = SessionDescription(SessionDescription.Type.OFFER, sdp)
-                    peerConnection?.setRemoteDescription(object : SdpObserver {
-                        override fun onSetSuccess() {
-                            createAnswer()
-                            pendingCandidates.forEach { peerConnection?.addIceCandidate(it) }
-                            pendingCandidates.clear()
-                        }
-                        override fun onSetFailure(error: String?) {}
-                        override fun onCreateSuccess(p0: SessionDescription?) {}
-                        override fun onCreateFailure(error: String?) {}
-                    }, desc)
+                    pendingOffer = SessionDescription(SessionDescription.Type.OFFER, sdp)
+                } else {
+                    _incomingCall.value = false
                 }
             }
             override fun onCancelled(error: DatabaseError) {}
-        })
+        }
+        database.child("offer").addValueEventListener(offerListener as ValueEventListener)
     }
 
     private fun createAnswer() {
@@ -226,7 +254,7 @@ class WebRtcRepository(private val context: Context) {
     }
 
     private fun listenForRemoteSDP() {
-        database.child("answer").addValueEventListener(object : ValueEventListener {
+        answerListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists() && isCaller) {
                     val sdp = snapshot.getValue(String::class.java) ?: return
@@ -243,12 +271,13 @@ class WebRtcRepository(private val context: Context) {
                 }
             }
             override fun onCancelled(error: DatabaseError) {}
-        })
+        }
+        database.child("answer").addValueEventListener(answerListener as ValueEventListener)
     }
 
     private fun listenForRemoteCandidates() {
         val path = if (isCaller) "calleeCandidates" else "callerCandidates"
-        database.child(path).addChildEventListener(object : ChildEventListener {
+        candidateListener = object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val data = snapshot.getValue(IceCandidateData::class.java) ?: return
                 val candidate = IceCandidate(data.sdpMid, data.sdpMLineIndex, data.sdp)
@@ -262,22 +291,54 @@ class WebRtcRepository(private val context: Context) {
             override fun onChildRemoved(snapshot: DataSnapshot) {}
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {}
-        })
+        }
+        database.child(path).addChildEventListener(candidateListener as ChildEventListener)
+    }
+
+    fun acceptIncomingCall() {
+        pendingOffer?.let { offer ->
+            peerConnection?.setRemoteDescription(object : SdpObserver {
+                override fun onSetSuccess() {
+                    createAnswer()
+                    pendingCandidates.forEach { peerConnection?.addIceCandidate(it) }
+                    pendingCandidates.clear()
+                }
+                override fun onSetFailure(error: String?) {}
+                override fun onCreateSuccess(p0: SessionDescription?) {}
+                override fun onCreateFailure(error: String?) {}
+            }, offer)
+            pendingOffer = null
+        }
+        _incomingCall.value = false
+    }
+
+    fun rejectIncomingCall() {
+        _incomingCall.value = false
+        database.child("offer").removeValue()
+        endCall()
     }
 
     private fun createCameraCapturer(): VideoCapturer? {
         val enumerator = Camera2Enumerator(context)
-        for (deviceName in enumerator.deviceNames) {
-            if (enumerator.isFrontFacing(deviceName)) {
-                return enumerator.createCapturer(deviceName, null)
+        val deviceNames = enumerator.deviceNames
+        for (name in deviceNames) {
+            if (enumerator.isFrontFacing(name)) {
+                val capturer = enumerator.createCapturer(name, null)
+                if (capturer != null) return capturer
             }
         }
-        return enumerator.deviceNames.firstOrNull()?.let { enumerator.createCapturer(it, null) }
+        for (name in deviceNames) {
+            if (!enumerator.isFrontFacing(name)) {
+                val capturer = enumerator.createCapturer(name, null)
+                if (capturer != null) return capturer
+            }
+        }
+        return null
     }
-
-    data class IceCandidateData(
-        val sdpMid: String? = null,
-        val sdpMLineIndex: Int = 0,
-        val sdp: String? = null
-    )
 }
+
+data class IceCandidateData(
+    val sdpMid: String? = null,
+    val sdpMLineIndex: Int = 0,
+    val sdp: String? = null
+)
