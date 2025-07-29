@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitInstance {
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8000")
+            .baseUrl("https://immersive-analytics-for-energy-grid-data.uksouth.cloudapp.azure.com")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

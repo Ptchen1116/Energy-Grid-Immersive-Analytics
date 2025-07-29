@@ -115,11 +115,12 @@ class WearMainActivity : ComponentActivity() {
         setContent {
             val command by spokenCommand.collectAsState()
 
-            // 非同步取得 sites
             val sitesState = produceState<List<Triple<String, String, String>>>(initialValue = emptyList()) {
                 value = getAllSiteLabelsReferencesAndNames()
             }
             val sites = sitesState.value
+            Log.i("WearMainCommand", "Sites: '$sites'")
+
 
             var currentStage by remember { mutableStateOf("selectSite") }
             var selectedMineReference by remember { mutableStateOf<String?>(null) }
