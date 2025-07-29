@@ -1,17 +1,11 @@
 package com.ucl.energygrid.data.repository
 
-import android.content.Context
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import org.locationtech.proj4j.CRSFactory
-import org.locationtech.proj4j.CoordinateTransformFactory
-import org.locationtech.proj4j.ProjCoordinate
-import org.json.JSONArray
-import org.json.JSONObject
 import android.util.Log
-import java.net.URL
-import java.net.HttpURLConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import java.net.HttpURLConnection
+import java.net.URL
 
 
 suspend fun readAndExtractSitesByType(category: String): List<Triple<String, Double, Double>> {

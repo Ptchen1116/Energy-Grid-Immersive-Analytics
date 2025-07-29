@@ -85,11 +85,16 @@ fun UKMap(
         ) {
             if (dynamicMarkerIcons.isEmpty()) {
                 PinType.values().forEach { type ->
-                    dynamicMarkerIcons[type] = BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, type))
+                    dynamicMarkerIcons[type] =
+                        BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, type))
                 }
             }
 
-            MinesMarkers(closedMine = closedMine, closingMine = closingMine, onSiteSelected = onSiteSelected)
+            MinesMarkers(
+                closedMine = closedMine,
+                closingMine = closingMine,
+                onSiteSelected = onSiteSelected
+            )
 
             myPins.forEach { pin ->
                 val mine = allMines.find { it.reference == pin.mine_id.toString() }
@@ -99,7 +104,8 @@ fun UKMap(
                         state = MarkerState(position = position),
                         title = mine.name ?: "My Pin",
                         snippet = pin.note ?: "",
-                        icon = dynamicMarkerIcons[PinType.USER_PIN] ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE),
+                        icon = dynamicMarkerIcons[PinType.USER_PIN]
+                            ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE),
                         onClick = {
                             onPinSelected(mine)
                             true
@@ -131,13 +137,13 @@ fun UKMap(
             if (energyDemandHeatmap) {
                 regionFeatures.forEach { region ->
                     val nutsCode = region.nutsCode
-                    val demand = energyConsumption[nutsCode]?.first
+                    val demand = energyConsumption[nutsCode]?.value  // 用 ForecastItem 的 value
 
                     val baseColor = when {
                         demand == null -> Color.Transparent
-                        demand < 10000.0 -> Color(0xFF00FF00)
-                        demand < 20000.0 -> Color(0xFFFFFF00)
-                        else -> Color(0xFFFF0000)
+                        demand < 10000.0 -> Color(0xFF00FF00)   // 綠
+                        demand < 20000.0 -> Color(0xFFFFFF00)   // 黃
+                        else -> Color(0xFFFF0000)               // 紅
                     }
 
                     val isSelected = selectedRegion?.nutsCode == nutsCode
@@ -159,12 +165,14 @@ fun UKMap(
             selectedRegion?.let { region ->
                 val center = region.getCenterLatLng()
                 val code = region.nutsCode
-                val consumptionPair = energyConsumption[code]
-                val consumption = consumptionPair?.first
-                val source = consumptionPair?.second
+
+                val forecast = energyConsumption[code]
+                val consumption = forecast?.value
+                val source = forecast?.source
 
                 val titleWithSource = source?.let { "${region.name} ($it)" } ?: region.name
-                val snippet = consumption?.let { "Total Consumption: %.2f GWh".format(it) } ?: "No data available"
+                val snippet = consumption?.let { "Total Consumption: %.2f GWh".format(it) }
+                    ?: "No data available"
 
                 Marker(
                     state = MarkerState(position = center),

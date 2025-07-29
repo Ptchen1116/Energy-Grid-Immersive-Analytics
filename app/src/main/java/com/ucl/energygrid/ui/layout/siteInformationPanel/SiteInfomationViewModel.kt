@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
-import com.ucl.energygrid.ui.screen.MainViewModel
 
 
 data class SiteInfoUiState(
