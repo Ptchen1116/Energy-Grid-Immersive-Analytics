@@ -58,6 +58,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.webrtc.EglBase
 import org.webrtc.SurfaceViewRenderer
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
@@ -66,6 +68,7 @@ class WearMainActivity : ComponentActivity() {
     private lateinit var localRenderer: SurfaceViewRenderer
     private lateinit var remoteRenderer: SurfaceViewRenderer
     private lateinit var eglBase: EglBase
+
 
     private val asrReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -116,7 +119,26 @@ class WearMainActivity : ComponentActivity() {
                 value = getAllSiteLabelsReferencesAndNames()
             }
             val sites = sitesState.value
-            Log.i("WearMainCommand", "Sites: '$sites'")
+            val incomingCall by viewModel.incomingCall.collectAsState()
+            var showIncomingDialog by remember { mutableStateOf(false) }
+
+            LaunchedEffect(incomingCall) {
+                showIncomingDialog = incomingCall
+            }
+
+            if (showIncomingDialog) {
+                IncomingCallDialog(
+                    callerName = "Incoming Call",
+                    onAccept = {
+                        viewModel.acceptCall()
+                        showIncomingDialog = false
+                    },
+                    onReject = {
+                        viewModel.rejectCall()
+                        showIncomingDialog = false
+                    }
+                )
+            }
 
 
             var currentStage by remember { mutableStateOf("selectSite") }
@@ -127,6 +149,19 @@ class WearMainActivity : ComponentActivity() {
                 if (sites.isEmpty()) return@LaunchedEffect
 
                 Log.i("WearMainCommand", "Received command: '$command'")
+
+                when (command.lowercase()) {
+                    "accept" -> {
+                        viewModel.acceptCall()
+                        showIncomingDialog = false
+                        return@LaunchedEffect
+                    }
+                    "reject" -> {
+                        viewModel.rejectCall()
+                        showIncomingDialog = false
+                        return@LaunchedEffect
+                    }
+                }
 
                 if (currentStage == "selectSite") {
                     val selectedSite = sites.firstOrNull {
@@ -225,7 +260,8 @@ class WearMainActivity : ComponentActivity() {
             val sites = getAllSiteLabelsReferencesAndNames()
             val siteLabels = sites.map { it.first.lowercase() }
             withContext(Dispatchers.Main) {
-                sendCommands(siteLabels)
+                val callActions = listOf("Accept", "Reject")
+                sendCommands(siteLabels + callActions)
             }
         }
     }
@@ -261,7 +297,7 @@ fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             SectionHeader(
-                                iconResId = R.drawable.siteinfo_pinandnote, // 請換成適合 icon
+                                iconResId = R.drawable.siteinfo_pinandnote,
                                 title = "Select Site",
                                 fontSize = 27.sp
                             )
@@ -525,4 +561,25 @@ fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
     }
 }
 
+@Composable
+fun IncomingCallDialog(
+    callerName: String = "Incoming Call",
+    onAccept: () -> Unit,
+    onReject: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onReject() },
+        title = { Text(text = callerName, style = MaterialTheme.typography.titleLarge) },
+        confirmButton = {
+            Button(onClick = onAccept) {
+                Text("Accept")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onReject) {
+                Text("Reject")
+            }
+        }
+    )
+}
 
