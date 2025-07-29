@@ -18,7 +18,7 @@ idna==3.10
 importlib_resources==6.5.2
 kiwisolver==1.4.8
 matplotlib==3.10.3
-numpy==2.3.1
+numpy
 packaging==25.0
 pandas==2.3.0
 passlib==1.7.4
