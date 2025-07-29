@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 
 
 suspend fun readAndExtractSitesByType(category: String): List<Triple<String, Double, Double>> {
-    val apiUrl = "http://10.0.2.2:8000/sites/$category"
+    val apiUrl = "https://immersive-analytics-for-energy-grid-data.uksouth.cloudapp.azure.com/sites/$category"
     val result = mutableListOf<Triple<String, Double, Double>>()
 
     return withContext(Dispatchers.IO) {
