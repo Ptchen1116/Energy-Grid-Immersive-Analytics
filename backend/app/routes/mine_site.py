@@ -8,7 +8,7 @@ from pathlib import Path
 
 router = APIRouter()
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent  
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent  
 ASSETS_DIR = PROJECT_ROOT / "app/src/main/assets"
 JSON_PATH = ASSETS_DIR / "fake_mine_location_data.json"
 
