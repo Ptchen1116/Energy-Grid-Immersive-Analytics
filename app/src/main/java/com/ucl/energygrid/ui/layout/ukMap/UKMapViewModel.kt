@@ -6,14 +6,14 @@ import com.ucl.energygrid.data.repository.EnergyRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
+import com.ucl.energygrid.data.remote.apis.ForecastItem
 
 class UKMapViewModel(
-    private val energyRepository: EnergyRepository = EnergyRepository() // 手動建立 Repository
+    private val energyRepository: EnergyRepository = EnergyRepository()
 ) : ViewModel() {
 
-    private val _energyConsumption = MutableStateFlow<Map<String, Pair<Double, String>>>(emptyMap())
-    val energyConsumption: StateFlow<Map<String, Pair<Double, String>>> = _energyConsumption
+    private val _energyConsumption = MutableStateFlow<Map<String, ForecastItem>>(emptyMap())
+    val energyConsumption: StateFlow<Map<String, ForecastItem>> = _energyConsumption
 
     fun loadForecast(year: Int) {
         viewModelScope.launch {

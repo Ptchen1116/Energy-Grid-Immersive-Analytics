@@ -22,4 +22,8 @@ object RetrofitInstance {
     val mineApi: MineApi by lazy {
         retrofit.create(MineApi::class.java)
     }
+
+    val energyApi: EnergyApi by lazy {
+        retrofit.create(EnergyApi::class.java)
+    }
 }
