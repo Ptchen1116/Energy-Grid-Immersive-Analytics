@@ -2,11 +2,11 @@ package com.ucl.energygrid.ui.layout.ukMap
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ucl.energygrid.data.remote.apis.ForecastItem
 import com.ucl.energygrid.data.repository.EnergyRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import com.ucl.energygrid.data.remote.apis.ForecastItem
 
 class UKMapViewModel(
     private val energyRepository: EnergyRepository = EnergyRepository()

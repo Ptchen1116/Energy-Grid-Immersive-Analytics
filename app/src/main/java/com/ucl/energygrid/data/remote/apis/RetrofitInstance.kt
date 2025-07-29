@@ -26,4 +26,8 @@ object RetrofitInstance {
     val energyApi: EnergyApi by lazy {
         retrofit.create(EnergyApi::class.java)
     }
+
+    val siteApi: SiteApi by lazy {
+        retrofit.create(SiteApi::class.java)
+    }
 }
