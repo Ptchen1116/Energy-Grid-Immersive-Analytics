@@ -69,7 +69,6 @@ class WearMainActivity : ComponentActivity() {
     private lateinit var remoteRenderer: SurfaceViewRenderer
     private lateinit var eglBase: EglBase
 
-
     private val asrReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "com.realwear.wearhf.intent.action.SPEECH_EVENT") {
@@ -121,6 +120,7 @@ class WearMainActivity : ComponentActivity() {
             val sites = sitesState.value
             val incomingCall by viewModel.incomingCall.collectAsState()
             var showIncomingDialog by remember { mutableStateOf(false) }
+            val callActive by viewModel.callActive.collectAsState()
 
             LaunchedEffect(incomingCall) {
                 showIncomingDialog = incomingCall
@@ -229,24 +229,27 @@ class WearMainActivity : ComponentActivity() {
                 WearMainScreen(
                     stage = currentStage,
                     mineName = selectedMineReference,
-                    mineInfo = selectedMineInfo
+                    mineInfo = selectedMineInfo,
+                    sites = sites
                 )
 
-                AndroidView(
-                    factory = { remoteRenderer },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(160.dp)
-                        .padding(8.dp)
-                )
+                if (callActive) {
+                    AndroidView(
+                        factory = { remoteRenderer },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(160.dp)
+                            .padding(8.dp)
+                    )
 
-                AndroidView(
-                    factory = { localRenderer },
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .size(80.dp)
-                        .padding(8.dp)
-                )
+                    AndroidView(
+                        factory = { localRenderer },
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .size(80.dp)
+                            .padding(8.dp)
+                    )
+                }
             }
         }
     }
@@ -279,11 +282,16 @@ class WearMainActivity : ComponentActivity() {
 
 
 @Composable
-fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
+fun WearMainScreen(
+    stage: String,
+    mineName: String?,
+    mineInfo: Mine? = null,
+    sites: List<Triple<String, String, String>> = emptyList()
+) {
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             when (stage) {
-                "selectSite" -> SelectSiteScreen()
+                "selectSite" -> SelectSiteScreen(sites)
                 "menu" -> MenuScreen(mineName ?: "")
                 "basicInfo" -> mineInfo?.let { BasicInfoScreen(it) } ?: LoadingScreen()
                 "floodTrend" -> mineInfo?.let { FloodTrendScreen(it) } ?: LoadingScreen()
@@ -295,7 +303,7 @@ fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
 }
 
 @Composable
-fun SelectSiteScreen() {
+fun SelectSiteScreen(sites: List<Triple<String, String, String>>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -308,8 +316,18 @@ fun SelectSiteScreen() {
             title = "Select Site",
             fontSize = 27.sp
         )
-        Spacer(modifier = Modifier.height(18.dp))
-        Text("Say your site number", color = Color.Black, fontSize = 24.sp)
+        Spacer(modifier = Modifier.height(12.dp))
+        Text("Say your site number", color = Color.Black, fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(12.dp))
+
+        sites.forEach { (label, _, name) ->
+            Text(
+                text = "$label: $name",
+                color = Color.DarkGray,
+                fontSize = 18.sp,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+        }
     }
 }
 
