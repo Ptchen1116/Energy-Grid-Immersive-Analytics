@@ -282,284 +282,223 @@ class WearMainActivity : ComponentActivity() {
 fun WearMainScreen(stage: String, mineName: String?, mineInfo: Mine? = null) {
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                when (stage) {
-                    "selectSite" -> {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            SectionHeader(
-                                iconResId = R.drawable.siteinfo_pinandnote,
-                                title = "Select Site",
-                                fontSize = 27.sp
-                            )
-                            Spacer(modifier = Modifier.height(18.dp))
-
-                            Text(
-                                "Say your site number",
-                                color = Color.Black,
-                                fontSize = 24.sp
-                            )
-                        }
-                    }
-                    "menu" -> {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            SectionHeader(
-                                iconResId = R.drawable.siteinfo_pinandnote,
-                                title = "Menu",
-                                fontSize = 27.sp
-                            )
-                            Spacer(modifier = Modifier.height(18.dp))
-
-                            Text("Mine: $mineName", color = Color.Black, fontSize = 24.sp)
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text("Say a command:", color = Color.Black, fontSize = 21.sp)
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text("1. Reselect site", color = Color.DarkGray, fontSize = 21.sp)
-                            Text("2. Show me basic info", color = Color.DarkGray, fontSize = 21.sp)
-                            Text("3. Show me flooding trend", color = Color.DarkGray, fontSize = 21.sp)
-                            Text("4. Show me historical energy demand", color = Color.DarkGray, fontSize = 21.sp)
-                            Text("5. Show me forecast energy demand", color = Color.DarkGray, fontSize = 21.sp)
-                        }
-                    }
-                    "basicInfo" -> {
-                        mineInfo?.let { mine ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                SectionHeader(
-                                    iconResId = R.drawable.siteinfo_pinandnote,
-                                    title = "Basic Information",
-                                    fontSize = 27.sp
-                                )
-                                Spacer(modifier = Modifier.height(18.dp))
-
-                                Text(
-                                    mine.name,
-                                    fontSize = 30.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1C0471)
-                                )
-                                Text(
-                                    "Reference: ${mine.reference}",
-                                    fontSize = 21.sp,
-                                    color = Color.Gray
-                                )
-
-                                Spacer(modifier = Modifier.height(18.dp))
-
-                                Row {
-                                    when (mine.status) {
-                                        "C" -> TypeTag("Closed Mine")
-                                        "I" -> TypeTag("Inactive Mine")
-                                        else -> TypeTag("Status Unknown")
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(18.dp))
-                                Text(
-                                    "Local Authority: ${mine.localAuthority ?: "Unknown"}",
-                                    fontSize = 21.sp,
-                                    color = Color.Black
-                                )
-                                Text(
-                                    "Coordinates: E=${mine.easting}, N=${mine.northing}",
-                                    fontSize = 21.sp,
-                                    color = Color.Black
-                                )
-
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Text(
-                                    "Say 'back' or 'menu' to return to menu",
-                                    color = Color.DarkGray,
-                                    fontSize = 18.sp
-                                )
-                            }
-                        } ?: run {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("Loading mine info...", color = Color.Black, fontSize = 21.sp)
-                            }
-                        }
-                    }
-                    "floodTrend" -> {
-                        mineInfo?.let { mine ->
-                            val floodColor = when (mine.floodRiskLevel?.lowercase()) {
-                                "high" -> Color.Red
-                                "medium" -> Color.Yellow
-                                "low" -> Color.Green
-                                else -> Color.Gray
-                            }
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                val floodColor = when (mine.floodRiskLevel?.lowercase()) {
-                                    "low" -> Color(0xFF00C853)
-                                    "medium" -> Color(0xFFFFD600)
-                                    "high" -> Color(0xFFD50000)
-                                    else -> Color.Gray
-                                }
-                                SectionHeader(
-                                    iconResId = R.drawable.siteinfo_floodingrisks,
-                                    title = "Flooding Risks",
-                                    trailingContent = {
-                                        FloodRiskTag(
-                                            label = mine.floodRiskLevel?.replaceFirstChar { it.uppercase() } ?: "Unknown",
-                                            color = floodColor
-                                        )
-                                    }
-                                )
-
-                                mine.floodHistory?.let {
-                                    FloodHistoryChartMP("Historical Flood Trend Graph", it)
-                                } ?: androidx.compose.material3.Text(
-                                    "No flood history available",
-                                    color = Color.Gray
-                                )
-
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Text(
-                                    "Say 'back' or 'menu' to return",
-                                    color = Color.DarkGray,
-                                    fontSize = 18.sp
-                                )
-                            }
-                        } ?: Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Loading mine info...", color = Color.Gray, fontSize = 21.sp)
-                        }
-                    }
-                    "historicalEnergy" -> {
-                        mineInfo?.let { mine ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                SectionHeader(
-                                    iconResId = R.drawable.siteinfo_energydemand,
-                                    title = "Energy Demand",
-                                    trailingContent = {
-                                        mine.trend?.let { trend ->
-                                            val trendColor = when (trend) {
-                                                Trend.INCREASING -> Color.Red
-                                                Trend.DECREASING -> Color(0xFF00C853)
-                                                Trend.STABLE -> Color.Gray
-                                            }
-                                            val trendLabel = when (trend) {
-                                                Trend.INCREASING -> "Increasing"
-                                                Trend.DECREASING -> "Decreasing"
-                                                Trend.STABLE -> "Stable"
-                                            }
-                                            TrendTag(label = trendLabel, color = trendColor)
-                                        }
-                                    }
-                                )
-
-                                mine.energyDemandHistory?.let {
-                                    EnergyLineChartMP("Historical Energy Demand Graph", it, null)
-                                } ?: androidx.compose.material3.Text(
-                                    "No energy history available",
-                                    color = Color.Gray
-                                )
-
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Text(
-                                    "Say 'back' or 'menu' to return",
-                                    color = Color.DarkGray,
-                                    fontSize = 18.sp
-                                )
-                            }
-                        } ?: Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Loading mine info...", color = Color.Gray, fontSize = 21.sp)
-                        }
-                    }
-                    "forecastEnergy" -> {
-                        mineInfo?.let { mine ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                SectionHeader(
-                                    iconResId = R.drawable.siteinfo_energydemand,
-                                    title = "Energy Demand",
-                                    trailingContent = {
-                                        mine.trend?.let { trend ->
-                                            val trendColor = when (trend) {
-                                                Trend.INCREASING -> Color.Red
-                                                Trend.DECREASING -> Color(0xFF00C853)
-                                                Trend.STABLE -> Color.Gray
-                                            }
-                                            val trendLabel = when (trend) {
-                                                Trend.INCREASING -> "Increasing"
-                                                Trend.DECREASING -> "Decreasing"
-                                                Trend.STABLE -> "Stable"
-                                            }
-                                            TrendTag(label = trendLabel, color = trendColor)
-                                        }
-                                    }
-                                )
-
-                                mine.forecastEnergyDemand?.let {
-                                    EnergyLineChartMP("Forecast Energy Demand Graph", it, null)
-                                } ?: Text("No forecast data", color = Color.Gray, fontSize = 21.sp)
-
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Text(
-                                    "Say 'back' or 'menu' to return",
-                                    color = Color.DarkGray,
-                                    fontSize = 18.sp
-                                )
-                            }
-                        } ?: Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Loading mine info...", color = Color.Gray, fontSize = 21.sp)
-                        }
-                    }
-                }
+            when (stage) {
+                "selectSite" -> SelectSiteScreen()
+                "menu" -> MenuScreen(mineName ?: "")
+                "basicInfo" -> mineInfo?.let { BasicInfoScreen(it) } ?: LoadingScreen()
+                "floodTrend" -> mineInfo?.let { FloodTrendScreen(it) } ?: LoadingScreen()
+                "historicalEnergy" -> mineInfo?.let { HistoricalEnergyScreen(it) } ?: LoadingScreen()
+                "forecastEnergy" -> mineInfo?.let { ForecastEnergyScreen(it) } ?: LoadingScreen()
             }
         }
     }
 }
+
+@Composable
+fun SelectSiteScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SectionHeader(
+            iconResId = R.drawable.siteinfo_pinandnote,
+            title = "Select Site",
+            fontSize = 27.sp
+        )
+        Spacer(modifier = Modifier.height(18.dp))
+        Text("Say your site number", color = Color.Black, fontSize = 24.sp)
+    }
+}
+
+@Composable
+fun MenuScreen(mineName: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SectionHeader(
+            iconResId = R.drawable.siteinfo_pinandnote,
+            title = "Menu",
+            fontSize = 27.sp
+        )
+        Spacer(modifier = Modifier.height(18.dp))
+        Text("Mine: $mineName", color = Color.Black, fontSize = 24.sp)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Say a command:", color = Color.Black, fontSize = 21.sp)
+        Spacer(modifier = Modifier.height(12.dp))
+        listOf(
+            "1. Reselect site",
+            "2. Show me basic info",
+            "3. Show me flooding trend",
+            "4. Show me historical energy demand",
+            "5. Show me forecast energy demand"
+        ).forEach {
+            Text(it, color = Color.DarkGray, fontSize = 21.sp)
+        }
+    }
+}
+
+@Composable
+fun BasicInfoScreen(mine: Mine) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SectionHeader(
+            iconResId = R.drawable.siteinfo_pinandnote,
+            title = "Basic Information",
+            fontSize = 27.sp
+        )
+        Spacer(modifier = Modifier.height(18.dp))
+        Text(mine.name, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C0471))
+        Text("Reference: ${mine.reference}", fontSize = 21.sp, color = Color.Gray)
+        Spacer(modifier = Modifier.height(18.dp))
+        Row {
+            when (mine.status) {
+                "C" -> TypeTag("Closed Mine")
+                "I" -> TypeTag("Inactive Mine")
+                else -> TypeTag("Status Unknown")
+            }
+        }
+        Spacer(modifier = Modifier.height(18.dp))
+        Text("Local Authority: ${mine.localAuthority ?: "Unknown"}", fontSize = 21.sp, color = Color.Black)
+        Text("Coordinates: E=${mine.easting}, N=${mine.northing}", fontSize = 21.sp, color = Color.Black)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Say 'back' or 'menu' to return to menu", color = Color.DarkGray, fontSize = 18.sp)
+    }
+}
+
+@Composable
+fun FloodTrendScreen(mine: Mine) {
+    val floodColor = when (mine.floodRiskLevel?.lowercase()) {
+        "low" -> Color(0xFF00C853)
+        "medium" -> Color(0xFFFFD600)
+        "high" -> Color(0xFFD50000)
+        else -> Color.Gray
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SectionHeader(
+            iconResId = R.drawable.siteinfo_floodingrisks,
+            title = "Flooding Risks",
+            trailingContent = {
+                FloodRiskTag(
+                    label = mine.floodRiskLevel?.replaceFirstChar { it.uppercase() } ?: "Unknown",
+                    color = floodColor
+                )
+            }
+        )
+
+        mine.floodHistory?.let {
+            FloodHistoryChartMP("Historical Flood Trend Graph", it)
+        } ?: Text("No flood history available", color = Color.Gray)
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Say 'back' or 'menu' to return", color = Color.DarkGray, fontSize = 18.sp)
+    }
+}
+
+@Composable
+fun HistoricalEnergyScreen(mine: Mine) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SectionHeader(
+            iconResId = R.drawable.siteinfo_energydemand,
+            title = "Energy Demand",
+            trailingContent = {
+                mine.trend?.let { trend ->
+                    val trendColor = when (trend) {
+                        Trend.INCREASING -> Color.Red
+                        Trend.DECREASING -> Color(0xFF00C853)
+                        Trend.STABLE -> Color.Gray
+                    }
+                    val trendLabel = when (trend) {
+                        Trend.INCREASING -> "Increasing"
+                        Trend.DECREASING -> "Decreasing"
+                        Trend.STABLE -> "Stable"
+                    }
+                    TrendTag(label = trendLabel, color = trendColor)
+                }
+            }
+        )
+
+        mine.energyDemandHistory?.let {
+            EnergyLineChartMP("Historical Energy Demand Graph", it, null)
+        } ?: Text("No energy history available", color = Color.Gray)
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Say 'back' or 'menu' to return", color = Color.DarkGray, fontSize = 18.sp)
+    }
+}
+
+@Composable
+fun ForecastEnergyScreen(mine: Mine) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SectionHeader(
+            iconResId = R.drawable.siteinfo_energydemand,
+            title = "Energy Demand",
+            trailingContent = {
+                mine.trend?.let { trend ->
+                    val trendColor = when (trend) {
+                        Trend.INCREASING -> Color.Red
+                        Trend.DECREASING -> Color(0xFF00C853)
+                        Trend.STABLE -> Color.Gray
+                    }
+                    val trendLabel = when (trend) {
+                        Trend.INCREASING -> "Increasing"
+                        Trend.DECREASING -> "Decreasing"
+                        Trend.STABLE -> "Stable"
+                    }
+                    TrendTag(label = trendLabel, color = trendColor)
+                }
+            }
+        )
+
+        mine.forecastEnergyDemand?.let {
+            EnergyLineChartMP("Forecast Energy Demand Graph", it, null)
+        } ?: Text("No forecast data", color = Color.Gray, fontSize = 21.sp)
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Say 'back' or 'menu' to return", color = Color.DarkGray, fontSize = 18.sp)
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Loading mine info...", color = Color.Gray, fontSize = 21.sp)
+    }
+}
+
 
 @Composable
 fun IncomingCallDialog(
