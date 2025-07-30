@@ -144,6 +144,9 @@ class WearMainActivity : ComponentActivity() {
             var currentStage by remember { mutableStateOf("selectSite") }
             var selectedMineReference by remember { mutableStateOf<String?>(null) }
             var selectedMineInfo by remember { mutableStateOf<Mine?>(null) }
+            var currentPage by remember { mutableStateOf(0) }
+            val sitesPerPage = 5
+            val maxPage = (sites.size - 1) / sitesPerPage
 
             LaunchedEffect(command, sites) {
                 if (sites.isEmpty()) return@LaunchedEffect
@@ -161,19 +164,33 @@ class WearMainActivity : ComponentActivity() {
                         showIncomingDialog = false
                         return@LaunchedEffect
                     }
+                    "next" -> {
+                        if (currentStage == "selectSite" && currentPage < maxPage) {
+                            currentPage += 1
+                            sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
+                        }
+                    }
+                    "previous" -> {
+                        if (currentStage == "selectSite" && currentPage > 0) {
+                            currentPage -= 1
+                            sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
+                        }
+                    }
                 }
 
                 if (currentStage == "selectSite") {
-                    val selectedSite = sites.firstOrNull {
+                    val visibleSites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage)
+
+                    val selectedSite = visibleSites.firstOrNull {
                         it.first.equals(command, ignoreCase = true) ||
-                                command in listOf("one", "1", "two", "2", "three", "3") &&
+                                command in listOf("one", "1", "two", "2", "three", "3", "four", "4", "five", "5") &&
                                 it.first.endsWith(command.takeLast(1))
                     }
+
                     if (selectedSite != null) {
                         selectedMineReference = selectedSite.second
                         selectedMineInfo = getInfoByReference(selectedSite.second)
                         currentStage = "menu"
-
                         sendCommands(
                             listOf(
                                 "reselect site",
@@ -230,7 +247,7 @@ class WearMainActivity : ComponentActivity() {
                     stage = currentStage,
                     mineName = selectedMineReference,
                     mineInfo = selectedMineInfo,
-                    sites = sites
+                    sites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage)
                 )
 
                 if (callActive) {
@@ -264,7 +281,8 @@ class WearMainActivity : ComponentActivity() {
             val siteLabels = sites.map { it.first.lowercase() }
             withContext(Dispatchers.Main) {
                 val callActions = listOf("Accept", "Reject")
-                sendCommands(siteLabels + callActions)
+                val changePages = listOf("Next", "Previous")
+                sendCommands(siteLabels + callActions + changePages)
             }
         }
     }
@@ -328,6 +346,9 @@ fun SelectSiteScreen(sites: List<Triple<String, String, String>>) {
                 modifier = Modifier.padding(vertical = 4.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("(Say 'next' or 'previous' to change page)", fontSize = 14.sp, color = Color.Gray)
     }
 }
 
@@ -540,3 +561,10 @@ fun IncomingCallDialog(
     )
 }
 
+fun getCurrentPageCommands(
+    sites: List<Triple<String, String, String>>,
+    page: Int,
+    perPage: Int
+): List<String> {
+    return sites.drop(page * perPage).take(perPage).map { it.first.lowercase() }
+}
