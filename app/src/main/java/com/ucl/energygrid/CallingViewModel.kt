@@ -14,6 +14,8 @@ class CallingViewModel(
 ) : ViewModel() {
 
     val isConnected: StateFlow<Boolean> = repo.isConnected
+    private val _callActive = MutableStateFlow(false)
+    val callActive: StateFlow<Boolean> get() = _callActive
 
     fun init(localView: SurfaceViewRenderer, remoteView: SurfaceViewRenderer, isCaller: Boolean) {
         repo.init(localView, remoteView, isCaller)
@@ -31,9 +33,11 @@ class CallingViewModel(
 
     fun acceptCall() = viewModelScope.launch {
         repo.acceptIncomingCall()
+        _callActive.value = true
     }
 
     fun rejectCall() = viewModelScope.launch {
         repo.rejectIncomingCall()
+        _callActive.value = false
     }
 }
