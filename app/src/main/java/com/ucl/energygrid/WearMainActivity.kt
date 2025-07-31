@@ -163,10 +163,10 @@ class WearMainActivity : ComponentActivity() {
                         sendCommands(
                             listOf(
                                 "reselect site",
-                                "show me basic info",
-                                "show me flooding trend",
-                                "show me historical energy demand",
-                                "show me forecast energy demand",
+                                "basic info",
+                                "flooding trend",
+                                "historical energy demand",
+                                "forecast energy demand",
                                 "close menu"
                             )
                         )
@@ -316,19 +316,11 @@ class WearMainActivity : ComponentActivity() {
 
                 if (callActive) {
                     AndroidView(
-                        factory = { remoteRenderer },
+                        factory = { localRenderer },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .size(160.dp)
-                            .padding(8.dp)
-                    )
-
-                    AndroidView(
-                        factory = { localRenderer },
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .size(80.dp)
-                            .padding(8.dp)
+                            .padding(end = 10.dp, bottom = 85.dp)
                     )
                 }
             }

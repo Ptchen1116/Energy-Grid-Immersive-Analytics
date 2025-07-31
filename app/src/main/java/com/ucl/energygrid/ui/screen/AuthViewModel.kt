@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.ucl.energygrid.data.repository.UserRepository
 
-
-class AuthViewModel : ViewModel() {
+class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
 
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
@@ -29,52 +29,33 @@ class AuthViewModel : ViewModel() {
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
-            try {
-                val api = RetrofitInstance.userApi
-                val response = api.login(LoginRequest(email, password))
-                if (response.isSuccessful) {
-                    val loginResponse = response.body()
-                    val token = loginResponse?.access_token
-
-                    if (token != null) {
-                        val jwt = JWT(token)
-                        val userId = jwt.getClaim("sub").asString() ?: jwt.getClaim("id").asString() ?: ""
-                        val userIdInt = userId.toIntOrNull() ?: -1
-
-                        if (userIdInt > 0) {
-                            _userToken.value = token
-                            _userId.value = userId
-                            _isLoggedIn.value = true
-                            _uiMessage.emit("Login success! UserId: $userId")
-                        } else {
-                            _isLoggedIn.value = false
-                            _uiMessage.emit("Login failed: Invalid userId")
-                        }
-                    } else {
-                        _uiMessage.emit("Login failed: No token received")
-                    }
-                } else {
-                    _uiMessage.emit("Login failed: ${response.errorBody()?.string()}")
+            val result = userRepository.login(email, password)
+            result.fold(
+                onSuccess = { (userId, token) ->
+                    _userId.value = userId
+                    _userToken.value = token
+                    _isLoggedIn.value = true
+                    _uiMessage.emit("Login success! UserId: $userId")
+                },
+                onFailure = { error ->
+                    _isLoggedIn.value = false
+                    _uiMessage.emit("Login failed: ${error.message}")
                 }
-            } catch (e: Exception) {
-                _uiMessage.emit("Login error: ${e.message}")
-            }
+            )
         }
     }
 
     fun register(username: String, email: String, password: String) {
         viewModelScope.launch {
-            try {
-                val api = RetrofitInstance.userApi
-                val response = api.register(RegisterRequest(username, email, password))
-                if (response.isSuccessful) {
+            val result = userRepository.register(username, email, password)
+            result.fold(
+                onSuccess = {
                     _uiMessage.emit("Register successful!")
-                } else {
-                    _uiMessage.emit("Register failed: ${response.errorBody()?.string()}")
+                },
+                onFailure = { error ->
+                    _uiMessage.emit("Register failed: ${error.message}")
                 }
-            } catch (e: Exception) {
-                _uiMessage.emit("Register error: ${e.message}")
-            }
+            )
         }
     }
 
