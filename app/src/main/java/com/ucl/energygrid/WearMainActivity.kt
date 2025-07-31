@@ -5,20 +5,26 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -58,8 +64,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.webrtc.EglBase
 import org.webrtc.SurfaceViewRenderer
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+
 
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
@@ -140,36 +145,96 @@ class WearMainActivity : ComponentActivity() {
                 )
             }
 
-
             var currentStage by remember { mutableStateOf("selectSite") }
-            var selectedMineReference by remember { mutableStateOf<String?>(null) }
+            var selectedMineName by remember { mutableStateOf<String?>(null) }
             var selectedMineInfo by remember { mutableStateOf<Mine?>(null) }
             var currentPage by remember { mutableStateOf(0) }
             val sitesPerPage = 5
             val maxPage = (sites.size - 1) / sitesPerPage
 
-            LaunchedEffect(command, sites) {
+            var menuExpanded by remember { mutableStateOf(false) }
+
+            LaunchedEffect(command, sites, currentPage, currentStage) {
                 if (sites.isEmpty()) return@LaunchedEffect
 
-                Log.i("WearMainCommand", "Received command: '$command'")
-
                 when (command.lowercase()) {
+                    "menu" -> {
+                        menuExpanded = true
+                        sendCommands(
+                            listOf(
+                                "reselect site",
+                                "show me basic info",
+                                "show me flooding trend",
+                                "show me historical energy demand",
+                                "show me forecast energy demand",
+                                "close menu"
+                            )
+                        )
+                    }
+
+                    "close menu" -> {
+                        menuExpanded = false
+                        sendCommands(listOf("menu"))
+                    }
+
+                    "reselect site" -> {
+                        currentStage = "selectSite"
+                        selectedMineName = null
+                        selectedMineInfo = null
+                        menuExpanded = false
+                        currentPage = 0
+                        sendCommands(sites.map { it.first.lowercase() } + listOf("menu"))
+                    }
+
+                    "basic info" -> {
+                        currentStage = "basicInfo"
+                        menuExpanded = false
+                        sendCommands(listOf("back", "menu"))
+                    }
+
+                    "flooding trend" -> {
+                        currentStage = "floodTrend"
+                        menuExpanded = false
+                        sendCommands(listOf("back", "menu"))
+                    }
+
+                    "historical energy demand" -> {
+                        currentStage = "historicalEnergy"
+                        menuExpanded = false
+                        sendCommands(listOf("back", "menu"))
+                    }
+
+                    "forecast energy demand" -> {
+                        currentStage = "forecastEnergy"
+                        menuExpanded = false
+                        sendCommands(listOf("back", "menu"))
+                    }
+
+                    "back" -> {
+                        currentStage = "selectSite"
+                        menuExpanded = false
+                        sendCommands(sites.map { it.first.lowercase() } + listOf("menu"))
+                    }
+
                     "accept" -> {
                         viewModel.acceptCall()
                         showIncomingDialog = false
                         return@LaunchedEffect
                     }
+
                     "reject" -> {
                         viewModel.rejectCall()
                         showIncomingDialog = false
                         return@LaunchedEffect
                     }
+
                     "next" -> {
                         if (currentStage == "selectSite" && currentPage < maxPage) {
                             currentPage += 1
                             sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
                         }
                     }
+
                     "previous" -> {
                         if (currentStage == "selectSite" && currentPage > 0) {
                             currentPage -= 1
@@ -183,61 +248,16 @@ class WearMainActivity : ComponentActivity() {
 
                     val selectedSite = visibleSites.firstOrNull {
                         it.first.equals(command, ignoreCase = true) ||
-                                command in listOf("one", "1", "two", "2", "three", "3", "four", "4", "five", "5") &&
-                                it.first.endsWith(command.takeLast(1))
+                                (command in listOf("one", "1", "two", "2", "three", "3", "four", "4", "five", "5") &&
+                                        it.first.endsWith(command.takeLast(1)))
                     }
 
                     if (selectedSite != null) {
-                        selectedMineReference = selectedSite.second
+                        selectedMineName = selectedSite.third
                         selectedMineInfo = getInfoByReference(selectedSite.second)
-                        currentStage = "menu"
-                        sendCommands(
-                            listOf(
-                                "reselect site",
-                                "show me basic info",
-                                "show me flooding trend",
-                                "show me historical energy demand",
-                                "show me forecast energy demand"
-                            )
-                        )
-                    }
-                } else if (currentStage == "menu") {
-                    when (command.lowercase()) {
-                        "reselect site" -> {
-                            selectedMineReference = null
-                            selectedMineInfo = null
-                            currentStage = "selectSite"
-                            sendCommands(sites.map { it.first.lowercase() })
-                        }
-                        "show me basic info" -> {
-                            currentStage = "basicInfo"
-                            sendCommands(listOf("back", "menu"))
-                        }
-                        "show me flooding trend" -> {
-                            currentStage = "floodTrend"
-                            sendCommands(listOf("back", "menu"))
-                        }
-                        "show me historical energy demand" -> {
-                            currentStage = "historicalEnergy"
-                            sendCommands(listOf("back", "menu"))
-                        }
-                        "show me forecast energy demand" -> {
-                            currentStage = "forecastEnergy"
-                            sendCommands(listOf("back", "menu"))
-                        }
-                    }
-                } else {
-                    if (command.lowercase() in listOf("back", "menu")) {
-                        currentStage = "menu"
-                        sendCommands(
-                            listOf(
-                                "reselect site",
-                                "show me basic info",
-                                "show me flooding trend",
-                                "show me historical energy demand",
-                                "show me forecast energy demand"
-                            )
-                        )
+                        currentStage = "basicInfo"
+                        menuExpanded = false
+                        sendCommands(listOf("back", "menu"))
                     }
                 }
             }
@@ -245,9 +265,53 @@ class WearMainActivity : ComponentActivity() {
             Box(modifier = Modifier.fillMaxSize()) {
                 WearMainScreen(
                     stage = currentStage,
-                    mineName = selectedMineReference,
+                    mineName = selectedMineName,
                     mineInfo = selectedMineInfo,
-                    sites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage)
+                    sites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage),
+                    menuExpanded = menuExpanded,
+                    onMenuDismiss = { menuExpanded = false },
+                    onMenuCommand = { selectedOption ->
+                        when (selectedOption) {
+                            "reselect site" -> {
+                                selectedMineName = null
+                                selectedMineInfo = null
+                                currentStage = "selectSite"
+                                currentPage = 0
+                                sendCommands(sites.map { it.first.lowercase() })
+                            }
+                            "basic info" -> currentStage = "basicInfo"
+                            "flooding trend" -> currentStage = "floodTrend"
+                            "historical energy demand" -> currentStage = "historicalEnergy"
+                            "forecast energy demand" -> currentStage = "forecastEnergy"
+                        }
+                        menuExpanded = false
+                        sendCommands(listOf("back", "menu"))
+                    },
+                    onMenuClick = {
+                        menuExpanded = true
+                        sendCommands(
+                            listOf(
+                                "reselect site",
+                                "basic info",
+                                "flooding trend",
+                                "historical energy demand",
+                                "forecast energy demand",
+                                "close menu"
+                            )
+                        )
+                    },
+                    onNextClick = {
+                        if (currentStage == "selectSite" && currentPage < maxPage) {
+                            currentPage += 1
+                            sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
+                        }
+                    },
+                    onPreviousClick = {
+                        if (currentStage == "selectSite" && currentPage > 0) {
+                            currentPage -= 1
+                            sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
+                        }
+                    }
                 )
 
                 if (callActive) {
@@ -304,17 +368,121 @@ fun WearMainScreen(
     stage: String,
     mineName: String?,
     mineInfo: Mine? = null,
-    sites: List<Triple<String, String, String>> = emptyList()
+    sites: List<Triple<String, String, String>> = emptyList(),
+    menuExpanded: Boolean,
+    onMenuDismiss: () -> Unit,
+    onMenuCommand: (String) -> Unit,
+    onMenuClick: () -> Unit,
+    onNextClick: () -> Unit,
+    onPreviousClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    MaterialTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            when (stage) {
-                "selectSite" -> SelectSiteScreen(sites)
-                "menu" -> MenuScreen(mineName ?: "")
-                "basicInfo" -> mineInfo?.let { BasicInfoScreen(it) } ?: LoadingScreen()
-                "floodTrend" -> mineInfo?.let { FloodTrendScreen(it) } ?: LoadingScreen()
-                "historicalEnergy" -> mineInfo?.let { HistoricalEnergyScreen(it) } ?: LoadingScreen()
-                "forecastEnergy" -> mineInfo?.let { ForecastEnergyScreen(it) } ?: LoadingScreen()
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Surface(
+                color = Color(0xFFAAE5F2),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(75.dp),
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Button(
+                        onClick = onMenuClick,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        Text("Menu")
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                when (stage) {
+                    "selectSite" -> SelectSiteScreen(sites)
+                    "basicInfo" -> mineInfo?.let { BasicInfoScreen(it) } ?: LoadingScreen()
+                    "floodTrend" -> mineInfo?.let { FloodTrendScreen(it) } ?: LoadingScreen()
+                    "historicalEnergy" -> mineInfo?.let { HistoricalEnergyScreen(it) } ?: LoadingScreen()
+                    "forecastEnergy" -> mineInfo?.let { ForecastEnergyScreen(it) } ?: LoadingScreen()
+                }
+            }
+
+            Surface(
+                color = Color(0xFFAAE5F2),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(75.dp),
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Button(onClick = onPreviousClick) {
+                            Text("Previous")
+                        }
+                        Button(onClick = onNextClick) {
+                            Text("Next")
+                        }
+                    }
+                }
+            }
+        }
+
+        if (menuExpanded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable { onMenuDismiss() },
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(0.8f),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "Mine: ${mineName ?: "Unknown"}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp,
+                            color = Color.White
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        listOf(
+                            "Reselect Site",
+                            "Basic Info",
+                            "Flooding Trend",
+                            "Historical Energy Demand",
+                            "Forecast Energy Demand"
+                        ).forEach { option ->
+                            Button(
+                                onClick = {
+                                    onMenuCommand(option.lowercase())
+                                    onMenuDismiss()
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(option, fontSize = 20.sp)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -372,16 +540,17 @@ fun MenuScreen(mineName: String) {
         Text("Say a command:", color = Color.Black, fontSize = 21.sp)
         Spacer(modifier = Modifier.height(12.dp))
         listOf(
-            "1. Reselect site",
-            "2. Show me basic info",
-            "3. Show me flooding trend",
-            "4. Show me historical energy demand",
-            "5. Show me forecast energy demand"
+            "Reselect site",
+            "Show me basic info",
+            "Show me flooding trend",
+            "Show me historical energy demand",
+            "Show me forecast energy demand"
         ).forEach {
             Text(it, color = Color.DarkGray, fontSize = 21.sp)
         }
     }
 }
+
 
 @Composable
 fun BasicInfoScreen(mine: Mine) {
