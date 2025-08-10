@@ -5,6 +5,10 @@ from app.models.mine_site import Mine, EnergyDemand, EnergyDemandType,MineRespon
 from app.schemas.mine_site import Mine as MineSchema
 import json
 from pathlib import Path
+from app.utils import get_current_user
+from app.models.user import User
+from app.models.user_pin import UserPin
+
 
 router = APIRouter()
 
@@ -99,13 +103,19 @@ def calculate_trend(energy_history: list[EnergyDemand]) -> str | None:
         return "STABLE"
 
 @router.get("/mines/{reference}", response_model=MineResponse)
-def get_mine(reference: str, db: Session = Depends(get_db)):
+def get_mine(
+    reference: str, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
     mine = db.query(Mine).filter(Mine.reference == reference).first()
     if not mine:
         raise HTTPException(status_code=404, detail="Mine not found")
 
-    historical = [e for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL]
+    user_pin = db.query(UserPin).filter_by(user_id=current_user.id, mine_id=mine.id).first()
+    user_note = user_pin.note if user_pin else None
 
+    historical = [e for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL]
     trend = calculate_trend(historical)
 
     return {
@@ -115,7 +125,7 @@ def get_mine(reference: str, db: Session = Depends(get_db)):
         "easting": mine.easting,
         "northing": mine.northing,
         "localAuthority": mine.local_authority,
-        "note": mine.note,
+        "note": user_note,  
         "floodRiskLevel": mine.flood_risk_level,
         "floodHistory": [{"year": f.year, "events": f.events} for f in mine.flood_history],
         "energyDemandHistory": [

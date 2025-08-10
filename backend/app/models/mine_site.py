@@ -20,7 +20,6 @@ class MineResponse(BaseModel):
     easting: float
     northing: float
     localAuthority: Optional[str] = None
-    note: Optional[str] = None
     floodRiskLevel: Optional[str] = None
     floodHistory: Optional[List] = []
     energyDemandHistory: Optional[List[EnergyDemand]] = []
