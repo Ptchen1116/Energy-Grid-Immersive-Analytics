@@ -5,6 +5,13 @@ from typing import Dict
 import pandas as pd
 from prophet import Prophet
 import os
+from fastapi import Depends
+from sqlalchemy.future import select
+from app.database import get_db
+from app.models.forecast import RegionEnergyConsumption 
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+
 
 app = FastAPI()
 router = APIRouter()
@@ -46,7 +53,11 @@ class ForecastRequest(BaseModel):
     year: int
 
 @router.post("/forecast")
-def forecast_energy(req: ForecastRequest) -> Dict[str, Dict[str, float | str]]:
+def forecast_energy(
+    req: ForecastRequest,
+    db: Session = Depends(get_db)  
+) -> Dict[str, Dict[str, float | str]]:
+
     result = {}
 
     for region in target_regions:
@@ -56,8 +67,17 @@ def forecast_energy(req: ForecastRequest) -> Dict[str, Dict[str, float | str]]:
             actual_val = region_df[region_df["year"] == req.year]["consumption"].mean()
             result[region] = {
                 "value": round(actual_val, 2),
-                "source": "actual"
+                "source": "historical"
             }
+            existing = db.query(RegionEnergyConsumption).filter_by(region=region, year=req.year).first()
+            if not existing:
+                db_record = RegionEnergyConsumption(
+                    region=region,
+                    year=req.year,
+                     consumption=float(actual_val),
+                    source="historical"
+                )
+                db.add(db_record)
             continue
 
         region_df["ds"] = pd.to_datetime(region_df["year"], format="%Y")
@@ -75,9 +95,22 @@ def forecast_energy(req: ForecastRequest) -> Dict[str, Dict[str, float | str]]:
         forecast = model.predict(future)
         year_pred = forecast[forecast["ds"].dt.year == req.year]
         avg = year_pred["yhat"].mean()
+
         result[region] = {
             "value": round(avg, 2),
             "source": "forecast"
         }
+
+        existing = db.query(RegionEnergyConsumption).filter_by(region=region, year=req.year).first()
+        if not existing:
+            db_record = RegionEnergyConsumption(
+            region=region,
+            year=req.year,
+            consumption=float(avg),
+            source="forecast"
+        )
+        db.add(db_record)
+
+    db.commit()  
 
     return result

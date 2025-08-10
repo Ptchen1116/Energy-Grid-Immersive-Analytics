@@ -490,7 +490,6 @@ fun SelectSiteScreen(sites: List<Triple<String, String, String>>) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SectionHeader(
-            iconResId = R.drawable.siteinfo_pinandnote,
             title = "Select Site",
             fontSize = 27.sp
         )
@@ -554,7 +553,6 @@ fun BasicInfoScreen(mine: Mine) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SectionHeader(
-            iconResId = R.drawable.siteinfo_pinandnote,
             title = "Basic Information",
             fontSize = 27.sp
         )
@@ -594,7 +592,6 @@ fun FloodTrendScreen(mine: Mine) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SectionHeader(
-            iconResId = R.drawable.siteinfo_floodingrisks,
             title = "Flooding Risks",
             trailingContent = {
                 FloodRiskTag(
@@ -623,7 +620,6 @@ fun HistoricalEnergyScreen(mine: Mine) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SectionHeader(
-            iconResId = R.drawable.siteinfo_energydemand,
             title = "Energy Demand",
             trailingContent = {
                 mine.trend?.let { trend ->
@@ -661,7 +657,6 @@ fun ForecastEnergyScreen(mine: Mine) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SectionHeader(
-            iconResId = R.drawable.siteinfo_energydemand,
             title = "Energy Demand",
             trailingContent = {
                 mine.trend?.let { trend ->

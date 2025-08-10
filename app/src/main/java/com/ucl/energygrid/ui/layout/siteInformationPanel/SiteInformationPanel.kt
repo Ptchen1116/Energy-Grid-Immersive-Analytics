@@ -227,7 +227,7 @@ fun SiteInformationPanel(
 
 @Composable
 fun SectionHeader(
-    iconResId: Int,
+    iconResId: Int? = null,
     title: String,
     trailingContent: (@Composable () -> Unit)? = null,
     fontSize: TextUnit = 18.sp
@@ -238,13 +238,15 @@ fun SectionHeader(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Image(
-            painter = painterResource(id = iconResId),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp)
-        )
+        if (iconResId != null) {
+            Image(
+                painter = painterResource(id = iconResId),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
 
-        Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+        }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
