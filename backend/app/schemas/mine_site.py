@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from enum import Enum
 
@@ -13,16 +13,14 @@ class EnergyDemand(BaseModel):
     value: float
     type: EnergyDemandType
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FloodEvent(BaseModel):
     year: int
     events: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Mine(BaseModel):
@@ -37,5 +35,4 @@ class Mine(BaseModel):
     flood_history: Optional[List[FloodEvent]] = []
     energy_demand: Optional[List[EnergyDemand]] = []
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

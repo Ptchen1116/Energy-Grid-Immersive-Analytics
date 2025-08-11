@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class EnergySiteCreate(BaseModel):
     name: str
@@ -9,5 +9,4 @@ class EnergySiteCreate(BaseModel):
 class EnergySiteRead(EnergySiteCreate):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
