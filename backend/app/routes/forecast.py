@@ -109,7 +109,7 @@ def forecast_energy(
             consumption=float(avg),
             source="forecast"
         )
-        db.add(db_record)
+            db.add(db_record)
 
     db.commit()  
 
