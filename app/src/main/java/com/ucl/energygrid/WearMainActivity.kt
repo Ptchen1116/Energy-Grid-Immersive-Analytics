@@ -159,17 +159,9 @@ class WearMainActivity : ComponentActivity() {
 
                 when (command.lowercase()) {
                     "menu" -> {
-                        menuExpanded = true
-                        sendCommands(
-                            listOf(
-                                "reselect site",
-                                "basic info",
-                                "flooding trend",
-                                "historical energy demand",
-                                "forecast energy demand",
-                                "close menu"
-                            )
-                        )
+                        currentStage = "menu"
+                        menuExpanded = false
+                        sendCommands(listOf("back", "menu"))
                     }
 
                     "close menu" -> {
@@ -268,37 +260,9 @@ class WearMainActivity : ComponentActivity() {
                     mineName = selectedMineName,
                     mineInfo = selectedMineInfo,
                     sites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage),
-                    menuExpanded = menuExpanded,
-                    onMenuDismiss = { menuExpanded = false },
-                    onMenuCommand = { selectedOption ->
-                        when (selectedOption) {
-                            "reselect site" -> {
-                                selectedMineName = null
-                                selectedMineInfo = null
-                                currentStage = "selectSite"
-                                currentPage = 0
-                                sendCommands(sites.map { it.first.lowercase() })
-                            }
-                            "basic info" -> currentStage = "basicInfo"
-                            "flooding trend" -> currentStage = "floodTrend"
-                            "historical energy demand" -> currentStage = "historicalEnergy"
-                            "forecast energy demand" -> currentStage = "forecastEnergy"
-                        }
-                        menuExpanded = false
-                        sendCommands(listOf("back", "menu"))
-                    },
                     onMenuClick = {
-                        menuExpanded = true
-                        sendCommands(
-                            listOf(
-                                "reselect site",
-                                "basic info",
-                                "flooding trend",
-                                "historical energy demand",
-                                "forecast energy demand",
-                                "close menu"
-                            )
-                        )
+                        currentStage = "menu"
+                        sendCommands(listOf("back", "menu"))
                     },
                     onNextClick = {
                         if (currentStage == "selectSite" && currentPage < maxPage) {
@@ -361,9 +325,6 @@ fun WearMainScreen(
     mineName: String?,
     mineInfo: Mine? = null,
     sites: List<Triple<String, String, String>> = emptyList(),
-    menuExpanded: Boolean,
-    onMenuDismiss: () -> Unit,
-    onMenuCommand: (String) -> Unit,
     onMenuClick: () -> Unit,
     onNextClick: () -> Unit,
     onPreviousClick: () -> Unit,
@@ -400,6 +361,7 @@ fun WearMainScreen(
                     "floodTrend" -> mineInfo?.let { FloodTrendScreen(it) } ?: LoadingScreen()
                     "historicalEnergy" -> mineInfo?.let { HistoricalEnergyScreen(it) } ?: LoadingScreen()
                     "forecastEnergy" -> mineInfo?.let { ForecastEnergyScreen(it) } ?: LoadingScreen()
+                    "menu" -> mineName?.let { MenuScreen(it) } ?: LoadingScreen()
                 }
             }
 
@@ -421,57 +383,6 @@ fun WearMainScreen(
                         }
                         Button(onClick = onNextClick) {
                             Text("Next")
-                        }
-                    }
-                }
-            }
-        }
-
-        if (menuExpanded) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.6f))
-                    .clickable { onMenuDismiss() },
-                contentAlignment = Alignment.Center
-            ) {
-                Card(
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxWidth(0.8f),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            "Mine: ${mineName ?: "Unknown"}",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp,
-                            color = Color.White
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        listOf(
-                            "Reselect Site",
-                            "Basic Info",
-                            "Flooding Trend",
-                            "Historical Energy Demand",
-                            "Forecast Energy Demand"
-                        ).forEach { option ->
-                            Button(
-                                onClick = {
-                                    onMenuCommand(option.lowercase())
-                                    onMenuDismiss()
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(option, fontSize = 20.sp)
-                            }
                         }
                     }
                 }
