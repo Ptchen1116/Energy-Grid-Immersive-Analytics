@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, Float, Integer, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from app.database import Base
 import enum
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
 class EnergyDemandType(enum.Enum):
@@ -26,12 +26,13 @@ class MineResponse(BaseModel):
     forecastEnergyDemand: Optional[List[EnergyDemand]] = []
     trend: Optional[str] = None
 
-    class Config:
-        alias_generator = lambda string: ''.join(
+    model_config = ConfigDict(
+        alias_generator=lambda string: ''.join(
             word.capitalize() if i > 0 else word
             for i, word in enumerate(string.split('_'))
-        )
-        allow_population_by_field_name = True
+        ),
+        populate_by_name=True  
+    )
 
 
 class Mine(Base):
