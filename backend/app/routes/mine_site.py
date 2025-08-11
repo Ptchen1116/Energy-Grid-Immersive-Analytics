@@ -5,9 +5,10 @@ from app.models.mine_site import Mine, EnergyDemand, EnergyDemandType,MineRespon
 from app.schemas.mine_site import Mine as MineSchema
 import json
 from pathlib import Path
-from app.utils import get_current_user
+from app.utils import get_current_user_optional
 from app.models.user import User
 from app.models.user_pin import UserPin
+from typing import Optional
 
 
 router = APIRouter()
@@ -106,14 +107,16 @@ def calculate_trend(energy_history: list[EnergyDemand]) -> str | None:
 def get_mine(
     reference: str, 
     db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     mine = db.query(Mine).filter(Mine.reference == reference).first()
     if not mine:
         raise HTTPException(status_code=404, detail="Mine not found")
 
-    user_pin = db.query(UserPin).filter_by(user_id=current_user.id, mine_id=mine.id).first()
-    user_note = user_pin.note if user_pin else None
+    user_note = None
+    if current_user:
+        user_pin = db.query(UserPin).filter_by(user_id=current_user.id, mine_id=mine.id).first()
+        user_note = user_pin.note if user_pin else None
 
     historical = [e for e in mine.energy_demand if e.type == EnergyDemandType.HISTORICAL]
     trend = calculate_trend(historical)
