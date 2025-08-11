@@ -107,6 +107,8 @@ dependencies {
     testImplementation("app.cash.turbine:turbine:0.12.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.10.0")
+
 
 
     testImplementation(libs.junit)

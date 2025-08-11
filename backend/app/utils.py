@@ -10,11 +10,10 @@ from fastapi.security import OAuth2PasswordBearer
 from typing import Optional
 
 
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")  
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
@@ -22,6 +21,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if token is None:
+        raise credentials_exception
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: int = payload.get("sub")
@@ -35,10 +36,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 def get_current_user_optional(
-    token: Optional[str] = Security(oauth2_scheme, auto_error=False),
+    token: Optional[str] = Security(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> Optional[User]:
     if token is None:

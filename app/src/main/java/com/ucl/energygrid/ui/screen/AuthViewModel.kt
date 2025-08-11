@@ -12,8 +12,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.ucl.energygrid.data.repository.UserRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.viewModelScope
 
-class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
+class AuthViewModel(
+    private val userRepository: UserRepository,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+) : ViewModel() {
 
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
@@ -28,7 +34,7 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
     val uiMessage = _uiMessage
 
     fun login(email: String, password: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcher) {
             val result = userRepository.login(email, password)
             result.fold(
                 onSuccess = { (userId, token) ->
@@ -46,7 +52,7 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
     }
 
     fun register(username: String, email: String, password: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcher) {
             val result = userRepository.register(username, email, password)
             result.fold(
                 onSuccess = {
