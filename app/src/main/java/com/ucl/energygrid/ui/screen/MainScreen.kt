@@ -66,6 +66,7 @@ import com.ucl.energygrid.ui.layout.ukMap.UKMap
 import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
 import kotlinx.coroutines.launch
 import com.ucl.energygrid.data.repository.UserRepository
+import com.ucl.energygrid.data.model.Mine
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,44 +136,15 @@ fun MainScreen(
                 containerColor = Color(0xFFAAE5F2)
             ),
             actions = {
-                Box {
-                    IconButton(onClick = {
-                        if (isLoggedIn) {
-                            expanded = true
-                        } else {
-                            showLoginDialog = true
-                        }
-                    }) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Login")
-                    }
-
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = {
-                            expanded = false
-                            pinsExpanded = false
-                        }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("My Pins") },
-                            onClick = {
-                                if (isLoggedIn) {
-                                    val userIdInt = userId?.toIntOrNull() ?: return@DropdownMenuItem
-                                    mainViewModel.loadMyPins(userIdInt, isLoggedIn)
-                                } else {
-                                    showLoginDialog = true
-                                }
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-
-                if (!isLoggedIn) {
-                    IconButton(onClick = { showRegisterDialog = true }) {
-                        Icon(Icons.Default.AddCircle, contentDescription = "Register")
-                    }
-                }
+                UserAccountActions(
+                    isLoggedIn = isLoggedIn,
+                    expanded = expanded,
+                    onExpandChange = { expanded = it },
+                    onShowLoginDialog = { showLoginDialog = true },
+                    onShowRegisterDialog = { showRegisterDialog = true },
+                    userId = userId,
+                    mainViewModel = mainViewModel
+                )
             }
         )
 
@@ -203,57 +175,13 @@ fun MainScreen(
                 sheetSwipeEnabled = true,
                 sheetDragHandle = null,
                 sheetContent = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .onGloballyPositioned { coordinates ->
-                                sheetHeightPx.intValue = coordinates.size.height
-                            }
-                            .padding(
-                                bottom = WindowInsets.navigationBars
-                                    .asPaddingValues()
-                                    .calculateBottomPadding()
-                            )
-                    ) {
-                        val userIdInt = userId?.toIntOrNull() ?: -1
-
-                        println("userIdInt = $userIdInt")
-
-                        when (currentBottomSheet) {
-                            BottomSheetContent.SiteInfo -> {
-                                selectedMine?.let {
-                                    SiteInformationPanel(
-                                        mine = it,
-                                        userId = userIdInt,
-                                        pinApi = RetrofitInstance.pinApi
-                                    )
-                                }
-                            }
-                            BottomSheetContent.MapControl -> MapControlPanel(
-                                floodingRisk = showFloodRisk,
-                                onFloodingRiskChange = { mainViewModel.toggleShowFloodRisk(it) },
-                                showSolar = showSolar,
-                                onSolarChange = { mainViewModel.toggleShowSolar(it) },
-                                showWind = showWind,
-                                onWindChange = { mainViewModel.toggleShowWind(it) },
-                                showHydroelectric = showHydroelectric,
-                                onHydroelectricChange = { mainViewModel.toggleShowHydroelectric(it) },
-                                closedMine = closedMine,
-                                onClosedMineChange = { mainViewModel.updateClosedMine(it) },
-                                closingMine = closingMine,
-                                onClosingMineChange = { mainViewModel.updateClosingMine(it) },
-                            )
-                            BottomSheetContent.TimeSimulation -> TimeSimulationPanel(
-                                energyDemandHeatmap = energyDemandHeatmap,
-                                onEnergyDemandHeatmapChange = { mainViewModel.toggleEnergyDemandHeatmap(it) },
-                                selectedYear = selectedYear,
-                                onSelectedYearChange = { mainViewModel.changeSelectedYear(it) }
-                            )
-                            else -> Spacer(modifier = Modifier.height(0.dp))
-                        }
-                        Spacer(modifier = Modifier.height(75.dp))
-                    }
+                    BottomSheetContentView(
+                        currentBottomSheet = currentBottomSheet,
+                        selectedMine = selectedMine,
+                        userId = userId,
+                        sheetHeightPx = sheetHeightPx,
+                        mainViewModel = mainViewModel
+                    )
                 },
                 snackbarHost = {}
             ) { innerPadding ->
@@ -262,39 +190,16 @@ fun MainScreen(
                         .fillMaxSize()
                         .padding(innerPadding)
                 ) {
-                    val renewableMarkers = mutableListOf<RenewableSite>()
-                    if (showSolar) {
-                        renewableMarkers.addAll(
-                            solarSites.map {
-                                RenewableSite(
-                                    name = it.first,
-                                    location = LatLng(it.second, it.third),
-                                    type = PinType.SOLAR
-                                )
-                            }
-                        )
-                    }
-                    if (showWind) {
-                        renewableMarkers.addAll(
-                            windSites.map {
-                                RenewableSite(
-                                    name = it.first,
-                                    location = LatLng(it.second, it.third),
-                                    type = PinType.WIND
-                                )
-                            }
-                        )
-                    }
-                    if (showHydroelectric) {
-                        renewableMarkers.addAll(
-                            hydroelectricSites.map {
-                                RenewableSite(
-                                    name = it.first,
-                                    location = LatLng(it.second, it.third),
-                                    type = PinType.HYDROELECTRIC
-                                )
-                            }
-                        )
+                    val renewableMarkers = buildList {
+                        if (showSolar) addAll(solarSites.map {
+                            RenewableSite(it.first, LatLng(it.second, it.third), PinType.SOLAR)
+                        })
+                        if (showWind) addAll(windSites.map {
+                            RenewableSite(it.first, LatLng(it.second, it.third), PinType.WIND)
+                        })
+                        if (showHydroelectric) addAll(hydroelectricSites.map {
+                            RenewableSite(it.first, LatLng(it.second, it.third), PinType.HYDROELECTRIC)
+                        })
                     }
 
                     UKMap(
@@ -418,6 +323,111 @@ fun MainScreen(
 }
 
 @Composable
+fun UserAccountActions(
+    isLoggedIn: Boolean,
+    expanded: Boolean,
+    onExpandChange: (Boolean) -> Unit,
+    onShowLoginDialog: () -> Unit,
+    onShowRegisterDialog: () -> Unit,
+    userId: String?,
+    mainViewModel: MainViewModel,
+) {
+    Box {
+        IconButton(onClick = {
+            if (isLoggedIn) {
+                onExpandChange(true)
+            } else {
+                onShowLoginDialog()
+            }
+        }) {
+            Icon(Icons.Default.AccountCircle, contentDescription = "Login")
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {
+                onExpandChange(false)
+            }
+        ) {
+            DropdownMenuItem(
+                text = { Text("My Pins") },
+                onClick = {
+                    if (isLoggedIn) {
+                        val userIdInt = userId?.toIntOrNull() ?: return@DropdownMenuItem
+                        mainViewModel.loadMyPins(userIdInt, isLoggedIn)
+                    } else {
+                        onShowLoginDialog()
+                    }
+                    onExpandChange(false)
+                }
+            )
+        }
+    }
+
+    if (!isLoggedIn) {
+        IconButton(onClick = { onShowRegisterDialog() }) {
+            Icon(Icons.Default.AddCircle, contentDescription = "Register")
+        }
+    }
+}
+
+@Composable
+fun BottomSheetContentView(
+    currentBottomSheet: BottomSheetContent,
+    selectedMine: Mine?,
+    userId: String?,
+    sheetHeightPx: androidx.compose.runtime.MutableIntState,
+    mainViewModel: MainViewModel,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .onGloballyPositioned { coordinates ->
+                sheetHeightPx.intValue = coordinates.size.height
+            }
+            .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+    ) {
+        val userIdInt = userId?.toIntOrNull() ?: -1
+
+        when (currentBottomSheet) {
+            BottomSheetContent.SiteInfo -> {
+                selectedMine?.let { mine ->
+                    SiteInformationPanel(
+                        mine = mine,
+                        userId = userIdInt,
+                        pinApi = RetrofitInstance.pinApi
+                    )
+                }
+            }
+            BottomSheetContent.MapControl -> MapControlPanel(
+                floodingRisk = mainViewModel.showFloodRisk.collectAsState().value,
+                onFloodingRiskChange = { mainViewModel.toggleShowFloodRisk(it) },
+                showSolar = mainViewModel.showSolar.collectAsState().value,
+                onSolarChange = { mainViewModel.toggleShowSolar(it) },
+                showWind = mainViewModel.showWind.collectAsState().value,
+                onWindChange = { mainViewModel.toggleShowWind(it) },
+                showHydroelectric = mainViewModel.showHydroelectric.collectAsState().value,
+                onHydroelectricChange = { mainViewModel.toggleShowHydroelectric(it) },
+                closedMine = mainViewModel.closedMine.collectAsState().value,
+                onClosedMineChange = { mainViewModel.updateClosedMine(it) },
+                closingMine = mainViewModel.closingMine.collectAsState().value,
+                onClosingMineChange = { mainViewModel.updateClosingMine(it) },
+            )
+            BottomSheetContent.TimeSimulation -> TimeSimulationPanel(
+                energyDemandHeatmap = mainViewModel.energyDemandHeatmap.collectAsState().value,
+                onEnergyDemandHeatmapChange = { mainViewModel.toggleEnergyDemandHeatmap(it) },
+                selectedYear = mainViewModel.selectedYear.collectAsState().value,
+                onSelectedYearChange = { mainViewModel.changeSelectedYear(it) }
+            )
+            else -> Spacer(modifier = Modifier.height(0.dp))
+        }
+        Spacer(modifier = Modifier.height(75.dp))
+    }
+}
+
+
+@Composable
 fun LoginDialog(
     onDismiss: () -> Unit,
     onLogin: (email: String, password: String) -> Unit
@@ -506,3 +516,4 @@ fun RegisterDialog(
         }
     )
 }
+
