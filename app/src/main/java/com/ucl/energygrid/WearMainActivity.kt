@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.webrtc.EglBase
 import org.webrtc.SurfaceViewRenderer
+import androidx.compose.foundation.layout.width
 
 
 class WearMainActivity : ComponentActivity() {
@@ -160,8 +161,7 @@ class WearMainActivity : ComponentActivity() {
                 when (command.lowercase()) {
                     "menu" -> {
                         currentStage = "menu"
-                        menuExpanded = false
-                        sendCommands(listOf("back", "menu"))
+                        sendCommands(listOf("reselect site", "basic info", "flooding trend", "historical energy demand", "forecast energy demand","back", "menu"))
                     }
 
                     "close menu" -> {
@@ -173,38 +173,32 @@ class WearMainActivity : ComponentActivity() {
                         currentStage = "selectSite"
                         selectedMineName = null
                         selectedMineInfo = null
-                        menuExpanded = false
                         currentPage = 0
                         sendCommands(sites.map { it.first.lowercase() } + listOf("menu"))
                     }
 
                     "basic info" -> {
                         currentStage = "basicInfo"
-                        menuExpanded = false
                         sendCommands(listOf("back", "menu"))
                     }
 
                     "flooding trend" -> {
                         currentStage = "floodTrend"
-                        menuExpanded = false
                         sendCommands(listOf("back", "menu"))
                     }
 
                     "historical energy demand" -> {
                         currentStage = "historicalEnergy"
-                        menuExpanded = false
                         sendCommands(listOf("back", "menu"))
                     }
 
                     "forecast energy demand" -> {
                         currentStage = "forecastEnergy"
-                        menuExpanded = false
                         sendCommands(listOf("back", "menu"))
                     }
 
                     "back" -> {
                         currentStage = "selectSite"
-                        menuExpanded = false
                         sendCommands(sites.map { it.first.lowercase() } + listOf("menu"))
                     }
 
@@ -398,14 +392,16 @@ fun SelectSiteScreen(sites: List<Triple<String, String, String>>) {
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.Start
     ) {
         SectionHeader(
             title = "Select Site",
             fontSize = 27.sp
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Text("Say your site number", color = Color.Black, fontSize = 20.sp)
+        Text("Say your site number", color = Color.Black, fontSize = 20.sp, modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 300.dp))
         Spacer(modifier = Modifier.height(12.dp))
 
         sites.forEach { (label, _, name) ->
@@ -413,42 +409,47 @@ fun SelectSiteScreen(sites: List<Triple<String, String, String>>) {
                 text = "$label: $name",
                 color = Color.DarkGray,
                 fontSize = 18.sp,
-                modifier = Modifier.padding(vertical = 4.dp)
+                modifier = Modifier
+                    .padding(start = 300.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Text("(Say 'next' or 'previous' to change page)", fontSize = 14.sp, color = Color.Gray)
+        Text("(Say 'next' or 'previous' to change page)", fontSize = 14.sp, color = Color.Gray, modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 300.dp))
     }
 }
 
 @Composable
 fun MenuScreen(mineName: String) {
+    val commands = listOf(
+        "Reselect Site",
+        "Basic Info",
+        "Flooding Trend",
+        "Historical Energy Demand",
+        "Forecast Energy Demand"
+    )
+
     Column(
-        modifier = Modifier
+        Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SectionHeader(
-            iconResId = R.drawable.siteinfo_pinandnote,
-            title = "Menu",
-            fontSize = 27.sp
-        )
-        Spacer(modifier = Modifier.height(18.dp))
-        Text("Mine: $mineName", color = Color.Black, fontSize = 24.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Say a command:", color = Color.Black, fontSize = 21.sp)
-        Spacer(modifier = Modifier.height(12.dp))
-        listOf(
-            "Reselect site",
-            "Show me basic info",
-            "Show me flooding trend",
-            "Show me historical energy demand",
-            "Show me forecast energy demand"
-        ).forEach {
-            Text(it, color = Color.DarkGray, fontSize = 21.sp)
+        Text("Say 'back' to close the menu", fontSize = 18.sp, color = Color.Black)
+        Spacer(Modifier.height(10.dp))
+
+        commands.forEach { cmd ->
+            Button(
+                onClick = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp)
+            ) {
+                Text(cmd, fontSize = 18.sp)
+            }
         }
     }
 }
