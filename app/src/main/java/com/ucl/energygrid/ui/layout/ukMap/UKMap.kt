@@ -38,7 +38,6 @@ import com.ucl.energygrid.data.model.RenewableSite
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
 import com.ucl.energygrid.ui.component.createPinBitmap
-import com.ucl.energygrid.data.repository.MinesMarkers
 
 import com.ucl.energygrid.data.remote.apis.ForecastItem
 
@@ -74,7 +73,6 @@ fun UKMap(
         )
     }
 
-    // 改成用 mutableStateOf 方便後續賦值觸發 Compose 重組
     var dynamicMarkerIcons by remember { mutableStateOf<Map<PinType, BitmapDescriptor>>(emptyMap()) }
 
     var selectedRegion by remember { mutableStateOf<RegionFeature?>(null) }
@@ -85,7 +83,6 @@ fun UKMap(
             cameraPositionState = cameraPositionState,
             onMapClick = { selectedRegion = null },
             onMapLoaded = {
-                // 地圖載入完成時初始化 icons
                 val icons = mutableMapOf<PinType, BitmapDescriptor>()
                 PinType.values().forEach { type ->
                     icons[type] = BitmapDescriptorFactory.fromBitmap(createPinBitmap(context, type))
@@ -140,7 +137,7 @@ fun UKMap(
 }
 
 @Composable
-fun MinesMarkers2(
+fun MinesMarkers(
     closedMine: Boolean,
     closingMine: Boolean,
     onSiteSelected: (Mine) -> Unit
