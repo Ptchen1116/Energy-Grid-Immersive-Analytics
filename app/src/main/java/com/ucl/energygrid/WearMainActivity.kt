@@ -233,8 +233,7 @@ class WearMainActivity : ComponentActivity() {
                     val visibleSites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage)
 
                     val selectedSite = visibleSites.firstOrNull {
-                        it.first.equals(command, ignoreCase = true) ||
-                                (command in listOf("one", "1", "two", "2", "three", "3", "four", "4", "five", "5") &&
+                        it.first.equals(command, ignoreCase = true) || (command in listOf("one", "1", "two", "2", "three", "3", "four", "4", "five", "5") &&
                                         it.first.endsWith(command.takeLast(1)))
                     }
 
