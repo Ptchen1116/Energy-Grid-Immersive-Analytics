@@ -499,10 +499,6 @@ fun CallingView(isCaller: Boolean) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AndroidView(
-            factory = { localView },
-            modifier = Modifier.size(200.dp)
-        )
-        AndroidView(
             factory = { remoteView },
             modifier = Modifier
                 .width(300.dp)

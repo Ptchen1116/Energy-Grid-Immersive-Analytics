@@ -386,7 +386,9 @@ fun BottomSheetContentView(
             .onGloballyPositioned { coordinates ->
                 sheetHeightPx.intValue = coordinates.size.height
             }
-            .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+            .padding(
+                bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            )
     ) {
         val userIdInt = userId?.toIntOrNull() ?: -1
 
