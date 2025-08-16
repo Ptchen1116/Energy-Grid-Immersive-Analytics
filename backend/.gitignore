@@ -3,3 +3,4 @@ __pycache__/
 *$py.class
 .env
 .pytest_cache
+energy_grid_env/
