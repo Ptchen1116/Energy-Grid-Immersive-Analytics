@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.mine_site import Mine, EnergyDemand, EnergyDemandType,MineResponse
-from app.schemas.mine_site import Mine as MineSchema
+from app.models.mine_site import Mine, EnergyDemand, EnergyDemandType,MineResponse, FloodEvent
 import json
 from pathlib import Path
 from app.utils import get_current_user_optional
@@ -44,6 +43,23 @@ def load_mines_from_json(db: Session, json_file: Path, target_ref: str = None):
 
         energy_history = []  
 
+        if obj.get("FloodHistory"):
+            for fh in obj["FloodHistory"]:
+                year = fh.get("year")
+                events = fh.get("events")
+                if year is not None and events is not None:
+                    exists = db.query(FloodEvent).filter_by(
+                        mine_reference=mine_ref,
+                        year=year
+                    ).first()
+                    if not exists:
+                        flood = FloodEvent(
+                            year=year,
+                            events=events,
+                            mine_reference=mine_ref
+                        )
+                        db.add(flood)
+
         if obj.get("EnergyDemandHistory"):
             for ed in obj["EnergyDemandHistory"]:
                 year = ed.get("year")
@@ -82,8 +98,6 @@ def load_mines_from_json(db: Session, json_file: Path, target_ref: str = None):
                             mine_reference=mine_ref
                         )
                         db.add(demand)
-
-        energy_history_sorted = sorted(energy_history, key=lambda x: x.year)
 
         mines_loaded.append(mine)
 
@@ -179,3 +193,18 @@ def orm_to_dict(mine: Mine) -> dict:
         "trend": trend,
     }
     return data
+
+@router.get("/debug/floods")
+def debug_floods(db: Session = Depends(get_db)):
+    mines = db.query(Mine).all()
+    results = []
+    for mine in mines:
+        results.append({
+            "mine": mine.reference,
+            "floodHistoryCount": len(mine.flood_history),
+            "floodHistory": [
+                {"year": f.year, "events": f.events, "mine_reference": f.mine_reference}
+                for f in mine.flood_history
+            ]
+        })
+    return results

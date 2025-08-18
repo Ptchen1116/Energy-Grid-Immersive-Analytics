@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
-
+import android.util.Log
 
 data class SiteInfoUiState(
     val note: String = "",
@@ -41,7 +41,7 @@ class SiteInformationViewModel(
                     val pin = response.body()
                     _uiState.value = _uiState.value.copy(
                         note = pin?.note ?: "",
-                        isPinned = pin != null,
+                        isPinned = pin?.id != null && pin.id != -1,
                         isNoteLoaded = true
                     )
                 } else {
