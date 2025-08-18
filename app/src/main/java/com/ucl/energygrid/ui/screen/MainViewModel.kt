@@ -88,13 +88,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun onMineSelected(mine: Mine) {
+    fun onMineSelected(mine: Mine?) {
         viewModelScope.launch {
-            val detailedMine = getInfoByReference(mine.reference)
-            if (detailedMine != null) {
-                _selectedMine.value = detailedMine
+            if (mine == null) {
+                _selectedMine.value = null
             } else {
-                _selectedMine.value = mine
+                val detailedMine = getInfoByReference(mine.reference)
+                _selectedMine.value = detailedMine ?: mine
             }
         }
     }

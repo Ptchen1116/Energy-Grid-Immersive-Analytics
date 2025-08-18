@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.ucl.energygrid.ui.screen.MainScreen
-import com.ucl.energygrid.data.repository.UserRepository
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
+import com.ucl.energygrid.data.repository.UserRepository
+import com.ucl.energygrid.ui.screen.MainScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -3,6 +3,7 @@ package com.ucl.energygrid.ui.layout.siteInformationPanel
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -214,11 +214,13 @@ fun SiteInformationPanel(
                 EnergyLineChartMP("Historical Energy Demand Graph", it, null)
             } ?: Text("No energy history available", color = Color.Gray)
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             mine.forecastEnergyDemand?.let {
                 EnergyLineChartMP("Forecast Energy Demand Graph", it, null)
             } ?: Text("No forecast data available", color = Color.Gray)
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             SectionHeader(
                 iconResId = R.drawable.siteinfo_call,
