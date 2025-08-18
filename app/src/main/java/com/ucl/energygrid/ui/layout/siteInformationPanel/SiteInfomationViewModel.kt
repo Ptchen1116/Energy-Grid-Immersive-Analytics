@@ -16,13 +16,14 @@ data class SiteInfoUiState(
     val isPinned: Boolean = false,
     val isPosting: Boolean = false,
     val isNoteLoaded: Boolean = false,
-    val postResult: String? = null
+    val postResult: String? = null,
+    val savedNote: String = ""
 )
 
 class SiteInformationViewModel(
     private val userId: Int,
     private val mineId: Int,
-    private val api: PinApi
+    private val api: PinApi,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SiteInfoUiState())
@@ -40,8 +41,10 @@ class SiteInformationViewModel(
                     val pin = response.body()
                     _uiState.value = _uiState.value.copy(
                         note = pin?.note ?: "",
+                        savedNote = pin?.note ?: "",
                         isPinned = pin?.id != null && pin.id != -1,
-                        isNoteLoaded = true
+                        isNoteLoaded = true,
+                        postResult = null
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(
@@ -68,16 +71,25 @@ class SiteInformationViewModel(
     }
 
     fun saveNote() {
+        val currentNote = _uiState.value.note
+        val previousNote = _uiState.value.savedNote
+
+        if (currentNote == previousNote) {
+            _uiState.value = _uiState.value.copy(postResult = null)
+            return
+        }
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isPosting = true, postResult = null)
             try {
-                val request = PinRequest(mine_id = mineId, note = _uiState.value.note)
+                val request = PinRequest(mine_id = mineId, note = currentNote)
                 val response = api.create_or_update_pin(userId, request)
 
                 if (response.isSuccessful) {
                     _uiState.value = _uiState.value.copy(
                         isPosting = false,
                         isPinned = true,
+                        savedNote = currentNote,
                         postResult = "Note saved successfully"
                     )
                 } else {
@@ -110,6 +122,7 @@ class SiteInformationViewModel(
                         isPosting = false,
                         isPinned = false,
                         note = "",
+                        savedNote = "",
                         postResult = "Pin removed successfully"
                     )
                 } else {
@@ -131,5 +144,8 @@ class SiteInformationViewModel(
             }
         }
     }
-}
 
+    fun clearPostResult() {
+        _uiState.value = _uiState.value.copy(postResult = null)
+    }
+}

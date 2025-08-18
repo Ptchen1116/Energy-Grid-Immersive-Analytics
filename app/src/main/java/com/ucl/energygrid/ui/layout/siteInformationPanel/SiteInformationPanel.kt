@@ -69,6 +69,9 @@ fun SiteInformationPanel(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val mainViewModel: MainViewModel = viewModel()
+    LaunchedEffect(Unit) {
+        viewModel.clearPostResult()
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -126,36 +129,47 @@ fun SiteInformationPanel(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
-                    Button(
-                        onClick = { viewModel.saveNote() },
-                        enabled = !uiState.isPosting && uiState.isNoteLoaded,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            when {
-                                uiState.isPosting -> "Saving..."
-                                uiState.note.isNotEmpty() -> "Update Note"
-                                else -> "Add Pin"
-                            }
-                        )
-                    }
-
                     if (uiState.isPinned) {
-                        Button(
-                            onClick = {
-                                viewModel.removePin()
-                                mainViewModel.loadMyPins(userId, true)
-                            },
-                            enabled = !uiState.isPosting,
-                            modifier = Modifier.weight(1f)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.align(Alignment.Center)
                         ) {
-                            Text("Remove Pin")
+                            Button(
+                                onClick = { viewModel.saveNote() },
+                                enabled = !uiState.isPosting && uiState.isNoteLoaded,
+                                modifier = Modifier.width(160.dp)
+                            ) {
+                                Text("Update Note")
+                            }
+
+                            Button(
+                                onClick = {
+                                    viewModel.removePin()
+                                    mainViewModel.loadMyPins(userId, true)
+                                },
+                                enabled = !uiState.isPosting,
+                                modifier = Modifier.width(160.dp)
+                            ) {
+                                Text("Remove Pin")
+                            }
+                        }
+                    } else {
+                        Button(
+                            onClick = { viewModel.saveNote() },
+                            enabled = !uiState.isPosting && uiState.isNoteLoaded,
+                            modifier = Modifier.align(Alignment.Center)
+                        ) {
+                            Text(
+                                when {
+                                    uiState.isPosting -> "Saving..."
+                                    else -> "Add Pin"
+                                }
+                            )
                         }
                     }
                 }
