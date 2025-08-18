@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -138,12 +139,10 @@ fun MainScreen(
             actions = {
                 UserAccountActions(
                     isLoggedIn = isLoggedIn,
-                    expanded = expanded,
-                    onExpandChange = { expanded = it },
                     onShowLoginDialog = { showLoginDialog = true },
                     onShowRegisterDialog = { showRegisterDialog = true },
                     userId = userId,
-                    mainViewModel = mainViewModel
+                    viewModel = authViewModel
                 )
             }
         )
@@ -326,46 +325,23 @@ fun MainScreen(
 @Composable
 fun UserAccountActions(
     isLoggedIn: Boolean,
-    expanded: Boolean,
-    onExpandChange: (Boolean) -> Unit,
     onShowLoginDialog: () -> Unit,
     onShowRegisterDialog: () -> Unit,
     userId: String?,
-    mainViewModel: MainViewModel,
+    viewModel: AuthViewModel,
 ) {
     Box {
-        IconButton(onClick = {
-            if (isLoggedIn) {
-                onExpandChange(true)
-            } else {
-                onShowLoginDialog()
+        if (isLoggedIn) {
+            IconButton(onClick = { viewModel.logout() }) {
+                Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
             }
-        }) {
-            Icon(Icons.Default.AccountCircle, contentDescription = "Login")
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = {
-                onExpandChange(false)
-            }
-        ) {
-            DropdownMenuItem(
-                text = { Text("My Pins") },
-                onClick = {
-                    if (isLoggedIn) {
-                        val userIdInt = userId?.toIntOrNull() ?: return@DropdownMenuItem
-                        mainViewModel.loadMyPins(userIdInt, isLoggedIn)
-                    } else {
-                        onShowLoginDialog()
-                    }
-                    onExpandChange(false)
-                }
-            )
         }
     }
 
     if (!isLoggedIn) {
+        IconButton(onClick = { onShowLoginDialog() }) {
+            Icon(Icons.Default.AccountCircle, contentDescription = "Login")
+        }
         IconButton(onClick = { onShowRegisterDialog() }) {
             Icon(Icons.Default.AddCircle, contentDescription = "Register")
         }
