@@ -35,15 +35,18 @@ import com.ucl.energygrid.data.model.PinResponse
 import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.data.model.RegionFeature
 import com.ucl.energygrid.data.model.RenewableSite
+import com.ucl.energygrid.data.remote.apis.ForecastItem
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
 import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
 import com.ucl.energygrid.ui.component.createPinBitmap
-
-import com.ucl.energygrid.data.remote.apis.ForecastItem
+import androidx.compose.runtime.rememberCoroutineScope
+import com.ucl.energygrid.ui.screen.rememberResetMap
+import com.ucl.energygrid.ui.screen.MainViewModel
 
 @Composable
 fun UKMap(
-    viewModel: UKMapViewModel,
+    mainViewModel: MainViewModel,
+    ukMapViewModel: UKMapViewModel,
     floodCenters: List<LatLng>,
     showMarkers: Boolean,
     renewableSites: List<RenewableSite> = emptyList(),
@@ -59,9 +62,9 @@ fun UKMap(
     onShowMyPinsClick: () -> Unit,
 ) {
     val context = LocalContext.current
-    val energyConsumption by viewModel.energyConsumption.collectAsState()
+    val energyConsumption by ukMapViewModel.energyConsumption.collectAsState()
 
-    LaunchedEffect(year) { viewModel.loadForecast(year) }
+    LaunchedEffect(year) { ukMapViewModel.loadForecast(year) }
 
     val ukBounds = LatLngBounds(LatLng(49.9, -8.6), LatLng(60.9, 1.8))
     val cameraPositionState = rememberCameraPositionState()
@@ -73,8 +76,16 @@ fun UKMap(
         )
     }
 
-    var dynamicMarkerIcons by remember { mutableStateOf<Map<PinType, BitmapDescriptor>>(emptyMap()) }
+    LaunchedEffect(Unit) {
+        ukMapViewModel.resetCameraEvent.collect {
+            cameraPositionState.animate(
+                update = CameraUpdateFactory.newLatLngBounds(ukBounds, 100),
+                durationMs = 500
+            )
+        }
+    }
 
+    var dynamicMarkerIcons by remember { mutableStateOf<Map<PinType, BitmapDescriptor>>(emptyMap()) }
     var selectedRegion by remember { mutableStateOf<RegionFeature?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -129,8 +140,10 @@ fun UKMap(
             }
         }
 
+        val resetMap = rememberResetMap(mainViewModel, ukMapViewModel)
+
         MapControlButtons(
-            onResetClick = { /* TODO */ },
+            onResetClick = resetMap,
             onShowMyPinsClick = onShowMyPinsClick
         )
     }

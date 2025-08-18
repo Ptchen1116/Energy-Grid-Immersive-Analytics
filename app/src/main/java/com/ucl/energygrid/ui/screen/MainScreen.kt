@@ -55,9 +55,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.maps.model.LatLng
 import com.ucl.energygrid.data.model.BottomSheetContent
+import com.ucl.energygrid.data.model.Mine
 import com.ucl.energygrid.data.model.PinType
 import com.ucl.energygrid.data.model.RenewableSite
 import com.ucl.energygrid.data.remote.apis.RetrofitInstance
+import com.ucl.energygrid.data.repository.UserRepository
 import com.ucl.energygrid.ui.layout.bottomNavigationBar.BottomNavigationBar
 import com.ucl.energygrid.ui.layout.mapControlPanel.MapControlPanel
 import com.ucl.energygrid.ui.layout.siteInformationPanel.SiteInformationPanel
@@ -65,9 +67,6 @@ import com.ucl.energygrid.ui.layout.timeSimulationPanel.TimeSimulationPanel
 import com.ucl.energygrid.ui.layout.ukMap.UKMap
 import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
 import kotlinx.coroutines.launch
-import com.ucl.energygrid.data.repository.UserRepository
-import com.ucl.energygrid.data.model.Mine
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,6 +133,7 @@ fun MainScreen(
             title = { Text("Energy Insight") },
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = Color(0xFFAAE5F2)
+
             ),
             actions = {
                 UserAccountActions(
@@ -203,7 +203,8 @@ fun MainScreen(
                     }
 
                     UKMap(
-                        viewModel = ukMapViewModel,
+                        mainViewModel = mainViewModel,
+                        ukMapViewModel = ukMapViewModel,
                         floodCenters = floodCenters,
                         showMarkers = showFloodRisk,
                         renewableSites = renewableMarkers,
@@ -519,3 +520,28 @@ fun RegisterDialog(
     )
 }
 
+
+@Composable
+fun rememberResetMap(
+    mainViewModel: MainViewModel,
+    ukMapViewModel: UKMapViewModel,
+): () -> Unit {
+    return {
+        mainViewModel.onSelectedMineChange(null)
+        mainViewModel.onMineSelected(null)
+
+        mainViewModel.clearMyPins()
+
+        mainViewModel.onBottomSheetChange(BottomSheetContent.None)
+
+        mainViewModel.toggleShowSolar(false)
+        mainViewModel.toggleShowWind(false)
+        mainViewModel.toggleShowHydroelectric(false)
+        mainViewModel.toggleShowFloodRisk(false)
+        mainViewModel.updateClosedMine(false)
+        mainViewModel.updateClosingMine(false)
+
+        ukMapViewModel.resetCamera()
+
+    }
+}

@@ -1,7 +1,5 @@
 package com.ucl.energygrid.data.repository
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.auth0.android.jwt.JWT
 import com.ucl.energygrid.data.model.LoginRequest
 import com.ucl.energygrid.data.model.RegisterRequest

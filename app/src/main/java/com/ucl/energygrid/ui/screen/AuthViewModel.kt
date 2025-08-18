@@ -2,19 +2,14 @@ package com.ucl.energygrid.ui.screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.auth0.android.jwt.JWT
-import com.ucl.energygrid.data.model.LoginRequest
-import com.ucl.energygrid.data.model.RegisterRequest
-import com.ucl.energygrid.data.remote.apis.RetrofitInstance
+import com.ucl.energygrid.data.repository.UserRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import com.ucl.energygrid.data.repository.UserRepository
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import androidx.lifecycle.viewModelScope
 
 class AuthViewModel(
     private val userRepository: UserRepository,
