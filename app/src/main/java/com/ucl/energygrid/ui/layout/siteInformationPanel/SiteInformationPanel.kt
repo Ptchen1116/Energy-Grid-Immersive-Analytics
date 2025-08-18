@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -126,28 +126,37 @@ fun SiteInformationPanel(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Button(
-                    onClick = { viewModel.saveNote() },
-                    enabled = !uiState.isPosting && uiState.isNoteLoaded
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        when {
-                            uiState.isPosting -> "Saving..."
-                            uiState.note.isNotEmpty() -> "Update Note"
-                            else -> "Add Pin"
-                        }
-                    )
-                }
-
-                if (uiState.isPinned) {
-                    Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                        onClick = { viewModel.removePin()
-                            mainViewModel.loadMyPins(userId, true) },
-                        colors = ButtonDefaults.buttonColors(),
-                        enabled = !uiState.isPosting
+                        onClick = { viewModel.saveNote() },
+                        enabled = !uiState.isPosting && uiState.isNoteLoaded,
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Remove Pin")
+                        Text(
+                            when {
+                                uiState.isPosting -> "Saving..."
+                                uiState.note.isNotEmpty() -> "Update Note"
+                                else -> "Add Pin"
+                            }
+                        )
+                    }
+
+                    if (uiState.isPinned) {
+                        Button(
+                            onClick = {
+                                viewModel.removePin()
+                                mainViewModel.loadMyPins(userId, true)
+                            },
+                            enabled = !uiState.isPosting,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Remove Pin")
+                        }
                     }
                 }
 
