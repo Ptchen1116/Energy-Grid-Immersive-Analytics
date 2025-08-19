@@ -111,15 +111,15 @@ fun MapControlPanel(
                 2 -> Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = showSolar, onCheckedChange = onSolarChange)
-                        Text("Solar")
+                        Text("Solar Power Plants")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = showWind, onCheckedChange = onWindChange)
-                        Text("Wind")
+                        Text("Wind Farms")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = showHydroelectric, onCheckedChange = onHydroelectricChange)
-                        Text("Hydroelectric")
+                        Text("Hydroelectric Stations")
                     }
                 }
             }
