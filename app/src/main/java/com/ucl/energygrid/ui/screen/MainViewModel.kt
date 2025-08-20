@@ -19,10 +19,39 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.content.Context
+import com.ucl.energygrid.data.remote.apis.PinApi
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+
+
+interface MainRepository {
+    suspend fun getAllMines(): List<Mine>
+    suspend fun readAndExtractSitesByType(category: String): List<Triple<String, Double, Double>>
+    suspend fun fetchAllFloodCenters(appContext: Context): List<LatLng>
+    suspend fun getInfoByReference(reference: String): Mine?
+    val pinApi: PinApi
+}
+
+class MainRepositoryImpl(
+    override val pinApi: PinApi = RetrofitInstance.pinApi
+) : MainRepository {
+    override suspend fun getAllMines(): List<Mine> = com.ucl.energygrid.data.repository.getAllMines()
+    override suspend fun readAndExtractSitesByType(category: String) =
+        com.ucl.energygrid.data.repository.readAndExtractSitesByType(category)
+    override suspend fun fetchAllFloodCenters(appContext: Context) =
+        com.ucl.energygrid.data.repository.fetchAllFloodCenters(appContext)
+    override suspend fun getInfoByReference(reference: String) =
+        com.ucl.energygrid.data.repository.getInfoByReference(reference)
+}
+
+class MainViewModel(
+    application: Application,
+    private val repository: MainRepository =  MainRepositoryImpl()
+) : AndroidViewModel(application) {
+
     private val appContext = getApplication<Application>()
 
+    // -------------------- UI State --------------------
     private val _currentBottomSheet = MutableStateFlow(BottomSheetContent.None)
     val currentBottomSheet: StateFlow<BottomSheetContent> = _currentBottomSheet
 
@@ -37,9 +66,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _showFloodRisk = MutableStateFlow(false)
     val showFloodRisk: StateFlow<Boolean> = _showFloodRisk
-
-    private val _floodCenters = MutableStateFlow<List<LatLng>>(emptyList())
-    val floodCenters: StateFlow<List<LatLng>> = _floodCenters
 
     private val _showSolar = MutableStateFlow(false)
     val showSolar: StateFlow<Boolean> = _showSolar
@@ -56,6 +82,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedYear = MutableStateFlow(2025)
     val selectedYear: StateFlow<Int> = _selectedYear
 
+    // -------------------- Data --------------------
     private val _solarSites = MutableStateFlow<List<Triple<String, Double, Double>>>(emptyList())
     val solarSites: StateFlow<List<Triple<String, Double, Double>>> = _solarSites
 
@@ -71,88 +98,62 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _allMines = MutableStateFlow<List<Mine>>(emptyList())
     val allMines: StateFlow<List<Mine>> = _allMines
 
-    init {
-        loadInitialData()
-    }
+    private val _floodCenters = MutableStateFlow<List<LatLng>>(emptyList())
+    val floodCenters: StateFlow<List<LatLng>> = _floodCenters
 
-    private fun loadInitialData() {
-        viewModelScope.launch {
-            _allMines.value = getAllMines()
-            _solarSites.value = readAndExtractSitesByType( category = "solar")
-            _windSites.value = readAndExtractSitesByType(category ="wind")
-            _hydroelectricSites.value = readAndExtractSitesByType( category ="hydroelectric")
-            _floodCenters.value = fetchAllFloodCenters(appContext)
-            GeoJsonRepository.loadGeoJsonFeatures { features ->
-                _regionFeatures.value = features
-            }
-        }
-    }
-
-    fun onMineSelected(mine: Mine?) {
-        viewModelScope.launch {
-            if (mine == null) {
-                _selectedMine.value = null
-            } else {
-                val detailedMine = getInfoByReference(mine.reference)
-                _selectedMine.value = detailedMine ?: mine
-            }
-        }
-    }
-
-    fun toggleShowFloodRisk(value: Boolean) {
-        _showFloodRisk.value = value
-    }
-
-    fun toggleShowSolar(value: Boolean) {
-        _showSolar.value = value
-    }
-
-    fun toggleShowWind(value: Boolean) {
-        _showWind.value = value
-    }
-
-    fun toggleShowHydroelectric(value: Boolean) {
-        _showHydroelectric.value = value
-    }
-
-    fun toggleEnergyDemandHeatmap(value: Boolean) {
-        _energyDemandHeatmap.value = value
-    }
-
-    fun changeSelectedYear(year: Int) {
-        _selectedYear.value = year
-    }
-
-    fun onSelectedMineChange(mine: Mine?) {
-        _selectedMine.value = mine
-    }
-
-    fun onBottomSheetChange(content: BottomSheetContent) {
-        _currentBottomSheet.value = content
-    }
-
-    fun updateClosedMine(mine: Boolean) {
-        _closedMine.value = mine
-    }
-
-    fun updateClosingMine(mine: Boolean) {
-        _closingMine.value = mine
-    }
-
+    // -------------------- Pins --------------------
     private val _myPins = MutableStateFlow<List<PinResponse>>(emptyList())
     val myPins: StateFlow<List<PinResponse>> = _myPins.asStateFlow()
 
     private val _showMyPinsMarkers = MutableStateFlow(false)
     val showMyPinsMarkers: StateFlow<Boolean> = _showMyPinsMarkers.asStateFlow()
 
-    fun loadMyPins(userId: Int, isLoggedIn: Boolean) {
-        if (!isLoggedIn) {
-            return
-        }
+    init {
+        loadInitialData()
+    }
 
+    private fun loadInitialData() {
+        viewModelScope.launch {
+            _allMines.value = repository.getAllMines()
+            _solarSites.value = repository.readAndExtractSitesByType("solar")
+            _windSites.value = repository.readAndExtractSitesByType("wind")
+            _hydroelectricSites.value = repository.readAndExtractSitesByType("hydroelectric")
+            _floodCenters.value = repository.fetchAllFloodCenters(appContext)
+
+            GeoJsonRepository.loadGeoJsonFeatures { features ->
+                _regionFeatures.value = features
+            }
+        }
+    }
+
+    // -------------------- Mine Select --------------------
+    fun onMineSelected(mine: Mine?) {
+        viewModelScope.launch {
+            _selectedMine.value = mine?.let {
+                repository.getInfoByReference(it.reference) ?: it
+            }
+        }
+    }
+
+    // -------------------- Toggle UI --------------------
+    fun toggleShowFloodRisk(value: Boolean) { _showFloodRisk.value = value }
+    fun toggleShowSolar(value: Boolean) { _showSolar.value = value }
+    fun toggleShowWind(value: Boolean) { _showWind.value = value }
+    fun toggleShowHydroelectric(value: Boolean) { _showHydroelectric.value = value }
+    fun toggleEnergyDemandHeatmap(value: Boolean) { _energyDemandHeatmap.value = value }
+
+    fun changeSelectedYear(year: Int) { _selectedYear.value = year }
+    fun onSelectedMineChange(mine: Mine?) { _selectedMine.value = mine }
+    fun onBottomSheetChange(content: BottomSheetContent) { _currentBottomSheet.value = content }
+    fun updateClosedMine(mine: Boolean) { _closedMine.value = mine }
+    fun updateClosingMine(mine: Boolean) { _closingMine.value = mine }
+
+    // -------------------- Pins --------------------
+    fun loadMyPins(userId: Int, isLoggedIn: Boolean) {
+        if (!isLoggedIn) return
         viewModelScope.launch {
             try {
-                val api = RetrofitInstance.pinApi
+                val api = repository.pinApi
                 val response = api.getAllPins(userId)
                 if (response.isSuccessful) {
                     _myPins.value = response.body() ?: emptyList()
@@ -165,7 +166,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
 
     fun clearMyPins() {
         _showMyPinsMarkers.value = false
