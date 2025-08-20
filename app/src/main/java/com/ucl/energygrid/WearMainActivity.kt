@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.webrtc.EglBase
 import org.webrtc.SurfaceViewRenderer
+import androidx.compose.runtime.rememberCoroutineScope
 
 
 class WearMainActivity : ComponentActivity() {
@@ -114,7 +115,6 @@ class WearMainActivity : ComponentActivity() {
 
         setContent {
             val command by spokenCommand.collectAsState()
-
             val sitesState = produceState<List<Triple<String, String, String>>>(initialValue = emptyList()) {
                 value = getAllSiteLabelsReferencesAndNames()
             }
@@ -141,127 +141,58 @@ class WearMainActivity : ComponentActivity() {
                 )
             }
 
-            var currentStage by remember { mutableStateOf("selectSite") }
-            var selectedMineName by remember { mutableStateOf<String?>(null) }
-            var selectedMineInfo by remember { mutableStateOf<Mine?>(null) }
-            var currentPage by remember { mutableStateOf(0) }
-            val sitesPerPage = 5
-            val maxPage = (sites.size - 1) / sitesPerPage
+            // 初始化 CommandHandler
+            val commandHandler = remember(sites) {
+                CommandHandler(
+                    sites = sites,
+                    sitesPerPage = 5,
+                    getInfoByReference = { ref -> getInfoByReference(ref) }
+                )
+            }
 
-            var menuExpanded by remember { mutableStateOf(false) }
-
-            LaunchedEffect(command, sites, currentPage, currentStage) {
+            LaunchedEffect(command) {
                 if (sites.isEmpty()) return@LaunchedEffect
-
-                when (command.lowercase()) {
-                    "menu" -> {
-                        currentStage = "menu"
-                        sendCommands(listOf("reselect site", "basic info", "flooding trend", "historical energy demand", "forecast energy demand","back", "menu"))
-                    }
-
-                    "close menu" -> {
-                        menuExpanded = false
-                        sendCommands(listOf("menu"))
-                    }
-
-                    "reselect site" -> {
-                        currentStage = "selectSite"
-                        selectedMineName = null
-                        selectedMineInfo = null
-                        currentPage = 0
-                        sendCommands(sites.map { it.first.lowercase() } + listOf("menu"))
-                    }
-
-                    "basic info" -> {
-                        currentStage = "basicInfo"
-                        sendCommands(listOf("back", "menu"))
-                    }
-
-                    "flooding trend" -> {
-                        currentStage = "floodTrend"
-                        sendCommands(listOf("back", "menu"))
-                    }
-
-                    "historical energy demand" -> {
-                        currentStage = "historicalEnergy"
-                        sendCommands(listOf("back", "menu"))
-                    }
-
-                    "forecast energy demand" -> {
-                        currentStage = "forecastEnergy"
-                        sendCommands(listOf("back", "menu"))
-                    }
-
-                    "back" -> {
-                        currentStage = "selectSite"
-                        sendCommands(sites.map { it.first.lowercase() } + listOf("menu"))
-                    }
-
-                    "accept" -> {
-                        viewModel.acceptCall()
-                        showIncomingDialog = false
-                        return@LaunchedEffect
-                    }
-
-                    "reject" -> {
-                        viewModel.rejectCall()
-                        showIncomingDialog = false
-                        return@LaunchedEffect
-                    }
-
-                    "next" -> {
-                        if (currentStage == "selectSite" && currentPage < maxPage) {
-                            currentPage += 1
-                            sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
-                        }
-                    }
-
-                    "previous" -> {
-                        if (currentStage == "selectSite" && currentPage > 0) {
-                            currentPage -= 1
-                            sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
-                        }
-                    }
-                }
-
-                if (currentStage == "selectSite") {
-                    val visibleSites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage)
-
-                    val selectedSite = visibleSites.firstOrNull {
-                        it.first.equals(command, ignoreCase = true) || (command in listOf("one", "1", "two", "2", "three", "3", "four", "4", "five", "5") &&
-                                        it.first.endsWith(command.takeLast(1)))
-                    }
-
-                    if (selectedSite != null) {
-                        selectedMineName = selectedSite.third
-                        selectedMineInfo = getInfoByReference(selectedSite.second)
-                        currentStage = "basicInfo"
-                        menuExpanded = false
-                        sendCommands(listOf("back", "menu"))
-                    }
-                }
+                val result = commandHandler.handleCommand(command, viewModel)
+                sendCommands(result.sendCommands)
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
+                val commandHandler = remember(sites) {
+                    CommandHandler(
+                        sites = sites,
+                        sitesPerPage = 5,
+                        getInfoByReference = { ref -> getInfoByReference(ref) }
+                    )
+                }
+
+                val scope = rememberCoroutineScope()
+
+                LaunchedEffect(command) {
+                    val result = commandHandler.handleCommand(command, viewModel)
+                    sendCommands(result.sendCommands)
+                }
+
                 WearMainScreen(
-                    stage = currentStage,
-                    mineName = selectedMineName,
-                    mineInfo = selectedMineInfo,
-                    sites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage),
+                    stage = commandHandler.currentStage,
+                    mineName = commandHandler.selectedMineName,
+                    mineInfo = commandHandler.selectedMineInfo,
+                    sites = sites.drop(commandHandler.currentPage * 5).take(5),
                     onMenuClick = {
-                        currentStage = "menu"
-                        sendCommands(listOf("back", "menu"))
+                        scope.launch {
+                            val result = commandHandler.handleCommand("menu", viewModel)
+                            sendCommands(result.sendCommands)
+                        }
                     },
                     onNextClick = {
-                        if (currentStage == "selectSite" && currentPage < maxPage) {
-                            currentPage += 1
-                            sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
+                        scope.launch {
+                            val result = commandHandler.handleCommand("next", viewModel)
+                            sendCommands(result.sendCommands)
                         }
                     },
                     onPreviousClick = {
-                        if (currentStage == "selectSite" && currentPage > 0) {
-                            currentPage -= 1
-                            sendCommands(getCurrentPageCommands(sites, currentPage, sitesPerPage) + listOf("previous", "next"))
+                        scope.launch {
+                            val result = commandHandler.handleCommand("previous", viewModel)
+                            sendCommands(result.sendCommands)
                         }
                     }
                 )
