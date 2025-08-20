@@ -5,13 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-data class CommandResult(
-    val newStage: String,
-    val newPage: Int,
-    val selectedMineName: String? = null,
-    val selectedMineInfo: Mine? = null,
-    val sendCommands: List<String> = emptyList()
-)
 class CommandHandler(
     private val sites: List<Triple<String, String, String>>, // (label, ref, name)
     private val sitesPerPage: Int = 5,
