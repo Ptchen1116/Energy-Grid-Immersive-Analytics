@@ -53,7 +53,7 @@ class UKMapViewModelTest {
 
         // Act
         viewModel.loadForecast(year)
-        testScheduler.advanceUntilIdle() // 確保 coroutine 完成
+        testScheduler.advanceUntilIdle()
 
         // Assert
         val result = viewModel.energyConsumption.first()
@@ -65,20 +65,19 @@ class UKMapViewModelTest {
     fun `resetCamera emits event without changing ViewModel`() = runTest {
         var eventReceived: Unit? = null
 
-        // 用 launch 收集 SharedFlow
         val job = launch {
             viewModel.resetCameraEvent.collect { event ->
                 eventReceived = event
-                this.cancel() // 用 this.cancel() 取消這個 coroutine
+                this.cancel()
             }
         }
 
         // Act
         viewModel.resetCamera()
-        testScheduler.advanceUntilIdle() // 確保 coroutine 完成
+        testScheduler.advanceUntilIdle()
 
         // Assert
         assertEquals(Unit, eventReceived)
-        job.cancel() // 確保 coroutine 結束
+        job.cancel()
     }
 }
