@@ -1,27 +1,31 @@
 package com.ucl.energygrid
 
 import android.app.Application
-import android.util.Log
-import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
-import io.mockk.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.test.*
+import com.ucl.energygrid.data.model.Mine
+import com.ucl.energygrid.data.model.PinResponse
+import com.ucl.energygrid.data.model.RegionFeature
+import com.ucl.energygrid.data.remote.apis.PinApi
+import com.ucl.energygrid.data.repository.GeoJsonRepository
+import com.ucl.energygrid.ui.screen.MainRepository
+import com.ucl.energygrid.ui.screen.MainViewModel
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Response
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-
-import com.ucl.energygrid.ui.screen.MainViewModel
-import com.ucl.energygrid.ui.screen.MainRepository
-import com.ucl.energygrid.data.model.Mine
-import com.ucl.energygrid.data.model.RegionFeature
-import com.ucl.energygrid.data.model.PinResponse
-import com.ucl.energygrid.data.remote.apis.PinApi
-import com.ucl.energygrid.data.repository.GeoJsonRepository
 
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -1,19 +1,21 @@
+import com.ucl.energygrid.CallingViewModel
+import com.ucl.energygrid.CommandHandler
+import com.ucl.energygrid.data.model.Mine
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.Assert.*
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import com.ucl.energygrid.CommandHandler
-import com.ucl.energygrid.CallingViewModel
-import com.ucl.energygrid.data.model.Mine
 
 
 @ExperimentalCoroutinesApi

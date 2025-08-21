@@ -1,39 +1,29 @@
 package com.ucl.energygrid
 
+import app.cash.turbine.test
 import com.ucl.energygrid.data.remote.apis.UserApi
 import com.ucl.energygrid.data.repository.UserRepository
 import com.ucl.energygrid.ui.screen.AuthViewModel
-
+import io.mockk.every
+import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.test.advanceUntilIdle
-
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-
 import org.junit.After
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.Assert.*
-import app.cash.turbine.test
-
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.test.*
-import org.junit.*
-import kotlin.test.*
-
 import java.util.Base64
-
-import io.mockk.every
-import io.mockk.mockkStatic
 
 
 @OptIn(ExperimentalCoroutinesApi::class)

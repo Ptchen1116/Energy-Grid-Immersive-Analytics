@@ -1,15 +1,11 @@
 package com.ucl.energygrid
 
-import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.*
-import com.ucl.energygrid.ui.layout.ukMap.EnergyRepository
-
 import com.ucl.energygrid.data.remote.apis.ForecastItem
-
+import com.ucl.energygrid.ui.layout.ukMap.EnergyRepository
+import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain

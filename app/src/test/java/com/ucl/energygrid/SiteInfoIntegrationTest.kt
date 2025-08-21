@@ -1,39 +1,26 @@
 package com.ucl.energygrid
 
 
-import android.app.Application
-import android.util.Log
-import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.model.LatLng
-import io.mockk.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.test.*
+import com.ucl.energygrid.data.model.PinRequest
+import com.ucl.energygrid.data.model.PinResponse
+import com.ucl.energygrid.data.remote.apis.PinApi
+import com.ucl.energygrid.ui.layout.siteInformationPanel.SiteInformationViewModel
+import io.mockk.coEvery
+import io.mockk.coVerifySequence
+import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Response
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
-
-
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.test.resetMain
-
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import io.mockk.coEvery
-import io.mockk.mockk
-
-import com.ucl.energygrid.ui.layout.siteInformationPanel.SiteInformationViewModel
-import com.ucl.energygrid.data.remote.apis.PinApi
-import com.ucl.energygrid.data.model.PinResponse
-import com.ucl.energygrid.data.model.PinRequest
+import kotlin.test.assertTrue
 
 
 @OptIn(ExperimentalCoroutinesApi::class)

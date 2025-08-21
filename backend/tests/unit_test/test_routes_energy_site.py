@@ -49,7 +49,6 @@ def test_get_sites_invalid_category(mock_db):
 # Test for CSV import / solar sites
 # -------------------------------
 def test_get_sites_csv(mock_db, monkeypatch):
-    # 模擬 CSV 讀取
     mock_csv_data = [
         {
             "Technology Type": "Solar Photovoltaics",

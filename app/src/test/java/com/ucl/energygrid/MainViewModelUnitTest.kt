@@ -1,53 +1,47 @@
 package com.ucl.energygrid
 
 // Kotlin & Coroutines
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.launch
 
 // JUnit
-import org.junit.Before
-import org.junit.After
-import org.junit.Test
-import org.junit.Assert.*
 
 // Android
-import android.app.Application
-import android.util.Log
-import com.google.android.gms.maps.model.LatLng
 
 // MockK
+
+// Retrofit
+
+// Your app classes
+import android.app.Application
+import com.google.android.gms.maps.model.LatLng
+import com.ucl.energygrid.data.model.BottomSheetContent
+import com.ucl.energygrid.data.model.Mine
+import com.ucl.energygrid.data.model.PinResponse
+import com.ucl.energygrid.data.model.RegionFeature
+import com.ucl.energygrid.data.remote.apis.PinApi
+import com.ucl.energygrid.data.repository.GeoJsonRepository
+import com.ucl.energygrid.ui.screen.MainRepository
+import com.ucl.energygrid.ui.screen.MainViewModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.mockkStatic
 import io.mockk.unmockkAll
-
-// Retrofit
-import retrofit2.Response
-
-// Your app classes
-import com.ucl.energygrid.ui.screen.MainViewModel
-import com.ucl.energygrid.data.model.Mine
-import com.ucl.energygrid.data.model.BottomSheetContent
-import com.ucl.energygrid.data.model.RegionFeature
-import com.ucl.energygrid.data.model.PinResponse
-import com.ucl.energygrid.data.remote.apis.RetrofitInstance
-import com.ucl.energygrid.data.remote.apis.PinApi
-import com.ucl.energygrid.data.repository.GeoJsonRepository
-import com.ucl.energygrid.data.repository.getAllMines
-import com.ucl.energygrid.data.repository.getInfoByReference
-import com.ucl.energygrid.data.repository.readAndExtractSitesByType
-import com.ucl.energygrid.data.repository.fetchAllFloodCenters
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import com.ucl.energygrid.ui.screen.MainRepository
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import retrofit2.Response
 
 @ExperimentalCoroutinesApi
 class MainViewModelTest {
