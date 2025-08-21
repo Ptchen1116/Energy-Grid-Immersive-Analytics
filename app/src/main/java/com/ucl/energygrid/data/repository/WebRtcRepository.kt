@@ -57,15 +57,14 @@ class WebRtcRepository(private val context: Context) {
     val incomingCall: StateFlow<Boolean> get() = _incomingCall
 
     val isConnected = MutableStateFlow(false)
+    private var isCallEndedByMe = false
 
-    // 監聽器變數，用來移除
     private var offerListener: ValueEventListener? = null
     private var answerListener: ValueEventListener? = null
     private var candidateListener: ChildEventListener? = null
 
     fun init(localView: SurfaceViewRenderer, remoteView: SurfaceViewRenderer, isCaller: Boolean) {
         if (this::peerConnectionFactory.isInitialized && peerConnection != null) {
-            // 已經初始化過，避免重複初始化
             return
         }
 
@@ -74,6 +73,8 @@ class WebRtcRepository(private val context: Context) {
         this.isCaller = isCaller
 
         setupPeerConnection()
+
+        listenForCallEnd()
     }
 
     private fun setupPeerConnection() {
@@ -183,7 +184,10 @@ class WebRtcRepository(private val context: Context) {
         }, MediaConstraints())
     }
 
-    fun endCall() {
+    fun endCall(byMe: Boolean = true) {
+        if (isCallEndedByMe) return
+        isCallEndedByMe = true
+
         try {
             videoCapturer?.stopCapture()
         } catch (_: Exception) {}
@@ -194,7 +198,6 @@ class WebRtcRepository(private val context: Context) {
         peerConnection?.close()
         peerConnection = null
 
-        // 移除監聽器
         offerListener?.let { database.child("offer").removeEventListener(it) }
         answerListener?.let { database.child("answer").removeEventListener(it) }
         candidateListener?.let {
@@ -202,11 +205,17 @@ class WebRtcRepository(private val context: Context) {
             database.child(path).removeEventListener(it)
         }
 
-        // 清理 signaling 資料
+        callEndedListener?.let { database.child("callEnded").removeEventListener(it) }
+
         clearSignaling()
 
         pendingCandidates.clear()
         isConnected.value = false
+
+        // 只有自己主動結束才通知對方
+        if (byMe) {
+            database.child("callEnded").setValue(true)
+        }
     }
 
     private fun clearSignaling() {
@@ -214,6 +223,7 @@ class WebRtcRepository(private val context: Context) {
         database.child("answer").removeValue()
         database.child("callerCandidates").removeValue()
         database.child("calleeCandidates").removeValue()
+        database.child("callEnded").removeValue()
     }
 
     private var pendingOffer: SessionDescription? = null
@@ -334,6 +344,21 @@ class WebRtcRepository(private val context: Context) {
             }
         }
         return null
+    }
+
+    private var callEndedListener: ValueEventListener? = null
+
+    private fun listenForCallEnd() {
+        callEndedListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists() && snapshot.getValue(Boolean::class.java) == true) {
+                    endCall(byMe = false)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        database.child("callEnded").addValueEventListener(callEndedListener as ValueEventListener)
     }
 }
 

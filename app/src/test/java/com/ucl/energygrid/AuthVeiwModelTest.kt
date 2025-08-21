@@ -1,19 +1,23 @@
 package com.ucl.energygrid.com.ucl.energygrid
 
 import app.cash.turbine.test
+import com.ucl.energygrid.data.repository.UserRepository
+import com.ucl.energygrid.ui.screen.AuthViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import com.ucl.energygrid.data.repository.UserRepository
-import com.ucl.energygrid.ui.screen.AuthViewModel
-import kotlinx.coroutines.Dispatchers
 
 
 @OptIn(ExperimentalCoroutinesApi::class)

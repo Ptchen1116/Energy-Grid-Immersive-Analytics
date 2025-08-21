@@ -14,18 +14,25 @@ class CallingViewModel(
 ) : ViewModel() {
 
     val isConnected: StateFlow<Boolean> = repo.isConnected
+
     private val _callActive = MutableStateFlow(false)
     val callActive: StateFlow<Boolean> get() = _callActive
+
+    init {
+        viewModelScope.launch {
+            repo.isConnected.collect { connected ->
+                _callActive.value = connected
+            }
+        }
+    }
 
     fun init(localView: SurfaceViewRenderer, remoteView: SurfaceViewRenderer, isCaller: Boolean) {
         repo.init(localView, remoteView, isCaller)
     }
 
     fun startCall() = viewModelScope.launch { repo.startCall() }
-    fun endCall() = viewModelScope.launch { repo.endCall() }
 
-    override fun onCleared() {
-        super.onCleared()
+    fun endCall() = viewModelScope.launch {
         repo.endCall()
     }
 
@@ -33,11 +40,14 @@ class CallingViewModel(
 
     fun acceptCall() = viewModelScope.launch {
         repo.acceptIncomingCall()
-        _callActive.value = true
     }
 
     fun rejectCall() = viewModelScope.launch {
         repo.rejectIncomingCall()
-        _callActive.value = false
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        repo.endCall()
     }
 }

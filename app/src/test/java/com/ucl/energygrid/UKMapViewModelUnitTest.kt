@@ -1,25 +1,24 @@
 package com.ucl.energygrid
 
-import app.cash.turbine.test
+import com.ucl.energygrid.data.remote.apis.ForecastItem
+import com.ucl.energygrid.ui.layout.ukMap.EnergyRepository
+import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.*
-import kotlinx.coroutines.cancel
-import com.ucl.energygrid.data.remote.apis.ForecastItem
-import com.ucl.energygrid.ui.layout.ukMap.EnergyRepository
-
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import org.mockito.kotlin.verify
-
-import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
+import org.mockito.kotlin.whenever
+import kotlin.test.assertEquals
 
 
 @ExperimentalCoroutinesApi

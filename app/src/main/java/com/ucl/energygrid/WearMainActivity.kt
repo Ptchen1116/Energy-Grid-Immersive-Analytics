@@ -61,6 +61,7 @@ import kotlinx.coroutines.withContext
 import org.webrtc.EglBase
 import org.webrtc.SurfaceViewRenderer
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.DisposableEffect
 
 
 class WearMainActivity : ComponentActivity() {
@@ -141,7 +142,6 @@ class WearMainActivity : ComponentActivity() {
                 )
             }
 
-            // 初始化 CommandHandler
             val commandHandler = remember(sites) {
                 CommandHandler(
                     sites = sites,
@@ -205,6 +205,11 @@ class WearMainActivity : ComponentActivity() {
                             .size(160.dp)
                             .padding(end = 10.dp, bottom = 85.dp)
                     )
+                    DisposableEffect(Unit) {
+                        onDispose {
+                            localRenderer.clearImage()
+                        }
+                    }
                 }
             }
         }
@@ -233,6 +238,8 @@ class WearMainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        localRenderer.release()
+        remoteRenderer.release()
         eglBase.release()
     }
 }
