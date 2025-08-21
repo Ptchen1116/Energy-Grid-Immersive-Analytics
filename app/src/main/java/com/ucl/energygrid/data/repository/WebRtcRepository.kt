@@ -195,6 +195,9 @@ class WebRtcRepository(private val context: Context) {
         if (this::localVideoSource.isInitialized) localVideoSource.dispose()
         if (this::localAudioSource.isInitialized) localAudioSource.dispose()
 
+        localView.clearImage()
+        remoteView.clearImage()
+
         peerConnection?.close()
         peerConnection = null
 
