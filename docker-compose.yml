@@ -19,6 +19,33 @@ services:
     depends_on:
       - db
 
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /home/azureuser/certbot/etc:/etc/letsencrypt
+      - /home/azureuser/certbot/www:/var/www/certbot
+    environment:
+      DOMAIN_NAME: immersive-analytics-for-energy-grid-data.uksouth.cloudapp.azure.com
+    depends_on:
+      - web
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - /home/azureuser/certbot/etc:/etc/letsencrypt
+      - /home/azureuser/certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot \
+           --email ucabpc5@ucl.ac.uk --agree-tos --no-eff-email \
+           -d immersive-analytics-for-energy-grid-data.uksouth.cloudapp.azure.com
+
 volumes:
-  postgres_data:
+  postgres-data:
+  certbot-etc:
+  certbot-www:
 
