@@ -8,9 +8,10 @@ import androidx.compose.runtime.setValue
 class CommandHandler(
     private val sites: List<Triple<String, String, String>>, // (label, ref, name)
     private val sitesPerPage: Int = 5,
-    private val getInfoByReference: suspend (String) -> Mine?
+    private val getInfoByReference: suspend (String) -> Mine?,
+    initialStage: String = "selectSite"
 ) {
-    var currentStage by mutableStateOf("selectSite")
+    var currentStage by mutableStateOf(initialStage)
         private set
     var selectedMineName by mutableStateOf<String?>(null)
         private set
@@ -98,7 +99,6 @@ class CommandHandler(
             }
         }
 
-        // 選 site
         if (currentStage == "selectSite") {
             val visibleSites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage)
             val selectedSite = visibleSites.firstOrNull {
