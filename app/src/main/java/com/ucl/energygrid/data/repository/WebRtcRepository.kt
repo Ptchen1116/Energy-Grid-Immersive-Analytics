@@ -32,6 +32,13 @@ import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoCapturer
 import org.webrtc.VideoSource
 import org.webrtc.VideoTrack
+import org.webrtc.VideoSink
+import org.webrtc.VideoFrame
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import android.Manifest
+
+
 
 class WebRtcRepository(private val context: Context) {
     private val eglBase = EglBase.create()
@@ -69,6 +76,11 @@ class WebRtcRepository(private val context: Context) {
         this.localView = localView
         this.remoteView = remoteView
         this.isCaller = isCaller
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED) {
+            Log.e("WebRtcRepository", "Camera permission not granted")
+        }
 
         setupPeerConnection()
 
@@ -336,21 +348,50 @@ class WebRtcRepository(private val context: Context) {
     }
 
     private fun createCameraCapturer(): VideoCapturer? {
+        checkAvailableCameras()
+
         val enumerator = Camera2Enumerator(context)
         val deviceNames = enumerator.deviceNames
+        Log.d("WebRtcWear", "Device names: ${deviceNames.joinToString()}") // log device names
+
         for (name in deviceNames) {
+            Log.d("WebRtcWear", "Checking front-facing camera: $name")
             if (enumerator.isFrontFacing(name)) {
                 val capturer = enumerator.createCapturer(name, null)
+                Log.d("WebRtcWear", "Front-facing capturer: $capturer")
                 if (capturer != null) return capturer
             }
         }
         for (name in deviceNames) {
+            Log.d("WebRtcWear", "Checking back-facing camera: $name")
             if (!enumerator.isFrontFacing(name)) {
                 val capturer = enumerator.createCapturer(name, null)
+                Log.d("WebRtcWear", "Back-facing capturer: $capturer")
                 if (capturer != null) return capturer
             }
         }
+        Log.e("WebRtcWear", "No camera capturer found")
         return null
+    }
+
+    private fun checkAvailableCameras() {
+        val pm = context.packageManager
+        val hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+        val hasFrontCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)
+        val hasBackCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)
+
+        Log.d("WebRtcWear", "Has any camera: $hasCamera")
+        Log.d("WebRtcWear", "Has front camera: $hasFrontCamera")
+        Log.d("WebRtcWear", "Has back camera: $hasBackCamera")
+
+        val enumerator = Camera2Enumerator(context)
+        val deviceNames = enumerator.deviceNames
+        Log.d("WebRtcWear", "Camera devices from enumerator: ${deviceNames.joinToString()}")
+
+        for (name in deviceNames) {
+            val isFront = enumerator.isFrontFacing(name)
+            Log.d("WebRtcWear", "Camera: $name, front-facing: $isFront")
+        }
     }
 
     private var callEndedListener: ValueEventListener? = null
@@ -367,7 +408,9 @@ class WebRtcRepository(private val context: Context) {
         }
         database.child("callEnded").addValueEventListener(callEndedListener as ValueEventListener)
     }
+
 }
+
 
 data class IceCandidateData(
     val sdpMid: String? = null,

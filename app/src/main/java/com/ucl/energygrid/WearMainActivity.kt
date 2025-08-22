@@ -62,7 +62,10 @@ import org.webrtc.EglBase
 import org.webrtc.SurfaceViewRenderer
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.DisposableEffect
-
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
@@ -89,8 +92,22 @@ class WearMainActivity : ComponentActivity() {
         sendBroadcast(intent)
     }
 
+    companion object {
+        private const val CAMERA_REQUEST_CODE = 1001
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                CAMERA_REQUEST_CODE
+            )
+        }
         window.setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
