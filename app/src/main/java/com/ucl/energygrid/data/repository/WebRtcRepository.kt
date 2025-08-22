@@ -343,8 +343,7 @@ class WebRtcRepository(private val context: Context) {
 
     fun rejectIncomingCall() {
         _incomingCall.value = false
-        database.child("offer").removeValue()
-        endCall()
+        endCall(byMe = false)
     }
 
     private fun createCameraCapturer(): VideoCapturer? {
