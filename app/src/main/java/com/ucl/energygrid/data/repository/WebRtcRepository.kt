@@ -47,6 +47,8 @@ class WebRtcRepository(private val context: Context) {
     private var isCaller: Boolean = false
     private lateinit var localView: SurfaceViewRenderer
     private lateinit var remoteView: SurfaceViewRenderer
+    private var viewsInitialized = false
+
 
     private val database: DatabaseReference = FirebaseDatabase.getInstance(
         "https://ucl---energy-data-analytics-default-rtdb.europe-west1.firebasedatabase.app"
@@ -64,10 +66,6 @@ class WebRtcRepository(private val context: Context) {
     private var candidateListener: ChildEventListener? = null
 
     fun init(localView: SurfaceViewRenderer, remoteView: SurfaceViewRenderer, isCaller: Boolean) {
-        if (this::peerConnectionFactory.isInitialized && peerConnection != null) {
-            return
-        }
-
         this.localView = localView
         this.remoteView = remoteView
         this.isCaller = isCaller
@@ -153,13 +151,17 @@ class WebRtcRepository(private val context: Context) {
         peerConnection?.addTrack(localVideoTrack)
         peerConnection?.addTrack(localAudioTrack)
 
-        localView.init(eglBase.eglBaseContext, null)
-        localView.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
-        localView.setMirror(true)
+        if(viewsInitialized == false){
+            localView.init(eglBase.eglBaseContext, null)
+            localView.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
+            localView.setMirror(true)
 
-        remoteView.init(eglBase.eglBaseContext, null)
-        remoteView.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FILL)
-        remoteView.setMirror(false)
+            remoteView.init(eglBase.eglBaseContext, null)
+            remoteView.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FILL)
+            remoteView.setMirror(false)
+
+            viewsInitialized = true
+        }
 
         listenForOffer()
         listenForRemoteSDP()
@@ -167,6 +169,9 @@ class WebRtcRepository(private val context: Context) {
     }
 
     fun startCall() {
+        if(peerConnection == null) {
+            init(localView, remoteView, isCaller = true)
+        }
         peerConnection?.createOffer(object : SdpObserver {
             override fun onCreateSuccess(sdp: SessionDescription?) {
                 peerConnection?.setLocalDescription(object : SdpObserver {
@@ -185,9 +190,6 @@ class WebRtcRepository(private val context: Context) {
     }
 
     fun endCall(byMe: Boolean = true) {
-        if (isCallEndedByMe) return
-        isCallEndedByMe = true
-
         try {
             videoCapturer?.stopCapture()
         } catch (_: Exception) {}
@@ -215,9 +217,11 @@ class WebRtcRepository(private val context: Context) {
         pendingCandidates.clear()
         isConnected.value = false
 
-        // 只有自己主動結束才通知對方
+
         if (byMe) {
             database.child("callEnded").setValue(true)
+        } else {
+            init(localView, remoteView, isCaller = false)
         }
     }
 
