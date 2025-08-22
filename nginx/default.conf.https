@@ -11,19 +11,3 @@ server {
     }
 }
 
-server {
-    listen 443 ssl;
-    server_name immersive-analytics-for-energy-grid-data.uksouth.cloudapp.azure.com;
-
-    ssl_certificate /etc/letsencrypt/live/immersive-analytics-for-energy-grid-data.uksouth.cloudapp.azure.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/immersive-analytics-for-energy-grid-data.uksouth.cloudapp.azure.com/privkey.pem;
-
-    location / {
-        proxy_pass http://fastapi_web:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
