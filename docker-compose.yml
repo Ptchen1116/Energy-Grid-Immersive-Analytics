@@ -45,7 +45,6 @@ services:
            -d immersive-analytics-for-energy-grid-data.uksouth.cloudapp.azure.com
 
 volumes:
-  postgres-data:
-  certbot-etc:
-  certbot-www:
+  postgres_data:
+
 
