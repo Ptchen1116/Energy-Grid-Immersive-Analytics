@@ -30,7 +30,8 @@ class CallingViewModel(
         repo.init(localView, remoteView, isCaller)
     }
 
-    fun startCall() = viewModelScope.launch { repo.startCall() }
+    fun startCall() = viewModelScope.launch {
+        repo.startCall() }
 
     fun endCall() = viewModelScope.launch {
         repo.endCall()
