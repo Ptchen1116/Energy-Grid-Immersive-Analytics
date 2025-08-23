@@ -32,7 +32,7 @@ class CommandHandler(
             "menu" -> {
                 currentStage = "menu"
                 return CommandResult(listOf("reselect site", "basic info", "flooding trend",
-                    "historical energy demand", "forecast energy demand", "back", "menu"))
+                    "historical energy demand", "forecast energy demand", "back", "menu", "accept", "reject"))
             }
 
             "close menu" -> {
@@ -45,27 +45,27 @@ class CommandHandler(
                 selectedMineName = null
                 selectedMineInfo = null
                 currentPage = 0
-                return CommandResult(sites.map { it.first.lowercase() } + listOf("menu"))
+                return CommandResult(sites.map { it.first.lowercase() } + listOf("next","accept", "reject", "previous"))
             }
 
             "basic info" -> {
                 currentStage = "basicInfo"
-                return CommandResult(listOf("back", "menu"))
+                return CommandResult(listOf("back", "menu","accept", "reject"))
             }
 
             "flooding trend" -> {
                 currentStage = "floodTrend"
-                return CommandResult(listOf("back", "menu"))
+                return CommandResult(listOf("back", "menu","accept", "reject"))
             }
 
             "historical energy demand" -> {
                 currentStage = "historicalEnergy"
-                return CommandResult(listOf("back", "menu"))
+                return CommandResult(listOf("back", "menu","accept", "reject"))
             }
 
             "forecast energy demand" -> {
                 currentStage = "forecastEnergy"
-                return CommandResult(listOf("back", "menu"))
+                return CommandResult(listOf("back", "menu","accept", "reject"))
             }
 
             "back" -> {
@@ -75,12 +75,12 @@ class CommandHandler(
 
             "accept" -> {
                 viewModel.acceptCall()
-                return CommandResult()
+                return CommandResult(sites.map { it.first.lowercase() } + listOf("reselect site", "back", "menu", "accept", "reject","previous", "next"))
             }
 
             "reject" -> {
                 viewModel.rejectCall()
-                return CommandResult()
+                return CommandResult(sites.map { it.first.lowercase() }  + listOf("reselect site", "back", "menu", "accept", "reject", "previous", "next"))
             }
 
             "next" -> {
@@ -110,7 +110,7 @@ class CommandHandler(
                 selectedMineName = selectedSite.third
                 selectedMineInfo = getInfoByReference(selectedSite.second)
                 currentStage = "basicInfo"
-                return CommandResult(listOf("back", "menu"))
+                return CommandResult(listOf("back", "menu","accept", "reject"))
             }
         }
 
