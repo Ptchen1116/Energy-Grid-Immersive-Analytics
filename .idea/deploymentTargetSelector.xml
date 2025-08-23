@@ -7,7 +7,7 @@
         <DropdownSelection timestamp="2025-08-23T17:25:22.501378Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/chenpeitong/.android/avd/Medium_Phone_2.avd" />
+              <DeviceId pluginId="Default" identifier="serial=bd32dc90;connection=8b429a79" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -18,7 +18,7 @@
         <DropdownSelection timestamp="2025-08-23T17:28:36.682870Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/chenpeitong/.android/avd/Medium_Phone_2.avd" />
+              <DeviceId pluginId="Default" identifier="serial=bd32dc90;connection=8b429a79" />
             </handle>
           </Target>
         </DropdownSelection>
