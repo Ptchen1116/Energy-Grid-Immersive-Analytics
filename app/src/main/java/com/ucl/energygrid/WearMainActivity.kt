@@ -66,6 +66,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
 
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
@@ -448,7 +449,13 @@ fun BasicInfoScreen(mine: Mine) {
         }
         Spacer(modifier = Modifier.height(18.dp))
         Text("Local Authority: ${mine.localAuthority ?: "Unknown"}", fontSize = 21.sp, color = Color.Black)
-        Text("Coordinates: E=${mine.easting}, N=${mine.northing}", fontSize = 21.sp, color = Color.Black)
+        val latLng = convertOSGB36ToWGS84(mine.easting, mine.northing)
+
+        Text(
+            "Location: %.2f °N, %.2f °E".format(latLng.latitude, latLng.longitude),
+            fontSize = 21.sp,
+            color = Color.Gray
+        )
         Spacer(modifier = Modifier.height(24.dp))
         Text("Say 'back' or 'menu' to return to menu", color = Color.DarkGray, fontSize = 18.sp)
     }
@@ -582,7 +589,7 @@ fun IncomingCallDialog(
 ) {
     AlertDialog(
         onDismissRequest = { onReject() },
-        title = { Text(text = callerName, style = MaterialTheme.typography.titleLarge) },
+        title = { Text(text = callerName, style = MaterialTheme.typography.titleLarge, color=Color.Black) },
         confirmButton = {
             Button(onClick = onAccept) {
                 Text("Accept")

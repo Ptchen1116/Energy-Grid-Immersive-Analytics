@@ -4,6 +4,7 @@ import com.ucl.energygrid.data.model.Mine
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import android.util.Log
 
 class CommandHandler(
     private val sites: List<Triple<String, String, String>>, // (label, ref, name)
@@ -29,61 +30,9 @@ class CommandHandler(
     suspend fun handleCommand(command: String, viewModel: CallingViewModel): CommandResult {
         if (sites.isEmpty()) return CommandResult()
 
+        Log.d("DEBUG", "Command received: '$command', currentStage=$currentStage, currentPage=$currentPage")
+
         when (command.lowercase()) {
-            "menu" -> {
-                currentStage = "menu"
-                return CommandResult(listOf("reselect site", "basic info", "flooding trend",
-                    "historical energy demand", "forecast energy demand", "back", "menu"))
-            }
-
-            "close menu" -> {
-                currentStage = "selectSite"
-                return CommandResult(listOf("menu"))
-            }
-
-            "reselect site" -> {
-                currentStage = "selectSite"
-                selectedMineName = null
-                selectedMineInfo = null
-                currentPage = 0
-                return CommandResult(sites.map { it.first.lowercase() } + listOf("menu"))
-            }
-
-            "basic info" -> {
-                currentStage = "basicInfo"
-                return CommandResult(listOf("back", "menu"))
-            }
-
-            "flooding trend" -> {
-                currentStage = "floodTrend"
-                return CommandResult(listOf("back", "menu"))
-            }
-
-            "historical energy demand" -> {
-                currentStage = "historicalEnergy"
-                return CommandResult(listOf("back", "menu"))
-            }
-
-            "forecast energy demand" -> {
-                currentStage = "forecastEnergy"
-                return CommandResult(listOf("back", "menu"))
-            }
-
-            "back" -> {
-                currentStage = "selectSite"
-                return CommandResult(sites.map { it.first.lowercase() } + listOf("menu"))
-            }
-
-            "accept" -> {
-                viewModel.acceptCall()
-                return CommandResult()
-            }
-
-            "reject" -> {
-                viewModel.rejectCall()
-                return CommandResult()
-            }
-
             "next" -> {
                 if (currentStage == "selectSite" && currentPage < maxPage) {
                     currentPage += 1
@@ -96,6 +45,60 @@ class CommandHandler(
                     currentPage -= 1
                     return CommandResult(getCurrentPageCommands() + listOf("previous", "next"))
                 }
+            }
+
+            "menu" -> {
+                currentStage = "menu"
+                return CommandResult(listOf("reselect site", "basic info", "flooding trend",
+                    "historical energy demand", "forecast energy demand", "back", "menu", "accept", "reject"))
+            }
+
+            "close menu" -> {
+                currentStage = "selectSite"
+                return CommandResult(listOf("menu"))
+            }
+
+            "reselect site" -> {
+                currentStage = "selectSite"
+                selectedMineName = null
+                selectedMineInfo = null
+                currentPage = 0
+                return CommandResult(sites.map { it.first.lowercase() } + listOf("next","accept", "reject", "previous"))
+            }
+
+            "basic info" -> {
+                currentStage = "basicInfo"
+                return CommandResult(listOf("back", "menu","accept", "reject"))
+            }
+
+            "flooding trend" -> {
+                currentStage = "floodTrend"
+                return CommandResult(listOf("back", "menu","accept", "reject"))
+            }
+
+            "historical energy demand" -> {
+                currentStage = "historicalEnergy"
+                return CommandResult(listOf("back", "menu","accept", "reject"))
+            }
+
+            "forecast energy demand" -> {
+                currentStage = "forecastEnergy"
+                return CommandResult(listOf("back", "menu","accept", "reject"))
+            }
+
+            "back" -> {
+                currentStage = "selectSite"
+                return CommandResult(sites.map { it.first.lowercase() } + listOf("menu"))
+            }
+
+            "accept" -> {
+                viewModel.acceptCall()
+                return CommandResult(sites.map { it.first.lowercase() } + listOf("reselect site", "back", "menu", "accept", "reject","previous", "next"))
+            }
+
+            "reject" -> {
+                viewModel.rejectCall()
+                return CommandResult(sites.map { it.first.lowercase() }  + listOf("reselect site", "back", "menu", "accept", "reject", "previous", "next"))
             }
         }
 
@@ -110,7 +113,7 @@ class CommandHandler(
                 selectedMineName = selectedSite.third
                 selectedMineInfo = getInfoByReference(selectedSite.second)
                 currentStage = "basicInfo"
-                return CommandResult(listOf("back", "menu"))
+                return CommandResult(listOf("back", "menu","accept", "reject", "next", "previous"))
             }
         }
 
@@ -118,6 +121,8 @@ class CommandHandler(
     }
 
     private fun getCurrentPageCommands(): List<String> {
-        return sites.drop(currentPage * sitesPerPage).take(sitesPerPage).map { it.first.lowercase() }
+        val currentSites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage).map { it.first.lowercase() }
+        Log.d("DEBUG", "getCurrentPageCommands() -> currentPage=$currentPage, sites=$currentSites")
+        return currentSites
     }
 }
