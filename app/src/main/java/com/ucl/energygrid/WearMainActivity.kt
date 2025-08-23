@@ -168,7 +168,7 @@ class WearMainActivity : ComponentActivity() {
                 )
             }
 
-            LaunchedEffect(command) {
+            LaunchedEffect(command, !callActive) {
                 if (sites.isEmpty()) return@LaunchedEffect
                 val result = commandHandler.handleCommand(command, viewModel)
                 sendCommands(result.sendCommands)
