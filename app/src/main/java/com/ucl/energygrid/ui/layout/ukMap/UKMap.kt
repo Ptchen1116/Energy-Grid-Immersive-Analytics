@@ -66,7 +66,10 @@ fun UKMap(
 
     LaunchedEffect(year) { ukMapViewModel.loadForecast(year) }
 
-    val ukBounds = LatLngBounds(LatLng(49.9, -8.6), LatLng(60.9, 1.8))
+    val ukBounds = LatLngBounds(
+        LatLng(50.0, -9.5),
+        LatLng(58.0, 1.0)
+    )
     val cameraPositionState = rememberCameraPositionState()
 
     LaunchedEffect(Unit) {

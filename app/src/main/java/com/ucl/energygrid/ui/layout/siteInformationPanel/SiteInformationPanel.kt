@@ -54,6 +54,7 @@ import com.ucl.energygrid.data.remote.apis.PinApi
 import com.ucl.energygrid.data.repository.WebRtcRepository
 import com.ucl.energygrid.ui.component.TypeTag
 import com.ucl.energygrid.ui.screen.MainViewModel
+import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
 import org.webrtc.SurfaceViewRenderer
 
 
@@ -89,8 +90,10 @@ fun SiteInformationPanel(
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1C0471)
             )
+            val latLng = convertOSGB36ToWGS84(mine.easting, mine.northing)
+
             Text(
-                "Location: ${mine.northing}°N, ${mine.easting}°E",
+                "Location: %.2f °N, %.2f °E".format(latLng.latitude, latLng.longitude),
                 fontSize = 14.sp,
                 color = Color.Gray
             )

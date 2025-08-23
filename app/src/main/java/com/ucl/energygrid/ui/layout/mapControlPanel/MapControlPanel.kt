@@ -81,7 +81,7 @@ fun MapControlPanel(
                     onClick = { selectedTab = 2 },
                     text = {
                         Text(
-                            "Renewable Sites",
+                            "Renewable Site",
                             color = if (selectedTab == 2) selectedColor else unselectedColor
                         )
                     }
@@ -111,15 +111,15 @@ fun MapControlPanel(
                 2 -> Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = showSolar, onCheckedChange = onSolarChange)
-                        Text("Solar Power Plants")
+                        Text("Solar Power Plant")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = showWind, onCheckedChange = onWindChange)
-                        Text("Wind Farms")
+                        Text("Wind Farm")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = showHydroelectric, onCheckedChange = onHydroelectricChange)
-                        Text("Hydroelectric Stations")
+                        Text("Hydroelectric Station")
                     }
                 }
             }

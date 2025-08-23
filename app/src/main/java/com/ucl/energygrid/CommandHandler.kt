@@ -4,6 +4,7 @@ import com.ucl.energygrid.data.model.Mine
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import android.util.Log
 
 class CommandHandler(
     private val sites: List<Triple<String, String, String>>, // (label, ref, name)
@@ -28,7 +29,23 @@ class CommandHandler(
     suspend fun handleCommand(command: String, viewModel: CallingViewModel): CommandResult {
         if (sites.isEmpty()) return CommandResult()
 
+        Log.d("DEBUG", "Command received: '$command', currentStage=$currentStage, currentPage=$currentPage")
+
         when (command.lowercase()) {
+            "next" -> {
+                if (currentStage == "selectSite" && currentPage < maxPage) {
+                    currentPage += 1
+                    return CommandResult(getCurrentPageCommands() + listOf("previous", "next"))
+                }
+            }
+
+            "previous" -> {
+                if (currentStage == "selectSite" && currentPage > 0) {
+                    currentPage -= 1
+                    return CommandResult(getCurrentPageCommands() + listOf("previous", "next"))
+                }
+            }
+
             "menu" -> {
                 currentStage = "menu"
                 return CommandResult(listOf("reselect site", "basic info", "flooding trend",
@@ -82,23 +99,8 @@ class CommandHandler(
                 viewModel.rejectCall()
                 return CommandResult(sites.map { it.first.lowercase() }  + listOf("reselect site", "back", "menu", "accept", "reject", "previous", "next"))
             }
-
-            "next" -> {
-                if (currentStage == "selectSite" && currentPage < maxPage) {
-                    currentPage += 1
-                    return CommandResult(getCurrentPageCommands() + listOf("previous", "next"))
-                }
-            }
-
-            "previous" -> {
-                if (currentStage == "selectSite" && currentPage > 0) {
-                    currentPage -= 1
-                    return CommandResult(getCurrentPageCommands() + listOf("previous", "next"))
-                }
-            }
         }
 
-        // 選 site
         if (currentStage == "selectSite") {
             val visibleSites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage)
             val selectedSite = visibleSites.firstOrNull {
@@ -110,7 +112,7 @@ class CommandHandler(
                 selectedMineName = selectedSite.third
                 selectedMineInfo = getInfoByReference(selectedSite.second)
                 currentStage = "basicInfo"
-                return CommandResult(listOf("back", "menu","accept", "reject"))
+                return CommandResult(listOf("back", "menu","accept", "reject", "next", "previous"))
             }
         }
 
@@ -118,6 +120,8 @@ class CommandHandler(
     }
 
     private fun getCurrentPageCommands(): List<String> {
-        return sites.drop(currentPage * sitesPerPage).take(sitesPerPage).map { it.first.lowercase() }
+        val currentSites = sites.drop(currentPage * sitesPerPage).take(sitesPerPage).map { it.first.lowercase() }
+        Log.d("DEBUG", "getCurrentPageCommands() -> currentPage=$currentPage, sites=$currentSites")
+        return currentSites
     }
 }
