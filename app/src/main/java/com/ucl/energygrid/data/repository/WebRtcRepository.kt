@@ -166,7 +166,7 @@ class WebRtcRepository(private val context: Context) {
         if(viewsInitialized == false){
             localView.init(eglBase.eglBaseContext, null)
             localView.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
-            localView.setMirror(true)
+            localView.setMirror(false)
 
             remoteView.init(eglBase.eglBaseContext, null)
             remoteView.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FILL)
