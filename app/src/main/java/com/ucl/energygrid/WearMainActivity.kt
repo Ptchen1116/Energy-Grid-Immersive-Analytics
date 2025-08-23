@@ -132,19 +132,16 @@ class WearMainActivity : ComponentActivity() {
 
         viewModel.init(localRenderer, remoteRenderer, isCaller = false)
 
-
         setContent {
             val command by spokenCommand.collectAsState()
             val sitesState = produceState<List<Triple<String, String, String>>>(initialValue = emptyList()) {
                 value = getAllSiteLabelsReferencesAndNames()
             }
             val sites = sitesState.value
-
             val incomingCall by viewModel.incomingCall.collectAsState()
             var showIncomingDialog by remember { mutableStateOf(false) }
             val callActive by viewModel.callActive.collectAsState()
 
-            // 更新 Incoming Dialog
             LaunchedEffect(incomingCall) {
                 showIncomingDialog = incomingCall
             }
@@ -163,78 +160,61 @@ class WearMainActivity : ComponentActivity() {
                 )
             }
 
-            var commandHandler by remember { mutableStateOf<CommandHandler?>(null) }
-
-            LaunchedEffect(sites, callActive) {
-                if (sites.isNotEmpty() && !callActive) {
-                    commandHandler = CommandHandler(
-                        sites = sites,
-                        sitesPerPage = 5,
-                        getInfoByReference = { ref -> getInfoByReference(ref) } // stage 預設就是 "selectSite"
-                    )
-
-                    val allCommands = sites.map { it.first.lowercase() } +
-                            listOf("Accept", "Reject", "Next", "Previous", "Menu",
-                                "Energy Forecast", "Flood Risk")
-                    sendCommands(allCommands)
-                }
+            val commandHandler = remember(sites) {
+                CommandHandler(
+                    sites = sites,
+                    sitesPerPage = 5,
+                    getInfoByReference = { ref -> getInfoByReference(ref) }
+                )
             }
 
             LaunchedEffect(command) {
                 if (sites.isEmpty()) return@LaunchedEffect
-                commandHandler?.let { handler ->
-                    when (command.lowercase()) {
-                        "accept" -> {
-                            viewModel.acceptCall()
-                            _spokenCommand.value = "No selection"
-                        }
-                        "reject" -> {
-                            viewModel.rejectCall()
-                            _spokenCommand.value = "No selection"
-                        }
-                        else -> {
-                            // suspend 安全呼叫 handleCommand
-                            launch {
-                                val result = handler.handleCommand(command, viewModel)
-                                sendCommands(result.sendCommands)
-                            }
-                        }
-                    }
-                }
+                val result = commandHandler.handleCommand(command, viewModel)
+                sendCommands(result.sendCommands)
             }
 
-            // UI
             Box(modifier = Modifier.fillMaxSize()) {
-                commandHandler?.let { handler ->
-                    val scope = rememberCoroutineScope()
-
-                    WearMainScreen(
-                        stage = handler.currentStage,
-                        mineName = handler.selectedMineName,
-                        mineInfo = handler.selectedMineInfo,
-                        sites = sites.drop(handler.currentPage * 5).take(5),
-                        onMenuClick = {
-                            scope.launch {
-                                val result = handler.handleCommand("menu", viewModel)
-                                sendCommands(result.sendCommands)
-                            }
-                        },
-                        onNextClick = {
-                            scope.launch {
-                                val result = handler.handleCommand("next", viewModel)
-                                sendCommands(result.sendCommands)
-                            }
-                        },
-                        onPreviousClick = {
-                            scope.launch {
-                                val result = handler.handleCommand("previous", viewModel)
-                                sendCommands(result.sendCommands)
-                            }
-                        }
+                val commandHandler = remember(sites) {
+                    CommandHandler(
+                        sites = sites,
+                        sitesPerPage = 5,
+                        getInfoByReference = { ref -> getInfoByReference(ref) }
                     )
                 }
 
-                // 當 callActive 時顯示 localRenderer
+                val scope = rememberCoroutineScope()
+
+                LaunchedEffect(command) {
+                    val result = commandHandler.handleCommand(command, viewModel)
+                    sendCommands(result.sendCommands)
+                }
+
+                WearMainScreen(
+                    stage = commandHandler.currentStage,
+                    mineName = commandHandler.selectedMineName,
+                    mineInfo = commandHandler.selectedMineInfo,
+                    sites = sites.drop(commandHandler.currentPage * 5).take(5),
+                    onMenuClick = {
+                        scope.launch {
+                            val result = commandHandler.handleCommand("menu", viewModel)
+                            sendCommands(result.sendCommands)
+                        }
+                    },
+                    onNextClick = {
+                        scope.launch {
+                            val result = commandHandler.handleCommand("next", viewModel)
+                            sendCommands(result.sendCommands)
+                        }
+                    },
+                    onPreviousClick = {
+                        scope.launch {
+                            val result = commandHandler.handleCommand("previous", viewModel)
+                            sendCommands(result.sendCommands)
+                        }
+                    }
+                )
+
                 if (callActive) {
                     AndroidView(
                         factory = { localRenderer },
@@ -244,7 +224,9 @@ class WearMainActivity : ComponentActivity() {
                             .padding(end = 10.dp, bottom = 85.dp)
                     )
                     DisposableEffect(Unit) {
-                        onDispose { localRenderer.clearImage() }
+                        onDispose {
+                            localRenderer.clearImage()
+                        }
                     }
                 }
             }
@@ -603,10 +585,3 @@ fun IncomingCallDialog(
     )
 }
 
-fun getCurrentPageCommands(
-    sites: List<Triple<String, String, String>>,
-    page: Int,
-    perPage: Int
-): List<String> {
-    return sites.drop(page * perPage).take(perPage).map { it.first.lowercase() }
-}
