@@ -69,6 +69,11 @@ import com.ucl.energygrid.ui.layout.ukMap.UKMap
 import com.ucl.energygrid.ui.layout.ukMap.UKMapViewModel
 import kotlinx.coroutines.launch
 
+data class MineMarker(
+    val mine: Mine,
+    val onClick: () -> Unit
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -201,24 +206,33 @@ fun MainScreen(
                         })
                     }
 
+                    val mineMarkers = allMines
+                        .filter { (closedMine && it.status == "C") || (closingMine && it.status == "I") }
+                        .map { mine ->
+                            MineMarker(
+                                mine = mine,
+                                onClick = {
+                                    mainViewModel.onMineSelected(mine)
+                                    coroutineScope.launch {
+                                        mainViewModel.onBottomSheetChange(BottomSheetContent.SiteInfo)
+                                        scaffoldState.bottomSheetState.expand()
+                                    }
+                                }
+                            )
+                        }
+
+                    val visibleFloodCenters = if (showFloodRisk) floodCenters else emptyList()
+
+
                     UKMap(
                         mainViewModel = mainViewModel,
                         ukMapViewModel = ukMapViewModel,
-                        floodCenters = floodCenters,
-                        showMarkers = showFloodRisk,
+                        floodCenters = visibleFloodCenters,
                         renewableSites = renewableMarkers,
                         regionFeatures = regionFeatures,
                         energyDemandHeatmap = energyDemandHeatmap,
                         year = selectedYear,
-                        closedMine = closedMine,
-                        closingMine = closingMine,
-                        onSiteSelected = { mine ->
-                            mainViewModel.onMineSelected(mine)
-                            coroutineScope.launch {
-                                mainViewModel.onBottomSheetChange(BottomSheetContent.SiteInfo)
-                                scaffoldState.bottomSheetState.expand()
-                            }
-                        },
+                        mineMarkers = mineMarkers,
                         myPins = if (showMyPinsMarkers) myPins else emptyList(),
                         allMines = allMines,
                         onPinSelected = { mine ->

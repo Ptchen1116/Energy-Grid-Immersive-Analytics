@@ -42,20 +42,18 @@ import com.ucl.energygrid.ui.component.createPinBitmap
 import androidx.compose.runtime.rememberCoroutineScope
 import com.ucl.energygrid.ui.screen.rememberResetMap
 import com.ucl.energygrid.ui.screen.MainViewModel
+import com.ucl.energygrid.ui.screen.MineMarker
 
 @Composable
 fun UKMap(
     mainViewModel: MainViewModel,
     ukMapViewModel: UKMapViewModel,
     floodCenters: List<LatLng>,
-    showMarkers: Boolean,
     renewableSites: List<RenewableSite> = emptyList(),
     regionFeatures: List<RegionFeature> = emptyList(),
     energyDemandHeatmap: Boolean = false,
     year: Int,
-    closedMine: Boolean,
-    closingMine: Boolean,
-    onSiteSelected: (Mine) -> Unit,
+    mineMarkers: List<MineMarker> = emptyList(),
     myPins: List<PinResponse> = emptyList(),
     allMines: List<Mine> = emptyList(),
     onPinSelected: (Mine) -> Unit,
@@ -104,11 +102,7 @@ fun UKMap(
                 dynamicMarkerIcons = icons
             }
         ) {
-            MinesMarkers(
-                closedMine = closedMine,
-                closingMine = closingMine,
-                onSiteSelected = onSiteSelected
-            )
+            MineMarkers(mineMarkers = mineMarkers)
 
             MyPinsMarkers(
                 myPins = myPins,
@@ -117,12 +111,11 @@ fun UKMap(
                 onPinSelected = onPinSelected
             )
 
-            if (showMarkers) {
-                FloodMarkers(
-                    floodCenters = floodCenters,
-                    dynamicMarkerIcons = dynamicMarkerIcons
-                )
-            }
+
+            FloodMarkers(
+                floodCenters = floodCenters,
+                dynamicMarkerIcons = dynamicMarkerIcons
+            )
 
             RenewableMarkers(renewableSites)
 
@@ -153,47 +146,24 @@ fun UKMap(
 }
 
 @Composable
-fun MinesMarkers(
-    closedMine: Boolean,
-    closingMine: Boolean,
-    onSiteSelected: (Mine) -> Unit
+fun MineMarkers(
+    mineMarkers: List<MineMarker>
 ) {
     val context = LocalContext.current
 
-    var mines by remember { mutableStateOf<List<Mine>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(closedMine, closingMine) {
-        isLoading = true
-        errorMessage = null
-        try {
-            mines = RetrofitInstance.mineApi.getAllMines()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            errorMessage = "Failed to load mines: ${e.message}"
-            mines = emptyList()
-        }
-        isLoading = false
-    }
-
-    val filteredMines = mines.filter {
-        (closedMine && it.status == "C") || (closingMine && it.status == "I")
-    }
-
-    filteredMines.forEach { mine ->
-        val latLng = remember(mine.easting, mine.northing) {
-            convertOSGB36ToWGS84(mine.easting, mine.northing)
+    mineMarkers.forEach { marker ->
+        val latLng = remember(marker.mine.easting, marker.mine.northing) {
+            convertOSGB36ToWGS84(marker.mine.easting, marker.mine.northing)
         }
 
-        val pinType = when (mine.status) {
+        val pinType = when (marker.mine.status) {
             "C" -> PinType.CLOSED_MINE
             "I" -> PinType.CLOSING_MINE
             else -> PinType.CLOSED_MINE
         }
 
-        val iconBitmap = remember(mine.trend, pinType) {
-            createPinBitmap(context, pinType, mine.trend)
+        val iconBitmap = remember(marker.mine.trend, pinType) {
+            createPinBitmap(context, pinType, marker.mine.trend)
         }
 
         val iconDescriptor = remember(iconBitmap) {
@@ -202,15 +172,15 @@ fun MinesMarkers(
 
         Marker(
             state = MarkerState(position = latLng),
-            title = mine.name,
-            snippet = when (mine.status) {
+            title = marker.mine.name,
+            snippet = when (marker.mine.status) {
                 "C" -> "Closed Mine"
                 "I" -> "Closing Mine"
                 else -> "Mine"
             },
             icon = iconDescriptor,
             onClick = {
-                onSiteSelected(mine)
+                marker.onClick()
                 true
             }
         )
