@@ -31,7 +31,7 @@ class AuthViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         userRepository = mockk()
-        authViewModel = AuthViewModel(userRepository)
+        authViewModel = AuthViewModel(userRepository, testDispatcher)
     }
 
     @After
@@ -40,7 +40,7 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun `login success updates state and emits success message`() = runTest {
+    fun `login success updates state and emits success message`() = runTest(testDispatcher) {
         val fakeUserId = "user123"
         val fakeToken = "tokenABC"
         coEvery { userRepository.login("email@test.com", "password") } returns Result.success(fakeUserId to fakeToken)
@@ -49,12 +49,10 @@ class AuthViewModelTest {
             authViewModel.login("email@test.com", "password")
             advanceUntilIdle()
 
-            // verify state updated
             assertTrue(authViewModel.isLoggedIn.value)
             assertEquals(fakeUserId, authViewModel.userId.value)
             assertEquals(fakeToken, authViewModel.userToken.value)
 
-            // verify emitted UI message
             val message = awaitItem()
             assertTrue(message.contains("Login success"))
         }
