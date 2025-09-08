@@ -127,10 +127,6 @@ class WebRtcRepository(private val context: Context) {
 
         val iceServers = listOf(
             PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
-            PeerConnection.IceServer.builder("turn:openrelay.metered.ca:80")
-                .setUsername("openrelayproject")
-                .setPassword("openrelayproject")
-                .createIceServer()
         )
         val config = PeerConnection.RTCConfiguration(iceServers)
 
