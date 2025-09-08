@@ -72,6 +72,7 @@ class WebRtcRepository(private val context: Context) {
     private var answerListener: ValueEventListener? = null
     private var candidateListener: ChildEventListener? = null
 
+
     fun init(localView: SurfaceViewRenderer, remoteView: SurfaceViewRenderer, isCaller: Boolean) {
         this.localView = localView
         this.remoteView = remoteView
@@ -79,9 +80,9 @@ class WebRtcRepository(private val context: Context) {
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED) {
-            Log.e("WebRtcRepository", "Camera permission not granted")
+            Log.e("WebRtcRepository", "Camera permission not granted :(")
+            return
         }
-
         setupPeerConnection()
 
         listenForCallEnd()
@@ -104,8 +105,10 @@ class WebRtcRepository(private val context: Context) {
 
         videoCapturer = createCameraCapturer()
         if (videoCapturer == null) {
-            Log.e("WebRtcRepository", "Failed to create video capturer")
+            Log.e("WebRtcRepository", "No camera found!")
             return
+        } else {
+            Log.e("WebRtcRepository", "camera found!")
         }
 
         localVideoSource = peerConnectionFactory.createVideoSource(videoCapturer!!.isScreencast)
@@ -123,12 +126,17 @@ class WebRtcRepository(private val context: Context) {
         localVideoTrack.addSink(localView)
 
         val iceServers = listOf(
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
+            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
+            PeerConnection.IceServer.builder("turn:openrelay.metered.ca:80")
+                .setUsername("openrelayproject")
+                .setPassword("openrelayproject")
+                .createIceServer()
         )
         val config = PeerConnection.RTCConfiguration(iceServers)
 
         peerConnection = peerConnectionFactory.createPeerConnection(config, object : PeerConnection.Observer {
             override fun onIceCandidate(candidate: IceCandidate?) {
+                Log.e("WebRtcRepository", "onIceCandidate: $candidate")
                 candidate?.let {
                     val path = if (isCaller) "callerCandidates" else "calleeCandidates"
                     database.child(path).push().setValue(
@@ -138,13 +146,15 @@ class WebRtcRepository(private val context: Context) {
             }
 
             override fun onTrack(transceiver: RtpTransceiver?) {
+                Log.e("WebRtcRepository", "onTrack: $transceiver")
                 (transceiver?.receiver?.track() as? VideoTrack)?.addSink(remoteView)
             }
 
             override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
+                Log.e("WebRtcRepository", "onConnectionChange: $newState")
                 if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
                     isConnected.value = true
-                    Log.d("WebRtcRepository", "Call connected")
+                    Log.e("WebRtcRepository", "Call connected")
                 }
             }
 

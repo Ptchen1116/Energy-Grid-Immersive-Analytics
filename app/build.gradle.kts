@@ -48,6 +48,22 @@ android {
     buildFeatures {
         compose = true
     }
+
+    flavorDimensions += "mode"
+
+    productFlavors {
+        create("phone") {
+            dimension = "mode"
+            applicationIdSuffix = ".phone"
+            versionNameSuffix = "-phone"
+        }
+        create("wear") {
+            dimension = "mode"
+            applicationIdSuffix = ".wear"
+            versionNameSuffix = "-wear"
+        }
+    }
+
 }
 val mapsComposeVersion = "4.4.1"
 
@@ -119,7 +135,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 }
 
 secrets {

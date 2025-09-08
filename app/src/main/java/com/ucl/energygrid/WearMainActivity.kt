@@ -67,6 +67,8 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.ucl.energygrid.data.repository.convertOSGB36ToWGS84
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class WearMainActivity : ComponentActivity() {
     private val _spokenCommand = MutableStateFlow("No selection")
