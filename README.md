@@ -28,7 +28,7 @@ You can view the Figma prototype here:
 
 You can switch between **phone** and **wear** variants in Android Studio:
 
-1. Open **Build Variants** panel (bottom-left corner of Android Studio).
+1. Open **Build Variants** panel (View/Tool Windows/Build Variants).
 2. In the **Module: app** row, change the **Active Build Variant** to either:
     - `phoneDebug` → builds the Phone app
     - `wearDebug` → builds the Wear app
