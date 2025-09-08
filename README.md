@@ -23,6 +23,9 @@ You can view the Figma prototype here:
 - **Activity**: `app/src/main/java/com/ucl/energygrid/WearMainActivity.kt`
 - **Manifest**: `app/src/wear/AndroidManifest.xml`
 
+### Backend Service
+- **Root**: `backend/`
+- **Entry Point**: `backend/app/main.py`
 
 ## Build Variants
 
