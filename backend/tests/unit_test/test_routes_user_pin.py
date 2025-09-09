@@ -6,10 +6,8 @@ from app.models.mine_site import Mine
 from app.routes import user_pin as user_pin_routes
 from typing import List
 
-# --- 只 include 一次 router ---
 app.include_router(user_pin_routes.router)
 
-# --- Dummy ORM / DB Session ---
 class DummyQuery:
     def __init__(self, results: List):
         self.results = results
@@ -21,7 +19,6 @@ class DummyQuery:
         return DummyQuery(filtered)
 
     def filter(self, *args, **kwargs):
-        # 簡單模擬，只處理 UserPin 或 Mine 的條件
         filtered = self.results
         for expr in args:
             if hasattr(expr, "left") and hasattr(expr.left, "name") and hasattr(expr.right, "value"):
@@ -41,7 +38,7 @@ class DummySession:
     def __init__(self):
         self.mines: List[Mine] = []
         self.user_pins: List[UserPin] = []
-        self._next_id = 1  # 自動 id 計數器
+        self._next_id = 1
 
     def query(self, model):
         if model.__name__ == "Mine":
@@ -76,25 +73,21 @@ class DummySession:
         container[:] = [o for o in container if o != obj]
 
 
-# --- 建立 dummy DB & TestClient ---
 dummy_db = DummySession()
 app.dependency_overrides[user_pin_routes.get_db] = lambda: dummy_db
 client = TestClient(app)
 
 
-# --- Pytest Fixture ---
 @pytest.fixture
 def setup_user_pins():
     dummy_db.mines.clear()
     dummy_db.user_pins.clear()
     dummy_db._next_id = 1
-    # 預設加入一個 UserPin
     pin = UserPin(user_id=1, mine_id=1, note="Initial note")
     dummy_db.add(pin)
     return dummy_db
 
 
-# --- CRUD 測試 ---
 def test_create_new_pin(setup_user_pins):
     response = client.post("/users/2/pins", json={"mine_id": 2, "note": "New note"})
     assert response.status_code == 200

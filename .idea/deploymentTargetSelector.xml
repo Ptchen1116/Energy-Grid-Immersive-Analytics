@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-24T19:10:32.803634Z">
+        <DropdownSelection timestamp="2025-09-08T07:22:30.348960Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/Users/chenpeitong/.android/avd/Medium_Phone_2.avd" />
@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="WearOS">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-23T20:44:53.415506Z">
+        <DropdownSelection timestamp="2025-09-08T07:19:22.683234Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=bd32dc90" />
+              <DeviceId pluginId="Default" identifier="serial=bd32dc90;connection=47ad452d" />
             </handle>
           </Target>
         </DropdownSelection>

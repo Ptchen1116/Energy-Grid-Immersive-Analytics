@@ -17,15 +17,10 @@ class DummyQuery:
             return DummyQuery(filtered)
         return DummyQuery(self.results)
 
-    # 新增這個方法，模擬 SQLAlchemy filter()
     def filter(self, *args, **kwargs):
-        # args 通常是 SQLAlchemy binary expression
-        # 我們假設只有 Mine.reference == reference 會用到
         filtered = []
         for item in self.results:
             for expr in args:
-                # expr.left.name == 'reference' 且 expr.right.value == reference
-                # 簡單模擬，只處理 Mine.reference == something
                 if hasattr(expr, 'left') and hasattr(expr.left, 'name') and expr.left.name == 'reference':
                     if getattr(expr.right, 'value', None) == item.reference:
                         filtered.append(item)
@@ -37,7 +32,6 @@ class DummyQuery:
     def all(self):
         return self.results
 
-# 模擬 SQLAlchemy Session
 class DummySession:
     def __init__(self):
         self.mines = []
