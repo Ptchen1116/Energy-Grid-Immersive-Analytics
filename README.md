@@ -1,6 +1,5 @@
 # Energy-Grid-Immersive-Analytics
 A UCL IXN project focused on immersive energy grid data analytics.  
-
 You can watch a demo video [here →](https://drive.google.com/file/d/1j9KDJKRgpUUIJNs5Pks_0t5vu8TqnJu7/view)
 
 
@@ -33,8 +32,7 @@ This project consists of two main applications: a Smart Glasses application for 
 ![Smart Glasses Application Sitemap](docs/images/smart_glasses_sitemap.png)
 
 ## Prototype
-You can view the Figma prototype here:  
-[Figma Prototype →](https://www.figma.com/design/OQmP5Oy1DRHOOuSBoV6fce/Untitled?node-id=1-142&t=QEvBvoJhwFXfmGFQ-1)
+You can view the Figma prototype [here →](https://www.figma.com/design/OQmP5Oy1DRHOOuSBoV6fce/Untitled?node-id=1-142&t=QEvBvoJhwFXfmGFQ-1)
 
 ## System Architecture
 ![System Architecture](docs/images/system_architecture.png)
