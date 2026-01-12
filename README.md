@@ -1,6 +1,6 @@
 # Energy-Grid-Immersive-Analytics
 A UCL IXN project focused on immersive energy grid data analytics.  
-You can watch a demo video [here →](https://drive.google.com/file/d/1j9KDJKRgpUUIJNs5Pks_0t5vu8TqnJu7/view)
+You can watch the demo video [here →](https://drive.google.com/file/d/1j9KDJKRgpUUIJNs5Pks_0t5vu8TqnJu7/view)
 
 
 ## Features
